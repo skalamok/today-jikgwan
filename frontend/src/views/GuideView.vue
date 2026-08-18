@@ -25,16 +25,24 @@ onMounted(async () => { stadiums.value = (await client.get('/stadiums')).data })
     </div>
   </div>
 
-  <div class="card wide">
-    <h2>STEP {{ step + 1 }}. {{ STEPS[step].t }}</h2>
-    <p style="font-size:14px; line-height:1.6">{{ STEPS[step].d }}</p>
+  <div class="card accent wide">
+    <div class="muted">STEP {{ step + 1 }} / {{ STEPS.length }}</div>
+    <div class="big" style="font-size:21px; margin-top:6px">{{ STEPS[step].t }}</div>
+    <p style="font-size:14px; line-height:1.65; margin-top:10px; opacity:.92">{{ STEPS[step].d }}</p>
+    <div class="bar on-dark">
+      <span :style="{ width: ((step + 1) / STEPS.length * 100) + '%' }"></span>
+    </div>
   </div>
 
-  <div class="card" v-if="step === 0" v-for="s in stadiums" :key="s.id">
-    <RouterLink :to="`/stadiums/${s.id}`">
-      <div class="mid">{{ s.name }}</div>
-      <div class="muted" style="margin-top:3px">{{ s.homeTeams }}</div>
-      <div class="muted" style="margin-top:6px">구역별 만족도 보기 →</div>
+  <div class="card wide" v-if="step === 0">
+    <h2>구장 고르기</h2>
+    <RouterLink v-for="s in stadiums" :key="s.id" :to="`/stadiums/${s.id}`"
+                class="list-item" style="align-items:center">
+      <div style="flex:1">
+        <div class="mid">{{ s.name }}</div>
+        <div class="muted" style="margin-top:3px">{{ s.homeTeams }}</div>
+      </div>
+      <span class="muted">›</span>
     </RouterLink>
   </div>
 

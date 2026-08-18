@@ -82,11 +82,19 @@ async function submit() {
 </script>
 
 <template>
+  <div class="card accent wide">
+    <div class="muted">직관 기록</div>
+    <div class="big" style="font-size:20px; margin-top:4px">그날을 남겨보세요</div>
+    <div class="muted" style="margin-top:6px">
+      경기 · 응원팀 · 좌석 구역 · 구역 평가는 필수입니다
+    </div>
+  </div>
+
   <div class="card">
     <div class="field">
       <label>① 사진</label>
       <input type="file" accept="image/jpeg,image/png" multiple @change="pickFiles" />
-      <div class="muted" style="margin-top:6px">
+      <div class="muted" style="margin-top:8px">
         {{ files.length }}/10 · 업로드 시 위치 정보는 자동으로 제거됩니다
       </div>
     </div>
@@ -106,13 +114,16 @@ async function submit() {
 
     <div class="field" v-if="selectedGame">
       <label>③ 어느 팀 응원하셨어요? <span class="req">*</span></label>
-      <div class="row" style="gap:8px">
-        <button class="btn small" :class="{ ghost: cheerTeamId !== selectedGame.homeTeamId || neutral }"
-                @click="neutral = false; cheerTeamId = selectedGame.homeTeamId">{{ selectedGame.homeTeam }}</button>
-        <button class="btn small" :class="{ ghost: cheerTeamId !== selectedGame.awayTeamId || neutral }"
-                @click="neutral = false; cheerTeamId = selectedGame.awayTeamId">{{ selectedGame.awayTeam }}</button>
-        <button class="btn small" :class="{ ghost: !neutral }"
-                @click="neutral = true; cheerTeamId = null">중립</button>
+      <div class="pick">
+        <button :class="{ on: !neutral && cheerTeamId === selectedGame.homeTeamId }"
+                @click="neutral = false; cheerTeamId = selectedGame.homeTeamId">
+          {{ selectedGame.homeTeam }}
+        </button>
+        <button :class="{ on: !neutral && cheerTeamId === selectedGame.awayTeamId }"
+                @click="neutral = false; cheerTeamId = selectedGame.awayTeamId">
+          {{ selectedGame.awayTeam }}
+        </button>
+        <button :class="{ on: neutral }" @click="neutral = true; cheerTeamId = null">중립</button>
       </div>
       <div class="muted" style="margin-top:6px" v-if="neutral">중립 관람은 승패 집계에서 제외됩니다</div>
     </div>
@@ -169,3 +180,17 @@ async function submit() {
   </button>
   <div class="toast" v-if="toast">{{ toast }}</div>
 </template>
+
+<style scoped>
+.pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pick button {
+  padding: 13px 8px; border: 1.5px solid var(--line); border-radius: 11px;
+  background: #fff; font-size: 14px; font-weight: 700; color: var(--ink-2);
+  cursor: pointer; transition: all .15s;
+}
+.pick button:hover { border-color: var(--brand-2); }
+.pick button.on {
+  background: var(--brand); border-color: var(--brand); color: #fff;
+  box-shadow: 0 2px 8px rgba(22,53,92,.20);
+}
+</style>

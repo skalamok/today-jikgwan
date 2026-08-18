@@ -29,7 +29,7 @@ function rate(v) { return v == null ? '-' : v.toFixed(3).replace(/^0/, '') }
         <div style="width:40px; text-align:right">승차</div>
       </div>
       <div v-for="r in rows" :key="r.teamId" class="list-item" style="align-items:center; padding:9px 0">
-        <div style="width:28px" class="mid">{{ r.rank }}</div>
+        <div style="width:28px"><span class="rank" :class="{ top: r.rank <= 3 }">{{ r.rank }}</span></div>
         <div style="flex:1" class="mid">{{ r.team }}</div>
         <div style="width:36px; text-align:right" class="muted">{{ r.games }}</div>
         <div style="width:70px; text-align:right" class="muted">{{ r.wins }}·{{ r.draws }}·{{ r.losses }}</div>
@@ -41,3 +41,12 @@ function rate(v) { return v == null ? '-' : v.toFixed(3).replace(/^0/, '') }
     </div>
   </div>
 </template>
+
+<style scoped>
+.rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 7px; font-size: 12px; font-weight: 800;
+  background: var(--card-soft); color: var(--muted);
+}
+.rank.top { background: var(--brand); color: #fff; }
+</style>

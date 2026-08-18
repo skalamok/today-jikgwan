@@ -7,16 +7,33 @@ onMounted(async () => { posts.value = (await client.get('/companion-posts')).dat
 </script>
 
 <template>
-  <div class="card">
+  <div class="card wide">
     <h2>모집 중인 동행</h2>
     <div v-if="!posts.length" class="empty"><p>모집 중인 동행이 없어요</p></div>
     <RouterLink v-for="p in posts" :key="p.id" :to="`/companions/${p.id}`"
                 class="list-item" style="align-items:center">
-      <div style="flex:1">
+      <div style="flex:1; min-width:0">
         <div class="mid">{{ p.gameLabel }}</div>
-        <div class="muted">{{ p.startAt.slice(0, 10) }} · {{ p.stadium }}</div>
+        <div class="muted" style="margin-top:4px">{{ p.startAt.slice(0, 10) }} · {{ p.stadium }}</div>
+        <div class="dots">
+          <i v-for="n in p.capacity" :key="n" :class="{ on: n <= p.confirmedCount }"></i>
+          <span class="muted" style="margin-left:6px; font-size:11.5px">
+            {{ p.confirmedCount }}/{{ p.capacity }}명
+          </span>
+        </div>
       </div>
-      <span class="chip">{{ p.confirmedCount }}/{{ p.capacity }}</span>
+      <span class="chip" :class="{ warn: p.status !== 'OPEN' }">
+        {{ p.status === 'OPEN' ? '모집중' : '마감' }}
+      </span>
     </RouterLink>
   </div>
 </template>
+
+<style scoped>
+.dots { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+.dots i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--draw-bg); display: inline-block;
+}
+.dots i.on { background: var(--brand-2); }
+</style>

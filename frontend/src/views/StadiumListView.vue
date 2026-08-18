@@ -7,7 +7,7 @@ onMounted(async () => { stadiums.value = (await client.get('/stadiums')).data })
 </script>
 
 <template>
-  <div class="card">
+  <div class="card wide">
     <h2>전국 구장</h2>
     <RouterLink v-for="s in stadiums" :key="s.id" :to="`/stadiums/${s.id}`"
                 class="list-item" style="align-items:center">

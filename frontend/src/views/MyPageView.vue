@@ -31,11 +31,19 @@ function doLogout() { logout(); router.replace('/login') }
 <template>
   <div v-if="loading"><div class="card"><div class="skeleton" style="height:60px"></div></div></div>
   <template v-else>
-    <div class="card">
+    <div class="card accent wide">
       <h2>내 활동</h2>
-      <div class="big">{{ logs.length }}<span style="font-size:14px">개 기록</span></div>
-      <div class="muted" style="margin-top:4px">
-        {{ stats.games }}경기 {{ stats.wins }}승 {{ stats.draws }}무 {{ stats.losses }}패
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <div class="big">{{ logs.length }}<span style="font-size:16px">개 기록</span></div>
+          <div class="mid" style="margin-top:6px; opacity:.92">
+            {{ stats.games }}경기 {{ stats.wins }}승 {{ stats.draws }}무 {{ stats.losses }}패
+          </div>
+        </div>
+        <div v-if="stats.totalCost" style="text-align:right">
+          <div class="muted">누적 지출</div>
+          <div class="mid" style="font-size:18px">{{ stats.totalCost.toLocaleString() }}원</div>
+        </div>
       </div>
     </div>
 
