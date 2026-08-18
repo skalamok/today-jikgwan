@@ -40,7 +40,11 @@ const title = computed(() => titles[route.name] || '오늘의직관')
     </header>
 
     <main class="content">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition name="fade" mode="out-in">
+          <component :is="Component" :key="$route.fullPath" />
+        </Transition>
+      </RouterView>
     </main>
 
     <nav class="tabbar" v-if="$route.name !== 'login' && $route.name !== 'signup'">

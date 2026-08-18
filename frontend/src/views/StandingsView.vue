@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const rows = ref([])
 const loading = ref(true)
@@ -30,7 +31,7 @@ function rate(v) { return v == null ? '-' : v.toFixed(3).replace(/^0/, '') }
       </div>
       <div v-for="r in rows" :key="r.teamId" class="list-item" style="align-items:center; padding:9px 0">
         <div style="width:28px"><span class="rank" :class="{ top: r.rank <= 3 }">{{ r.rank }}</span></div>
-        <div style="flex:1" class="mid">{{ r.team }}</div>
+        <div style="flex:1"><TeamMark :name="r.team" size="sm" /></div>
         <div style="width:36px; text-align:right" class="muted">{{ r.games }}</div>
         <div style="width:70px; text-align:right" class="muted">{{ r.wins }}·{{ r.draws }}·{{ r.losses }}</div>
         <div style="width:44px; text-align:right" class="mid">{{ rate(r.winRate) }}</div>

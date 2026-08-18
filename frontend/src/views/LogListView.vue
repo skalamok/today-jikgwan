@@ -16,7 +16,8 @@ const resultText = { WIN: '승', LOSE: '패', DRAW: '무', NEUTRAL: '중립' }
   <div class="card wide">
     <div v-if="loading"><div class="skeleton" style="height:56px"></div></div>
     <div v-else-if="!logs.length" class="empty">
-      <p>아직 기록이 없어요</p>
+      <div class="em">📝</div>
+      <p>아직 기록이 없어요<br>다녀온 경기를 남겨보세요</p>
       <RouterLink to="/logs/new"><button class="btn small">첫 기록 남기기</button></RouterLink>
     </div>
     <div v-else>

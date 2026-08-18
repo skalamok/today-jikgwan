@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const summary = ref(null)
 const dims = ref({ STADIUM: [], OPPONENT: [], DAY_OF_WEEK: [] })
@@ -25,7 +26,8 @@ onMounted(async () => {
   <div v-if="loading"><div class="card"><div class="skeleton" style="height:80px"></div></div></div>
 
   <div v-else-if="!summary.games" class="card empty">
-    <p>아직 기록이 없어요</p>
+    <div class="em">📊</div>
+    <p>아직 기록이 없어요<br>기록이 쌓이면 전적이 만들어집니다</p>
     <RouterLink to="/logs/new"><button class="btn small">첫 기록 남기기</button></RouterLink>
   </div>
 
@@ -63,19 +65,26 @@ onMounted(async () => {
     <div class="card" v-for="(rows, key) in dims" :key="key">
       <h2>{{ { STADIUM: '구장별', OPPONENT: '상대팀별', DAY_OF_WEEK: '요일별' }[key] }}</h2>
       <div v-if="!rows.length" class="muted">아직 데이터가 없어요</div>
-      <div v-for="r in rows" :key="r.key" class="list-item" style="align-items:center; padding:10px 0">
-        <div style="flex:1" class="mid">{{ r.label }}</div>
-        <div class="muted" style="margin-right:10px">
-          {{ r.games }}경기 {{ r.wins }}승 {{ r.draws }}무 {{ r.losses }}패
-        </div>
-        <div style="min-width:78px; text-align:right">
+      <div v-for="r in rows" :key="r.key" class="dim-row">
+        <div class="row">
+          <TeamMark v-if="key === 'OPPONENT'" :name="r.label" size="sm" />
+          <span v-else class="mid">{{ r.label }}</span>
           <span v-if="r.winRate != null" class="mid">{{ rate(r.winRate) }}</span>
           <span v-else class="chip draw">표본 부족</span>
-          <div v-if="r.winRate != null" class="bar" style="margin-top:5px">
-            <span :style="{ width: (r.winRate * 100) + '%' }"></span>
-          </div>
+        </div>
+        <div class="bar" v-if="r.winRate != null">
+          <span :style="{ width: (r.winRate * 100) + '%' }"></span>
+        </div>
+        <div class="muted" style="margin-top:6px; font-size:11.5px">
+          {{ r.games }}경기 · {{ r.wins }}승 {{ r.draws }}무 {{ r.losses }}패
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.dim-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.dim-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.dim-row:first-child { padding-top: 0; }
+</style>

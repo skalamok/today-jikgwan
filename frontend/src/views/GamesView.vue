@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const date = ref('2026-08-18')
 const games = ref([])
@@ -40,17 +41,15 @@ watch(date, load)
     <div v-else>
       <div v-for="g in games" :key="g.id" class="list-item" style="align-items:center">
         <div style="flex:1; min-width:0">
-          <div class="row" style="justify-content:flex-start; gap:8px">
-            <span class="mid" :class="{ dim: g.resultConfirmed && g.homeScore < g.awayScore }">
-              {{ g.homeTeam }}
-            </span>
-            <span v-if="g.resultConfirmed" class="score">{{ g.homeScore }}</span>
-            <span class="muted" style="font-size:11px">:</span>
-            <span v-if="g.resultConfirmed" class="score">{{ g.awayScore }}</span>
-            <span class="mid" :class="{ dim: g.resultConfirmed && g.awayScore < g.homeScore }">
-              {{ g.awayTeam }}
-            </span>
-            <span v-if="!g.resultConfirmed" class="muted">vs</span>
+          <div class="row" style="justify-content:flex-start; gap:9px">
+            <TeamMark :name="g.homeTeam" :dim="g.resultConfirmed && g.homeScore < g.awayScore" />
+            <template v-if="g.resultConfirmed">
+              <span class="score" :class="{ dim: g.homeScore < g.awayScore }">{{ g.homeScore }}</span>
+              <span class="muted" style="font-size:11px">:</span>
+              <span class="score" :class="{ dim: g.awayScore < g.homeScore }">{{ g.awayScore }}</span>
+            </template>
+            <span v-else class="muted">vs</span>
+            <TeamMark :name="g.awayTeam" :dim="g.resultConfirmed && g.awayScore < g.homeScore" />
           </div>
           <div class="muted" style="margin-top:4px">
             {{ g.stadium }} · {{ kst(g.startAt) }}

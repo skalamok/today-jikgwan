@@ -22,7 +22,11 @@ const routes = [
   { path: '/companions/:id', name: 'companion', component: () => import('../views/CompanionDetailView.vue'), meta: { id: 'SCR-MATE-002' } },
 ]
 
-const router = createRouter({ history: createWebHistory(), routes })
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+  scrollBehavior: (to, from, saved) => saved || { top: 0 },
+})
 
 router.beforeEach((to) => {
   if (!to.meta.public && !auth.token) {

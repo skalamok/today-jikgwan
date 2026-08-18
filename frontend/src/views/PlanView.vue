@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const DAYS = [
   { v: 'MONDAY', l: '월' }, { v: 'TUESDAY', l: '화' }, { v: 'WEDNESDAY', l: '수' },
@@ -120,9 +121,9 @@ async function generate() {
       <div v-if="!result.proposed.length" class="muted">조건을 만족하는 경기가 없어요</div>
       <div v-for="p in result.proposed" :key="p.gameId" class="list-item" style="align-items:center">
         <div style="flex:1">
-          <div class="mid">
-            {{ p.matchup }}
-            <span v-if="p.cheerTeamGame" class="chip" style="margin-left:4px">응원팀</span>
+          <div class="row" style="justify-content:flex-start; gap:7px">
+            <TeamMark v-for="t in p.matchup.split(' vs ')" :key="t" :name="t" size="sm" />
+            <span v-if="p.cheerTeamGame" class="chip">응원팀</span>
           </div>
           <div class="muted">
             {{ p.gameDate }}({{ p.dayOfWeek }}) {{ p.startTime }} · {{ p.stadium }}

@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const comments = ref([])
 const commentDraft = ref('')
@@ -67,7 +68,9 @@ async function act(kind) {
       <span class="chip" :class="post.status === 'OPEN' ? '' : 'warn'">
         {{ { OPEN: '모집중', FULL: '마감', CLOSED: '종료', ENDED: '종료' }[post.status] }}
       </span>
-      <div class="big" style="font-size:20px; margin-top:8px">{{ post.gameLabel }}</div>
+      <div class="row" style="justify-content:flex-start; gap:8px; margin-top:10px">
+        <TeamMark v-for="t in post.gameLabel.split(' vs ')" :key="t" :name="t" size="lg" />
+      </div>
       <div class="muted">{{ post.startAt.slice(0, 10) }} · {{ post.stadium }}</div>
     </div>
 

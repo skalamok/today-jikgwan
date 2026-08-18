@@ -18,7 +18,10 @@ onMounted(async () => {
   <div class="card wide">
     <h2>알림</h2>
     <div v-if="loading"><div class="skeleton" style="height:40px"></div></div>
-    <div v-else-if="!items.length" class="empty"><p>받은 알림이 없어요</p></div>
+    <div v-else-if="!items.length" class="empty">
+      <div class="em">🔔</div>
+      <p>받은 알림이 없어요</p>
+    </div>
     <RouterLink v-else v-for="n in items" :key="n.id" :to="n.linkUrl || '/'"
                 class="list-item" style="align-items:center">
       <div class="ico">{{ ICON[n.type] || '🔔' }}</div>

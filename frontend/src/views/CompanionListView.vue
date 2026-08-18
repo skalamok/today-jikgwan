@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const posts = ref([])
 onMounted(async () => { posts.value = (await client.get('/companion-posts')).data })
@@ -9,11 +10,16 @@ onMounted(async () => { posts.value = (await client.get('/companion-posts')).dat
 <template>
   <div class="card wide">
     <h2>모집 중인 동행</h2>
-    <div v-if="!posts.length" class="empty"><p>모집 중인 동행이 없어요</p></div>
+    <div v-if="!posts.length" class="empty">
+      <div class="em">🤝</div>
+      <p>모집 중인 동행이 없어요</p>
+    </div>
     <RouterLink v-for="p in posts" :key="p.id" :to="`/companions/${p.id}`"
                 class="list-item" style="align-items:center">
       <div style="flex:1; min-width:0">
-        <div class="mid">{{ p.gameLabel }}</div>
+        <div class="row" style="justify-content:flex-start; gap:7px">
+          <TeamMark v-for="t in p.gameLabel.split(' vs ')" :key="t" :name="t" size="sm" />
+        </div>
         <div class="muted" style="margin-top:4px">{{ p.startAt.slice(0, 10) }} · {{ p.stadium }}</div>
         <div class="dots">
           <i v-for="n in p.capacity" :key="n" :class="{ on: n <= p.confirmedCount }"></i>

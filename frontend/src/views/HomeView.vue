@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const loading = ref(true)
 const summary = ref(null)
@@ -17,6 +18,11 @@ const winRateText = computed(() => {
   // REQ-F-305 표본 부족 시 승률 대신 전적만 표시한다
   return s.smallSample ? '표본이 더 쌓이면 승률이 표시돼요' : `승률 ${s.winRate.toFixed(3).replace('0.', '.')}`
 })
+
+function kst(iso) {
+  return new Date(iso).toLocaleTimeString('ko-KR',
+    { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Seoul' })
+}
 
 onMounted(async () => {
   try {
@@ -81,9 +87,13 @@ onMounted(async () => {
       <div v-if="!games.length" class="empty" style="padding:20px"><p>오늘은 경기가 없어요</p></div>
       <div v-else>
         <div v-for="g in games" :key="g.id" class="list-item" style="align-items:center">
-          <div style="flex:1">
-            <div class="mid">{{ g.homeTeam }} vs {{ g.awayTeam }}</div>
-            <div class="muted">{{ g.stadium }} · {{ g.startAt.slice(11, 16) }}</div>
+          <div style="flex:1; min-width:0">
+            <div class="row" style="justify-content:flex-start; gap:7px">
+              <TeamMark :name="g.homeTeam" size="sm" />
+              <span class="muted" style="font-size:11px">vs</span>
+              <TeamMark :name="g.awayTeam" size="sm" />
+            </div>
+            <div class="muted" style="margin-top:5px">{{ g.stadium }} · {{ kst(g.startAt) }}</div>
           </div>
           <span v-if="g.resultConfirmed" class="mid">{{ g.homeScore }} : {{ g.awayScore }}</span>
           <span v-else class="chip warn">확인 중</span>

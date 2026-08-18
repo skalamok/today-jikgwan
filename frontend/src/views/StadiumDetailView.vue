@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../api/client'
+import TeamMark from '../components/TeamMark.vue'
 
 const route = useRoute()
 const stadium = ref(null)
@@ -27,7 +28,9 @@ watch(() => route.params.id, load)
   <div v-if="stadium">
     <div class="card accent">
       <div class="big" style="font-size:22px">{{ stadium.name }}</div>
-      <div class="muted" style="margin-top:4px">{{ stadium.homeTeams.join(' · ') }}</div>
+      <div class="row" style="justify-content:flex-start; gap:7px; margin-top:10px">
+        <TeamMark v-for="t in stadium.homeTeams" :key="t" :name="t" size="sm" />
+      </div>
       <div class="muted" v-if="stadium.nameEn">{{ stadium.nameEn }}</div>
     </div>
 
