@@ -292,17 +292,18 @@ slide("", head("DESIGN DECISION 1", "외부 데이터를 쓸 수 있는지부터
       <div class="d">KBO · STATIZ 모두<br><span class="bad">User-agent: *<br>Disallow: /</span></div></div>
     <div class="arw">›</div>
     <div class="step"><div class="n">STEP 3</div><div class="t">권리자 문의</div>
-      <div class="d">STATIZ 운영자<br><span class="bad">서면 거절</span></div></div>
+      <div class="d">STATIZ 운영자<br><span class="bad">개인용 경로 없음</span></div></div>
     <div class="arw">›</div>
     <div class="step"><div class="n">STEP 4</div><div class="t">대안 탐색</div>
       <div class="d">TheSportsDB · 기상청<br><span class="good">약관상 이용 허용</span></div></div>
   </div>
 
   <div class="box dark" style="margin-top:7mm">
-    <h3>STATIZ 운영자 회신 (2026-08-18)</h3>
-    <p style="font-size:10pt">"개인/학업/실습 목적을 포함한 <b style="color:#ffd666">모든 자동화된 데이터 수집 행위를 금지</b>하고 있습니다.
-    (…) '출처를 명시해 달라'는 안내는 저희가 정식으로 제공하거나 이용을 허락한 데이터에 한해 적용되는 원칙이며,
-    자동 수집을 통한 이용까지 허용하는 의미는 아닙니다."</p>
+    <h3>STATIZ 문의 결과 (2026-08-18)</h3>
+    <p style="font-size:10pt">공개된 안내는 "출처를 명시하면 데이터를 이용할 수 있다"였다.
+    어디까지 적용되는지 불분명하여 운영자에게 직접 문의한 결과,
+    <b style="color:#ffd666">크롤링을 금지하며 개인 이용자에게 제공할 수 있는 API 도 없다</b>는 답변을 받았다.
+    수집 방법을 조정해 해결될 문제가 아니라 개인이 이용할 정식 경로 자체가 없었다.</p>
   </div>
 
   <div class="cols2" style="margin-top:5mm">
