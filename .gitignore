@@ -1,0 +1,23 @@
+# ---------- 빌드 산출물 ----------
+backend/build/
+backend/.gradle/
+frontend/dist/
+frontend/node_modules/
+
+# ---------- 로컬 실행 데이터 ----------
+# 사용자 업로드 이미지. 저장소에 넣지 않는다
+uploads/
+
+# ---------- 도구 설정 ----------
+# 절대 경로가 들어 있어 다른 환경에서 쓸 수 없다
+.claude/
+
+# ---------- 환경 ----------
+.env
+.env.local
+
+# ---------- OS / 에디터 ----------
+.DS_Store
+*.swp
+.idea/
+.vscode/

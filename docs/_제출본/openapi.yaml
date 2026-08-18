@@ -1,0 +1,1383 @@
+openapi: 3.0.3
+info:
+  title: 오늘의직관 API
+  description: |
+    KBO 직관 기록 및 관람 정보 서비스 REST API 명세서.
+
+    - 작성자: 이채목
+    - 작성일: 2026-08-18
+
+    ### 데이터 출처
+    경기 데이터는 이용이 명시적으로 허용된 공식 API(TheSportsDB, Korean KBO League ID 4830)에서
+    배치로 동기화하며, 누락·불일치는 사용자 제보로 보완한다 (REQ-F-107, REQ-N-013).
+    외부 데이터가 포함된 응답에는 `dataSource` 필드로 출처를 표기한다 (REQ-N-014).
+    클라이언트 요청이 외부 API로 직접 전달되지 않는다 (REQ-N-016).
+
+    ### 공통 규칙
+    - 인증이 필요한 API는 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
+    - 모든 오류 응답은 `ErrorResponse` 형식을 따른다.
+    - 목록 조회는 `page`, `size` 쿼리 파라미터를 사용한다 (page는 0부터).
+  version: 0.1.0
+  contact:
+    name: 이채목
+
+servers:
+  - url: https://api.todayjikgwan.com/api/v1
+    description: 운영 서버
+  - url: http://localhost:8080/api/v1
+    description: 로컬 개발 서버
+
+tags:
+  - name: Auth
+    description: 인증 (REQ-F-001 ~ 004)
+  - name: User
+    description: 회원 정보 (REQ-F-005 ~ 007)
+  - name: Game
+    description: 경기 정보 (REQ-F-101 ~ 107)
+  - name: Stadium
+    description: 구장 및 구역별 만족도 (REQ-F-108 ~ 111)
+  - name: AttendanceLog
+    description: 직관 기록 (REQ-F-201 ~ 214)
+  - name: Stat
+    description: 전적 집계 (REQ-F-301 ~ 309)
+  - name: Companion
+    description: 동행 모집 (REQ-F-501 ~ 506)
+  - name: CompanionChat
+    description: 동행 소통 (REQ-F-510 ~ 513)
+  - name: Safety
+    description: 신고 · 차단 (REQ-F-508, REQ-F-509)
+  - name: ViewingPlan
+    description: 관람 계획 (REQ-F-401 ~ 404)
+  - name: Admin
+    description: 운영자 기능 (REQ-F-601 ~ 605)
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==================== Auth ====================
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: 이메일 회원가입
+      description: REQ-F-001. 가입 후 인증 메일을 발송한다. 인증 링크 유효기간은 30분이다.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nickname]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: fan@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: 8자 이상, 영문/숫자/특수문자 중 2종 이상
+                nickname:
+                  type: string
+                  maxLength: 30
+                  example: 잠실단골
+                favoriteTeamId:
+                  type: integer
+                  format: int64
+                  nullable: true
+      responses:
+        '201':
+          description: 가입 성공. 인증 메일 발송됨
+        '409':
+          description: 이메일 또는 닉네임 중복
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                code: DUPLICATE_EMAIL
+                message: 이미 사용 중인 이메일입니다.
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 이메일 로그인
+      description: REQ-F-002. 비밀번호 5회 연속 실패 시 캡차 토큰을 요구한다.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                captchaToken:
+                  type: string
+                  nullable: true
+                  description: 5회 이상 실패한 계정에서만 필수
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '401':
+          description: 계정 정보 불일치. 이메일/비밀번호 중 무엇이 틀렸는지 구분하지 않는다
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                code: INVALID_CREDENTIALS
+                message: 이메일 또는 비밀번호가 올바르지 않습니다.
+        '403':
+          description: 이메일 미인증 또는 캡차 필요
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                code: CAPTCHA_REQUIRED
+                message: 캡차 인증이 필요합니다.
+
+  /auth/kakao:
+    post:
+      tags: [Auth]
+      summary: 카카오 소셜 로그인
+      description: REQ-F-003. 최초 로그인 시 `isNewUser=true`를 반환하며, 클라이언트는 약관 동의 및 응원팀 설정 화면으로 이동한다.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [authorizationCode]
+              properties:
+                authorizationCode: { type: string }
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/TokenResponse'
+                  - type: object
+                    properties:
+                      isNewUser: { type: boolean, example: false }
+
+  /auth/password-reset:
+    post:
+      tags: [Auth]
+      summary: 비밀번호 재설정 메일 발송
+      description: REQ-F-004. 가입되지 않은 이메일이어도 계정 존재 여부를 노출하지 않기 위해 동일하게 200을 반환한다.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200':
+          description: 요청 접수됨
+
+  # ==================== User ====================
+  /users/me:
+    get:
+      tags: [User]
+      summary: 내 정보 조회
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [User]
+      summary: 내 정보 수정
+      description: REQ-F-005, REQ-F-006. 응원팀 변경 시 변경 이력을 기록하며, **이미 작성된 관람 기록의 승패 판정에는 소급 적용하지 않는다.**
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname: { type: string, maxLength: 30 }
+                favoriteTeamId: { type: integer, format: int64 }
+                profileImageUrl: { type: string }
+      responses:
+        '200':
+          description: 수정 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '409':
+          description: 닉네임 중복
+
+  /users/me/badges:
+    get:
+      tags: [User]
+      summary: 내 배지 목록
+      description: REQ-F-703
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BadgeResponse' }
+
+  # ==================== Game ====================
+  /games:
+    get:
+      tags: [Game]
+      summary: 경기 일정 및 결과 조회
+      description: REQ-F-101, REQ-F-102. 날짜 미지정 시 당일 기준으로 조회한다.
+      security: []
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date }, example: '2026-08-18' }
+        - { name: teamId, in: query, schema: { type: integer, format: int64 } }
+        - { name: stadiumId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Size' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items: { $ref: '#/components/schemas/GameResponse' }
+                  dataSource:
+                    type: string
+                    description: REQ-N-014 출처 표기
+                    example: 'TheSportsDB'
+                  syncedAt:
+                    type: string
+                    format: date-time
+                    description: REQ-F-106 마지막 동기화 시각
+                  stale:
+                    type: boolean
+                    description: REQ-N-010 동기화 실패로 마지막 성공 데이터를 반환한 경우 true
+                    example: false
+
+  /games/{gameId}:
+    get:
+      tags: [Game]
+      summary: 경기 상세 조회
+      description: REQ-F-103
+      security: []
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GameResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /games/suggest:
+    post:
+      tags: [Game]
+      summary: 촬영 일시 기반 경기 후보 조회
+      description: |
+        REQ-F-204. 업로드한 사진의 촬영 일시로 해당 일자의 경기를 후보로 반환한다.
+        촬영 일시가 없거나 해당일 경기가 없으면 빈 배열을 반환하며, 클라이언트는 수동 선택으로 전환한다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [takenAt]
+              properties:
+                takenAt: { type: string, format: date-time }
+      responses:
+        '200':
+          description: 후보 목록
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GameResponse' }
+
+  /games/{gameId}/weather:
+    get:
+      tags: [Game]
+      summary: 경기 구장 날씨 조회
+      description: |
+        REQ-F-112. 경기 시작 시각 기준 구장 날씨를 반환한다.
+        기상청 단기예보 API 결과를 서버가 배치로 동기화한 값이며, 예보 범위를 벗어난 경기는 null 을 반환한다.
+      security: []
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeatherResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /standings:
+    get:
+      tags: [Game]
+      summary: 팀 순위 조회
+      description: REQ-F-104. **외부 순위표를 가져오지 않고 등록된 경기 결과로부터 직접 산출한다.**
+      security: []
+      parameters:
+        - { name: season, in: query, schema: { type: integer }, example: 2026 }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/StandingResponse' }
+
+  # ==================== Stadium ====================
+  /stadiums:
+    get:
+      tags: [Stadium]
+      summary: 구장 목록 조회
+      description: REQ-F-108
+      security: []
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/StadiumResponse' }
+
+  /stadiums/{stadiumId}:
+    get:
+      tags: [Stadium]
+      summary: 구장 상세 조회
+      description: REQ-F-109, REQ-F-110. 구역별 만족도 집계를 함께 반환한다.
+      security: []
+      parameters:
+        - { name: stadiumId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StadiumDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /stadiums/{stadiumId}/zones/{zoneId}/reviews:
+    get:
+      tags: [Stadium]
+      summary: 구역별 후기 조회
+      description: REQ-F-111. 공개 설정된 기록의 메모만 최신순으로 반환하며 작성자는 노출하지 않는다.
+      security: []
+      parameters:
+        - { name: stadiumId, in: path, required: true, schema: { type: integer, format: int64 } }
+        - { name: zoneId, in: path, required: true, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Size' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    memo: { type: string }
+                    rating: { type: integer, example: 4 }
+                    attendedAt: { type: string, format: date }
+
+  # ==================== AttendanceLog ====================
+  /attendance-logs:
+    get:
+      tags: [AttendanceLog]
+      summary: 내 직관 기록 목록
+      description: REQ-F-213
+      parameters:
+        - { name: season, in: query, schema: { type: integer } }
+        - { name: stadiumId, in: query, schema: { type: integer, format: int64 } }
+        - { name: teamId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Size' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttendanceLogSummary' }
+    post:
+      tags: [AttendanceLog]
+      summary: 직관 기록 작성
+      description: |
+        REQ-F-201 ~ 211. 저장 성공 시 전적 재집계를 트리거한다 (REQ-F-309).
+
+        **동일 경기에 대한 기록은 사용자당 1건으로 제한된다.** 이미 존재하면 409를 반환하며,
+        클라이언트는 기존 기록 수정으로 유도한다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceLogRequest' }
+      responses:
+        '201':
+          description: 작성 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceLogDetail' }
+        '409':
+          description: 동일 경기 기록이 이미 존재함
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                code: DUPLICATE_ATTENDANCE_LOG
+                message: 이미 이 경기 기록이 있어요.
+                data: { existingLogId: 1024 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /attendance-logs/{logId}:
+    get:
+      tags: [AttendanceLog]
+      summary: 기록 상세 조회
+      description: REQ-F-214, REQ-N-008. 비공개 기록은 작성자만 조회할 수 있다.
+      parameters:
+        - { $ref: '#/components/parameters/LogId' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceLogDetail' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [AttendanceLog]
+      summary: 기록 수정
+      description: REQ-F-212. 수정 후 전적을 재집계한다.
+      parameters:
+        - { $ref: '#/components/parameters/LogId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceLogRequest' }
+      responses:
+        '200':
+          description: 수정 성공
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [AttendanceLog]
+      summary: 기록 삭제
+      description: REQ-F-212. 삭제 후 전적을 재집계한다.
+      parameters:
+        - { $ref: '#/components/parameters/LogId' }
+      responses:
+        '204':
+          description: 삭제 성공
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /attendance-logs/{logId}/photos:
+    post:
+      tags: [AttendanceLog]
+      summary: 사진 업로드
+      description: |
+        REQ-F-203. 기록당 최대 10장, 1장당 10MB 이하.
+        서버는 저장 전에 **위치 메타데이터를 제거하고**(REQ-N-007) 썸네일을 생성한다(REQ-N-002).
+        일부 파일이 실패해도 나머지는 정상 처리하며, 실패 목록을 응답에 포함한다.
+      parameters:
+        - { $ref: '#/components/parameters/LogId' }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        '201':
+          description: 업로드 결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploaded:
+                    type: array
+                    items: { $ref: '#/components/schemas/PhotoResponse' }
+                  failed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fileName: { type: string }
+                        reason: { type: string, example: FILE_TOO_LARGE }
+        '413':
+          description: 전체 파일이 허용 용량을 초과함
+
+  # ==================== Stat ====================
+  /stats/me/summary:
+    get:
+      tags: [Stat]
+      summary: 내 전적 요약
+      description: |
+        REQ-F-301, REQ-F-305, REQ-F-306.
+
+        **소표본 표시 정책**: 표본이 기준(5경기) 미만인 항목은 `winRate`를 null로 반환하고
+        `smallSample=true`를 함께 내린다. 클라이언트는 승률 대신 전적만 표시한다.
+      parameters:
+        - { name: season, in: query, schema: { type: integer }, description: '미지정 시 통산' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatSummaryResponse' }
+
+  /stats/me:
+    get:
+      tags: [Stat]
+      summary: 차원별 전적 조회
+      description: REQ-F-302 ~ 304, REQ-F-307
+      parameters:
+        - name: dimension
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [STADIUM, OPPONENT, DAY_OF_WEEK, SEASON, COMPANION]
+        - { name: season, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/StatItem' }
+
+  # ==================== Companion ====================
+  /companion-posts:
+    get:
+      tags: [Companion]
+      summary: 동행 모집 목록
+      description: REQ-F-502. 마감된 모집은 기본적으로 제외한다.
+      parameters:
+        - { name: gameDate, in: query, schema: { type: string, format: date } }
+        - { name: stadiumId, in: query, schema: { type: integer, format: int64 } }
+        - { name: includeClosed, in: query, schema: { type: boolean, default: false } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CompanionPostResponse' }
+    post:
+      tags: [Companion]
+      summary: 동행 모집 등록
+      description: REQ-F-501. 이미 시작한 경기에는 등록할 수 없다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gameId, capacity]
+              properties:
+                gameId: { type: integer, format: int64 }
+                capacity: { type: integer, minimum: 2, maximum: 10, description: '작성자 포함 정원' }
+                intro: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: 등록 성공
+        '400':
+          description: 경기 시작 시각이 지난 경우
+
+  /companion-posts/{postId}:
+    get:
+      tags: [Companion]
+      summary: 동행 모집 상세
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompanionPostDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /companion-posts/{postId}/applications:
+    post:
+      tags: [Companion]
+      summary: 동행 참여 (선착순 확정)
+      description: |
+        REQ-F-503, REQ-F-504, REQ-F-505, REQ-N-011.
+
+        **동시 요청 시에도 확정 인원이 정원을 초과하지 않아야 한다.**
+        서버는 게시글 행에 대한 잠금 또는 낙관적 락(version)으로 정합성을 보장하며,
+        정원이 이미 찬 요청에는 409를 반환한다. 대기자 개념은 두지 않는다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      responses:
+        '201':
+          description: 확정 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seq: { type: integer, description: '확정 순번', example: 3 }
+                  confirmedCount: { type: integer, example: 3 }
+                  capacity: { type: integer, example: 3 }
+        '409':
+          description: 정원 마감 또는 동일 시간대 중복 확정
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                full:
+                  summary: 정원 마감 (REQ-F-504)
+                  value:
+                    code: COMPANION_POST_FULL
+                    message: 방금 정원이 찼어요.
+                conflict:
+                  summary: 동일 시간대 중복 (REQ-F-505)
+                  value:
+                    code: TIME_CONFLICT
+                    message: 같은 시간에 확정된 동행이 있어요.
+        '400':
+          description: 본인이 등록한 모집에는 지원할 수 없음
+
+    delete:
+      tags: [Companion]
+      summary: 동행 참여 취소
+      description: REQ-F-506. 경기 시작 24시간 이내에는 취소할 수 없다. 취소 시 해당 자리는 다시 모집 상태가 된다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      responses:
+        '204':
+          description: 취소 성공
+        '400':
+          description: 취소 제한 시간 경과
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                code: CANCEL_DEADLINE_PASSED
+                message: 경기 임박 시에는 취소할 수 없어요.
+
+  /companion-posts/{postId}/comments:
+    get:
+      tags: [CompanionChat]
+      summary: 모집글 문의 댓글 조회
+      description: REQ-F-510. 공개 댓글이므로 비확정자도 열람할 수 있다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CommentResponse' }
+    post:
+      tags: [CompanionChat]
+      summary: 모집글 문의 댓글 작성
+      description: REQ-F-510
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: 작성 성공
+
+  /companion-posts/{postId}/messages:
+    get:
+      tags: [CompanionChat]
+      summary: 동행 대화 조회
+      description: |
+        REQ-F-511. **확정된 동행자만 조회할 수 있다.**
+        `after` 를 지정하면 그 시각 이후 메시지만 반환하므로 주기적 조회에 사용할 수 있다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+        - name: after
+          in: query
+          schema: { type: string, format: date-time }
+          description: 이 시각 이후 메시지만 조회
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items: { $ref: '#/components/schemas/MessageResponse' }
+                  readOnly:
+                    type: boolean
+                    description: REQ-F-513 경기 종료 후 일정 기간 경과 시 true
+        '403':
+          description: 확정된 동행자가 아님
+    post:
+      tags: [CompanionChat]
+      summary: 동행 대화 전송
+      description: REQ-F-511. 읽기 전용으로 전환된 대화방에는 전송할 수 없다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, maxLength: 1000 }
+      responses:
+        '201':
+          description: 전송 성공
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageResponse' }
+        '403':
+          description: 확정된 동행자가 아니거나 읽기 전용 상태
+
+  /companion-posts/{postId}/messages/read:
+    put:
+      tags: [CompanionChat]
+      summary: 대화 읽음 처리
+      description: 마지막 읽은 시각을 갱신한다. 메시지마다 읽음 행을 쌓지 않는다.
+      parameters:
+        - { $ref: '#/components/parameters/PostId' }
+      responses:
+        '204':
+          description: 처리 완료
+
+  /reports:
+    post:
+      tags: [Safety]
+      summary: 신고
+      description: |
+        REQ-F-508. 모집 글·댓글·대화 메시지·사용자를 신고한다.
+        신고된 대화는 검토 종료 시까지 보존한다 (REQ-N-023).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetType, targetId, reason]
+              properties:
+                targetType:
+                  type: string
+                  enum: [POST, COMMENT, MESSAGE, USER]
+                targetId: { type: integer, format: int64 }
+                reason: { type: string, maxLength: 255 }
+      responses:
+        '201':
+          description: 신고 접수
+        '409':
+          description: 동일 대상에 이미 신고함
+
+  /users/me/blocks:
+    get:
+      tags: [Safety]
+      summary: 차단 목록 조회
+      description: REQ-F-509
+      responses:
+        '200':
+          description: 조회 성공
+    post:
+      tags: [Safety]
+      summary: 사용자 차단
+      description: REQ-F-509. 차단하면 해당 사용자의 모집 글이 노출되지 않고 상호 지원이 불가능하다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: integer, format: int64 }
+      responses:
+        '201':
+          description: 차단 완료
+
+  # ==================== ViewingPlan ====================
+  /viewing-plans:
+    post:
+      tags: [ViewingPlan]
+      summary: 관람 계획 생성
+      description: REQ-F-401, REQ-F-402. 목표와 제약 조건을 저장한다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seasonYear, targetCount]
+              properties:
+                seasonYear: { type: integer, example: 2026 }
+                targetCount: { type: integer, example: 20 }
+                budgetTotal: { type: integer, example: 600000 }
+                maxCostPerGame: { type: integer, example: 40000 }
+                availableDays:
+                  type: array
+                  items: { type: string, enum: [MON, TUE, WED, THU, FRI, SAT, SUN] }
+                stadiumIds:
+                  type: array
+                  items: { type: integer, format: int64 }
+      responses:
+        '201':
+          description: 생성 성공
+
+  /viewing-plans/{planId}/generate:
+    post:
+      tags: [ViewingPlan]
+      summary: 후보 일정 자동 편성
+      description: |
+        REQ-F-403. 저장된 제약 조건을 만족하는 경기를 선정해 목표 횟수만큼 제안한다.
+
+        모든 제약을 만족하는 해가 없으면 `unsatisfied` 배열에 완화가 필요한 제약을 담아 반환한다.
+      parameters:
+        - { name: planId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: 편성 결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  proposed:
+                    type: array
+                    items: { $ref: '#/components/schemas/GameResponse' }
+                  fulfilledCount: { type: integer, example: 14 }
+                  targetCount: { type: integer, example: 20 }
+                  unsatisfied:
+                    type: array
+                    description: 목표를 채우지 못한 경우 완화 후보
+                    items:
+                      type: object
+                      properties:
+                        constraint: { type: string, example: AVAILABLE_DAYS }
+                        message: { type: string, example: '토요일을 추가하면 6경기를 더 채울 수 있어요.' }
+
+  # ==================== Admin ====================
+  /admin/games:
+    post:
+      tags: [Admin]
+      summary: 경기 등록
+      description: REQ-F-601, REQ-N-009. 운영자 권한이 필요하다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GameUpsertRequest' }
+      responses:
+        '201':
+          description: 등록 성공
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/games/unconfirmed:
+    get:
+      tags: [Admin]
+      summary: 결과 미확정 경기 조회
+      description: |
+        REQ-F-607. 사용자 제보가 기준 수만큼 일치하지 않아 결과가 확정되지 않은 경기를 조회한다.
+        제보가 서로 엇갈리는 경기를 운영자가 검토해 직접 확정할 수 있다.
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    game: { $ref: '#/components/schemas/GameResponse' }
+                    reports:
+                      type: array
+                      description: 스코어별 제보 집계
+                      items:
+                        type: object
+                        properties:
+                          homeScore: { type: integer, example: 5 }
+                          awayScore: { type: integer, example: 3 }
+                          count: { type: integer, example: 2 }
+                    threshold: { type: integer, description: 확정 기준 제보 수, example: 3 }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/games/{gameId}/revisions:
+    post:
+      tags: [Admin]
+      summary: 경기 결과 정정
+      description: |
+        REQ-F-602, REQ-F-603, REQ-F-309.
+
+        정정 사유는 필수이며, 변경 전후 값이 `game_revisions`에 추가 전용으로 기록된다.
+        정정 후 해당 경기를 기록한 **모든 사용자**의 전적을 재집계하고 알림을 발송한다 (REQ-F-604).
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                status:
+                  type: string
+                  enum: [SCHEDULED, IN_PROGRESS, FINISHED, CANCELED, SUSPENDED]
+                homeScore: { type: integer }
+                awayScore: { type: integer }
+                reason:
+                  type: string
+                  maxLength: 255
+                  example: 우천 노게임 처리
+      responses:
+        '200':
+          description: 정정 완료
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revisionId: { type: integer, format: int64 }
+                  affectedUserCount:
+                    type: integer
+                    description: 전적이 재계산된 사용자 수
+                    example: 37
+        '403': { $ref: '#/components/responses/Forbidden' }
+    get:
+      tags: [Admin]
+      summary: 경기 정정 이력 조회
+      description: REQ-F-603. 이력은 수정·삭제되지 않는다.
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GameRevisionResponse' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, default: 0, minimum: 0 }
+    Size:
+      name: size
+      in: query
+      schema: { type: integer, default: 20, maximum: 100 }
+    LogId:
+      name: logId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+
+  responses:
+    BadRequest:
+      description: 요청 값이 올바르지 않음
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unauthorized:
+      description: 인증 필요 또는 토큰 만료
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: 권한 없음 (REQ-N-008, REQ-N-009)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: 대상을 찾을 수 없음
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: INVALID_CREDENTIALS }
+        message: { type: string, example: 이메일 또는 비밀번호가 올바르지 않습니다. }
+        data: { type: object, nullable: true }
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, example: 3600 }
+
+    UserResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        email: { type: string }
+        nickname: { type: string }
+        profileImageUrl: { type: string, nullable: true }
+        favoriteTeam: { $ref: '#/components/schemas/TeamResponse' }
+        attendanceCount: { type: integer, example: 12 }
+
+    TeamResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string, example: 두산 베어스 }
+        shortName: { type: string, example: 두산 }
+        logoUrl: { type: string, nullable: true }
+        channels: { $ref: '#/components/schemas/TeamChannels' }
+
+    GameResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        seasonYear: { type: integer, example: 2026 }
+        gameDate: { type: string, format: date }
+        startAt: { type: string, format: date-time }
+        stadium: { $ref: '#/components/schemas/StadiumResponse' }
+        homeTeam: { $ref: '#/components/schemas/TeamResponse' }
+        awayTeam: { $ref: '#/components/schemas/TeamResponse' }
+        homeScore: { type: integer, nullable: true }
+        awayScore: { type: integer, nullable: true }
+        status:
+          type: string
+          enum: [SCHEDULED, IN_PROGRESS, FINISHED, CANCELED, SUSPENDED]
+        resultConfirmed:
+          type: boolean
+          description: REQ-F-608. false 이면 화면에 "확인 중" 배지를 표시한다
+          example: true
+
+    StandingResponse:
+      type: object
+      description: 등록된 경기 결과로부터 산출 (REQ-F-104)
+      properties:
+        rank: { type: integer, example: 1 }
+        team: { $ref: '#/components/schemas/TeamResponse' }
+        games: { type: integer }
+        wins: { type: integer }
+        draws: { type: integer }
+        losses: { type: integer }
+        winRate: { type: number, format: float, example: 0.636 }
+        gamesBehind: { type: number, format: float, example: 0.0 }
+
+    WeatherResponse:
+      type: object
+      properties:
+        temperature: { type: number, format: float, nullable: true, example: 27.4 }
+        sky: { type: string, nullable: true, example: 구름많음 }
+        precipType: { type: string, nullable: true, example: 없음 }
+        precipProbability: { type: integer, nullable: true, example: 30 }
+        alert:
+          type: string
+          nullable: true
+          description: REQ-F-113 기상특보 발효 시
+          example: 호우주의보
+        rainRisk:
+          type: boolean
+          description: 강수 확률이 기준 이상이거나 특보 발효 중이면 true
+        fetchedAt: { type: string, format: date-time }
+        dataSource:
+          type: string
+          description: REQ-N-024 출처 표기
+          example: 기상청 단기예보 (공공데이터포털, 공공누리 출처표시)
+
+    TeamChannels:
+      type: object
+      description: REQ-F-114 구단 공식 채널
+      properties:
+        homepageUrl: { type: string, nullable: true }
+        ticketUrl: { type: string, nullable: true }
+        instagramUrl: { type: string, nullable: true }
+        youtubeUrl: { type: string, nullable: true }
+
+    StadiumResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string, example: 잠실야구장 }
+        address: { type: string }
+        capacity: { type: integer, example: 25000 }
+
+    StadiumDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/StadiumResponse'
+        - type: object
+          properties:
+            homeTeams:
+              type: array
+              items: { $ref: '#/components/schemas/TeamResponse' }
+            zones:
+              type: array
+              items: { $ref: '#/components/schemas/ZoneStatResponse' }
+            myRecord:
+              type: object
+              nullable: true
+              description: 로그인 사용자의 해당 구장 전적
+              properties:
+                games: { type: integer }
+                wins: { type: integer }
+                draws: { type: integer }
+                losses: { type: integer }
+
+    ZoneStatResponse:
+      type: object
+      properties:
+        zoneId: { type: integer, format: int64 }
+        name: { type: string, example: 3루 내야 지정석 }
+        avgRating:
+          type: number
+          format: float
+          nullable: true
+          description: 표본 5건 미만이면 null (REQ-F-305)
+          example: 4.2
+        ratingCount: { type: integer, example: 87 }
+        smallSample: { type: boolean, example: false }
+
+    AttendanceLogRequest:
+      type: object
+      required: [gameId, stadiumZoneId, zoneRating]
+      properties:
+        gameId: { type: integer, format: int64 }
+        cheerTeamId:
+          type: integer
+          format: int64
+          nullable: true
+          description: null 이면 중립 관람 (승패 집계 제외)
+        stadiumZoneId: { type: integer, format: int64 }
+        zoneRating: { type: integer, minimum: 1, maximum: 5, description: 필수 (REQ-F-206) }
+        memo: { type: string, maxLength: 1000 }
+        gameRating: { type: integer, minimum: 1, maximum: 5, nullable: true }
+        ticketCost: { type: integer, minimum: 0, nullable: true }
+        foodCost: { type: integer, minimum: 0, nullable: true }
+        transportCost: { type: integer, minimum: 0, nullable: true }
+        visibility: { type: string, enum: [PUBLIC, PRIVATE], default: PRIVATE }
+        reportedHomeScore:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: REQ-F-606. 경기 결과가 미확정(resultConfirmed=false)인 경우 필수
+        reportedAwayScore:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: REQ-F-606. 경기 결과가 미확정인 경우 필수
+        companions:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            properties:
+              userId: { type: integer, format: int64, nullable: true }
+              name: { type: string, nullable: true, description: 비회원인 경우 }
+
+    AttendanceLogSummary:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        gameDate: { type: string, format: date }
+        stadiumName: { type: string }
+        matchup: { type: string, example: '두산 5 : 3 롯데' }
+        result: { type: string, enum: [WIN, DRAW, LOSE, NEUTRAL] }
+        thumbnailUrl: { type: string, nullable: true }
+
+    AttendanceLogDetail:
+      allOf:
+        - $ref: '#/components/schemas/AttendanceLogSummary'
+        - type: object
+          properties:
+            game: { $ref: '#/components/schemas/GameResponse' }
+            zoneName: { type: string }
+            zoneRating: { type: integer }
+            memo: { type: string, nullable: true }
+            gameRating: { type: integer, nullable: true }
+            totalCost: { type: integer, nullable: true }
+            visibility: { type: string, enum: [PUBLIC, PRIVATE] }
+            photos:
+              type: array
+              items: { $ref: '#/components/schemas/PhotoResponse' }
+
+    PhotoResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        originalUrl: { type: string }
+        thumbnailUrl: { type: string }
+        takenAt: { type: string, format: date-time, nullable: true }
+
+    StatSummaryResponse:
+      type: object
+      properties:
+        seasonYear: { type: integer, nullable: true, description: null 이면 통산 }
+        games: { type: integer, example: 12 }
+        wins: { type: integer, example: 7 }
+        draws: { type: integer, example: 1 }
+        losses: { type: integer, example: 4 }
+        winRate:
+          type: number
+          format: float
+          nullable: true
+          description: 표본 5경기 미만이면 null (REQ-F-305)
+          example: 0.636
+        smallSample: { type: boolean, example: false }
+        neutralCount: { type: integer, description: 승패 집계에서 제외된 중립 관람 수, example: 1 }
+        currentStreak: { type: integer, description: 양수는 연승, 음수는 연패, example: 2 }
+        longestWinStreak: { type: integer, example: 4 }
+        totalCost: { type: integer, nullable: true, example: 312000 }
+
+    StatItem:
+      type: object
+      properties:
+        key: { type: string, example: '1' }
+        label: { type: string, example: 잠실야구장 }
+        games: { type: integer }
+        wins: { type: integer }
+        draws: { type: integer }
+        losses: { type: integer }
+        winRate: { type: number, format: float, nullable: true }
+        smallSample: { type: boolean }
+
+    CommentResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        nickname: { type: string }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    MessageResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        nickname: { type: string }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+        isMine: { type: boolean }
+
+    BadgeResponse:
+      type: object
+      properties:
+        code: { type: string, example: FIRST_LOG }
+        name: { type: string, example: 첫 직관 }
+        description: { type: string, example: 첫 관람 기록을 남겼어요 }
+        iconUrl: { type: string, nullable: true }
+        achievedAt: { type: string, format: date-time }
+
+    CompanionPostResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        game: { $ref: '#/components/schemas/GameResponse' }
+        authorNickname: { type: string }
+        capacity: { type: integer }
+        confirmedCount: { type: integer }
+        status: { type: string, enum: [OPEN, FULL, CLOSED, ENDED] }
+
+    CompanionPostDetail:
+      allOf:
+        - $ref: '#/components/schemas/CompanionPostResponse'
+        - type: object
+          properties:
+            intro: { type: string, nullable: true }
+            confirmedMembers:
+              type: array
+              items:
+                type: object
+                properties:
+                  nickname: { type: string }
+                  seq: { type: integer }
+                  isAuthor: { type: boolean }
+            myStatus:
+              type: string
+              enum: [NONE, CONFIRMED, AUTHOR]
+              description: 클라이언트 버튼 상태 결정용
+
+    GameUpsertRequest:
+      type: object
+      required: [seasonYear, startAt, stadiumId, homeTeamId, awayTeamId]
+      properties:
+        seasonYear: { type: integer }
+        startAt: { type: string, format: date-time }
+        stadiumId: { type: integer, format: int64 }
+        homeTeamId: { type: integer, format: int64 }
+        awayTeamId: { type: integer, format: int64 }
+        homeScore: { type: integer, nullable: true }
+        awayScore: { type: integer, nullable: true }
+        status:
+          type: string
+          enum: [SCHEDULED, IN_PROGRESS, FINISHED, CANCELED, SUSPENDED]
+
+    GameRevisionResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        beforeStatus: { type: string, nullable: true }
+        beforeHomeScore: { type: integer, nullable: true }
+        beforeAwayScore: { type: integer, nullable: true }
+        afterStatus: { type: string }
+        afterHomeScore: { type: integer, nullable: true }
+        afterAwayScore: { type: integer, nullable: true }
+        reason: { type: string }
+        revisedBy: { type: string, description: 운영자 닉네임 }
+        revisedAt: { type: string, format: date-time }

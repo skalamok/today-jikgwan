@@ -1,0 +1,170 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --ink: #16181d;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --brand: #1f4e79;
+  --brand-soft: #eaf1f8;
+  --win: #2563eb;
+  --lose: #dc2626;
+  --draw: #6b7280;
+  --radius: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+.app { max-width: 480px; margin: 0 auto; min-height: 100%; background: var(--bg);
+       display: flex; flex-direction: column; }
+
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+          justify-content: space-between; padding: 14px 16px; background: var(--card);
+          border-bottom: 1px solid var(--line); }
+.topbar h1 { font-size: 17px; margin: 0; font-weight: 700; letter-spacing: -0.3px; }
+.topbar .scr { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+.content { flex: 1; padding: 16px; padding-bottom: 84px; }
+
+.tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+          width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(5, 1fr);
+          background: var(--card); border-top: 1px solid var(--line); }
+.tabbar a { padding: 10px 0 14px; text-align: center; font-size: 11px; color: var(--muted); }
+.tabbar a.active { color: var(--brand); font-weight: 700; }
+.tabbar .ico { display: block; font-size: 18px; margin-bottom: 2px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 16px; margin-bottom: 12px; }
+.card h2 { margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--muted); }
+
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.muted { color: var(--muted); font-size: 12px; }
+.big { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.mid { font-size: 16px; font-weight: 700; }
+
+.btn { display: block; width: 100%; padding: 14px; border: 0; border-radius: 10px;
+       background: var(--brand); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn:disabled { background: #c9cdd3; cursor: not-allowed; }
+.btn.ghost { background: var(--brand-soft); color: var(--brand); }
+.btn.small { width: auto; padding: 8px 14px; font-size: 13px; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px;
+  font-size: 15px; font-family: inherit; background: #fff; }
+.field textarea { min-height: 84px; resize: vertical; }
+.field .err { color: var(--lose); font-size: 12px; margin-top: 6px; }
+.req { color: var(--lose); }
+
+.chip { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px;
+        font-weight: 700; background: var(--brand-soft); color: var(--brand); }
+.chip.win { background: #e8efff; color: var(--win); }
+.chip.lose { background: #fdeaea; color: var(--lose); }
+.chip.draw { background: #f0f1f3; color: var(--draw); }
+.chip.warn { background: #fff4e5; color: #b45309; }
+
+.list-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.list-item:last-child { border-bottom: 0; }
+.thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #eef0f3; flex: none; }
+
+.empty { text-align: center; padding: 36px 12px; color: var(--muted); }
+.empty p { margin: 0 0 14px; font-size: 14px; }
+
+.stars { display: flex; gap: 6px; }
+.stars button { border: 0; background: none; font-size: 26px; cursor: pointer; padding: 0;
+                color: #d5d8dd; line-height: 1; }
+.stars button.on { color: #f5a524; }
+
+.source { font-size: 11px; color: var(--muted); text-align: right; margin-top: 8px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 50;
+         background: #16181d; color: #fff; padding: 11px 16px; border-radius: 10px; font-size: 13px;
+         max-width: 420px; }
+.skeleton { background: linear-gradient(90deg,#eef0f3,#f6f7f9,#eef0f3); background-size: 200% 100%;
+            animation: sk 1.2s infinite; border-radius: 8px; height: 16px; }
+@keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+
+/* =====================================================================
+   반응형 (REQ-N-012)
+   모바일을 기본으로 두되, 넓은 화면에서는 상단 내비게이션 + 2단 그리드로 펼친다.
+   ===================================================================== */
+@media (min-width: 768px) {
+  body { background: #eef1f5; }
+
+  .app { max-width: 1080px; }
+
+  .topbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar h1 { font-size: 20px; }
+
+  /* 하단 탭 → 상단 가로 내비게이션.
+     .app 이 flex column 이므로 order 로 헤더 바로 아래에 올린다 */
+  .topbar { order: 0; }
+  .tabbar { order: 1; }
+  .content { order: 2; }
+
+  .tabbar {
+    position: sticky;
+    top: 57px;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: none;
+    width: 100%;
+    grid-template-columns: repeat(5, max-content);
+    gap: 4px;
+    padding: 0 20px;
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+    z-index: 9;
+  }
+  .tabbar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 14px;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+  }
+  .tabbar a.active { border-bottom-color: var(--brand); }
+  .tabbar .ico { display: inline; margin: 0; font-size: 15px; }
+
+  .content {
+    padding: 24px 28px 48px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-content: start;
+  }
+  /* 카드가 그리드 셀이 되므로 개별 마진은 제거한다 */
+  .content > * { margin-bottom: 0; }
+  .card { margin-bottom: 0; }
+
+  /* v-if/v-else 래퍼 div 는 그리드 셀을 차지하지 않고 자식을 직접 배치한다 */
+  .content > div:not(.card):not(.empty) { display: contents; }
+
+  /* 버튼과 안내 문구는 가로 전체를 쓴다 */
+  .content > .btn,
+  .content > a > .btn,
+  .content > .empty { grid-column: 1 / -1; }
+  .content > a { grid-column: 1 / -1; }
+
+  .btn { max-width: 320px; }
+  .list-item { padding: 14px 0; }
+  .big { font-size: 32px; }
+}
+
+@media (min-width: 1024px) {
+  .content { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .card.wide { grid-column: 1 / -1; }
+}

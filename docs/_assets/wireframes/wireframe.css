@@ -1,0 +1,84 @@
+/* =====================================================================
+   화면 설계서용 와이어프레임 스타일
+   지침: 그레이스케일 사용, 컬러는 강조에만 제한적으로 (강의자료 8p)
+   ===================================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: #fff; color: #222; padding: 16px;
+}
+.frame { width: 358px; border: 2px solid #333; background: #fff; }
+
+.f-head {
+  border-bottom: 2px solid #333; padding: 8px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: #ececec; font-size: 12px; font-weight: 700;
+}
+.f-head .sid { font-size: 10px; font-weight: 600; color: #666; }
+
+.f-body { padding: 10px; }
+
+.blk {
+  border: 1px solid #999; background: #fafafa; padding: 10px;
+  margin-bottom: 8px; position: relative; min-height: 34px;
+}
+.blk.plain { border-style: dashed; background: #fff; }
+.blk.solidfill { background: #ddd; }
+.blk.btn { background: #333; color: #fff; text-align: center; font-weight: 700; padding: 11px; }
+.blk.btn.off { background: #c9c9c9; color: #6b6b6b; }
+.blk.btn.ghost { background: #fff; border: 2px solid #333; color: #222; }
+
+.n {
+  position: absolute; left: -9px; top: -9px;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: #333; color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.t   { font-size: 12px; font-weight: 700; }
+.s   { font-size: 11px; color: #666; margin-top: 3px; }
+.xl  { font-size: 22px; font-weight: 800; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.lab { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.inp { border: 1px solid #999; background: #fff; padding: 8px; font-size: 11px; color: #888; }
+.pill { border: 1px solid #333; border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+.pill.fill { background: #333; color: #fff; }
+.divider { border-top: 1px dashed #bbb; margin: 8px 0; }
+.center { text-align: center; }
+.stars { letter-spacing: 3px; font-size: 15px; }
+
+.f-nav {
+  border-top: 2px solid #333; display: grid; grid-template-columns: repeat(5, 1fr);
+  font-size: 9px; text-align: center;
+}
+.f-nav div { padding: 7px 0; border-right: 1px solid #ccc; color: #777; }
+.f-nav div:last-child { border-right: 0; }
+.f-nav div.on { font-weight: 800; color: #111; background: #ececec; }
+
+.note { font-size: 10px; color: #555; margin-top: 4px; }
+
+/* =====================================================================
+   데스크톱 와이어프레임 (>= 768px 브레이크포인트)
+   상단 가로 내비게이션 + 다단 그리드
+   ===================================================================== */
+.frame.pc { width: 1000px; }
+.frame.pc .f-nav {
+  border-top: 0; border-bottom: 2px solid #333;
+  grid-template-columns: repeat(5, max-content);
+}
+.frame.pc .f-nav div {
+  padding: 9px 20px; font-size: 11px; border-right: 0;
+  border-bottom: 3px solid transparent;
+}
+.frame.pc .f-nav div.on { background: #fff; border-bottom-color: #333; }
+.frame.pc .f-body {
+  padding: 14px; display: grid; gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+.frame.pc .f-body > .blk { margin-bottom: 0; }
+.frame.pc .span-all { grid-column: 1 / -1; }
+.frame.pc .span-2 { grid-column: span 2; }
+.bp {
+  border: 1px dashed #999; background: #f5f5f5; padding: 6px 9px;
+  font-size: 10px; color: #444; margin-bottom: 8px;
+}
