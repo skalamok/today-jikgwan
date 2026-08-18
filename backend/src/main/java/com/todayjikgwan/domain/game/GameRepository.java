@@ -24,4 +24,10 @@ public interface GameRepository extends JpaRepository<Game, Long> {
             + "and g.status = com.todayjikgwan.domain.game.GameStatus.SCHEDULED "
             + "order by g.startAt")
     List<Game> findUpcomingInSeason(@Param("season") int season, @Param("from") LocalDate from);
+
+    /** REQ-F-104 순위 산출용. 결과가 확정된 경기만 */
+    @Query("select g from Game g join fetch g.homeTeam join fetch g.awayTeam "
+            + "where g.seasonYear = :season and g.resultConfirmed = true "
+            + "and g.homeScore is not null and g.awayScore is not null")
+    List<Game> findFinishedInSeason(@Param("season") int season);
 }

@@ -3,13 +3,40 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../api/client'
 
+const comments = ref([])
+const commentDraft = ref('')
+
 const route = useRoute()
 const post = ref(null)
 const toast = ref('')
 const busy = ref(false)
 
-async function load() { post.value = (await client.get(`/companion-posts/${route.params.id}`)).data }
+async function load() {
+  post.value = (await client.get(`/companion-posts/${route.params.id}`)).data
+  comments.value = (await client.get(`/companion-posts/${route.params.id}/comments`)).data
+}
 onMounted(load)
+
+// REQ-F-510 공개 문의 댓글. 지원 전에도 질문할 수 있다
+async function addComment() {
+  const text = commentDraft.value.trim()
+  if (!text) return
+  const { data } = await client.post(`/companion-posts/${route.params.id}/comments`, { content: text })
+  comments.value.push(data)
+  commentDraft.value = ''
+}
+
+// REQ-F-508 신고
+async function report() {
+  const reason = window.prompt('신고 사유를 입력해주세요')
+  if (!reason) return
+  try {
+    await client.post('/reports', { targetType: 'POST', targetId: Number(route.params.id), reason })
+    toast.value = '신고가 접수됐어요'
+  } catch (e) {
+    toast.value = e.response?.data?.message || '신고에 실패했어요'
+  }
+}
 
 // 화면설계서 SCR-MATE-002 상태 정의표에 따른 버튼 분기
 const button = computed(() => {
@@ -64,9 +91,36 @@ async function act(kind) {
       </div>
     </div>
 
+    <div class="card" v-if="post.myStatus === 'CONFIRMED' || post.myStatus === 'AUTHOR'">
+      <h2>동행 대화</h2>
+      <div class="muted" style="margin:-6px 0 10px">확정된 동행자끼리만 볼 수 있어요</div>
+      <RouterLink :to="`/companions/${$route.params.id}/chat`">
+        <button class="btn ghost small">대화방 열기</button>
+      </RouterLink>
+    </div>
+
+    <div class="card">
+      <h2>문의</h2>
+      <div class="muted" style="margin:-6px 0 10px">누구나 볼 수 있는 공개 댓글이에요</div>
+      <div v-if="!comments.length" class="muted">아직 문의가 없어요</div>
+      <div v-for="c in comments" :key="c.id" class="list-item" style="padding:9px 0">
+        <div style="flex:1">
+          <div>{{ c.content }}</div>
+          <div class="muted" style="margin-top:3px">{{ c.nickname }} · {{ c.createdAt.slice(5, 16).replace('T', ' ') }}</div>
+        </div>
+      </div>
+      <div class="row" style="gap:6px; margin-top:10px">
+        <input v-model="commentDraft" placeholder="궁금한 점을 물어보세요" maxlength="500"
+               @keyup.enter="addComment"
+               style="flex:1; padding:10px; border:1px solid var(--line); border-radius:10px; font-size:14px" />
+        <button class="btn small" :disabled="!commentDraft.trim()" @click="addComment">등록</button>
+      </div>
+    </div>
+
     <button class="btn" v-if="button" :disabled="button.disabled || busy" @click="act(button.action)">
       {{ busy ? '처리 중…' : button.label }}
     </button>
+    <button class="btn ghost" style="margin-top:8px" @click="report">이 모집 신고하기</button>
     <div class="toast" v-if="toast">{{ toast }}</div>
   </div>
 </template>

@@ -25,6 +25,7 @@ watch(date, load)
       <label>날짜</label>
       <input type="date" v-model="date" />
     </div>
+    <RouterLink to="/standings"><button class="btn ghost small" style="margin-top:10px">팀 순위 보기</button></RouterLink>
   </div>
 
   <div class="card">

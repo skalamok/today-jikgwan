@@ -31,6 +31,12 @@ public enum ErrorCode {
     CANCEL_DEADLINE_PASSED(HttpStatus.BAD_REQUEST, "경기 임박 시에는 취소할 수 없어요."),
     NOT_APPLIED(HttpStatus.BAD_REQUEST, "참여 중인 모집이 아니에요."),
 
+    // 소통 · 안전
+    NOT_CONFIRMED_MEMBER(HttpStatus.FORBIDDEN, "확정된 동행자만 대화할 수 있어요."),
+    CHAT_READ_ONLY(HttpStatus.BAD_REQUEST, "종료된 대화방이에요."),
+    ALREADY_REPORTED(HttpStatus.CONFLICT, "이미 신고한 대상이에요."),
+    CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST, "자기 자신은 차단할 수 없어요."),
+
     // 사진
     PHOTO_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "사진은 최대 10장까지 올릴 수 있어요."),
 

@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/games/weather/sync").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/games/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/stadiums/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/standings").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")   // REQ-N-009
                 .anyRequest().authenticated())

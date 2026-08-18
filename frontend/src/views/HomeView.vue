@@ -47,7 +47,7 @@ onMounted(async () => {
       <div class="muted" style="margin:6px 0 12px">
         직관 다녀온 사람들이 남긴 구역별 만족도로 자리를 고를 수 있어요
       </div>
-      <RouterLink to="/stadiums"><button class="btn ghost small">구장 살펴보기</button></RouterLink>
+      <RouterLink to="/guide"><button class="btn ghost small">첫 직관 가이드 보기</button></RouterLink>
     </div>
 
     <!-- B. 기록이 있는 사용자: 전적 요약을 우선 노출 -->
