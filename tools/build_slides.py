@@ -188,9 +188,9 @@ slide("", head("DELIVERABLES", "산출물") + """
     <div class="box"><div class="big">35</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
       <p class="small">개요 + 요구사항<br>+ 화면 설계</p></div>
-    <div class="box dark"><div class="big">✓</div>
-      <div class="mid" style="margin-top:2mm">설계 검증</div>
-      <p class="small">설계대로 구현하여<br>동작을 확인함</p></div>
+    <div class="box dark"><div class="big">4/4</div>
+      <div class="mid" style="margin-top:2mm">기술 과제</div>
+      <p class="small">집계 · 동시성 · 이력<br>제약조건 편성 모두 구현</p></div>
   </div>
 </div>""")
 
@@ -427,7 +427,7 @@ slide("", head("NEXT", "정리") + """
       <ul><li>실시간 스코어보드<br><span class="small">데이터 제공처 유료 구독 전제</span></li>
       <li>선수 개인 기록<br><span class="small">데이터 확보 경로 없음</span></li></ul></div>
     <div class="box"><h3>다음 단계</h3>
-      <ul><li>관람 계획 자동 편성</li><li>배지 · 카드 공유</li>
+      <ul><li>배지 · 카드 공유</li><li>동행 대화방</li>
       <li>운영자 화면</li><li>공개 배포</li></ul></div>
   </div>
   <div class="box dark" style="margin-top:7mm; text-align:center; padding:8mm">

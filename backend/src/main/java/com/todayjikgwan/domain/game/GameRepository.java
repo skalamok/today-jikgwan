@@ -17,4 +17,11 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     @Query("select g from Game g join fetch g.stadium "
             + "where g.gameDate between :from and :to order by g.startAt")
     List<Game> findUpcomingBetween(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    /** REQ-F-403 편성 대상. 시즌 내 아직 열리지 않은 경기 */
+    @Query("select g from Game g join fetch g.stadium join fetch g.homeTeam join fetch g.awayTeam "
+            + "where g.seasonYear = :season and g.gameDate >= :from "
+            + "and g.status = com.todayjikgwan.domain.game.GameStatus.SCHEDULED "
+            + "order by g.startAt")
+    List<Game> findUpcomingInSeason(@Param("season") int season, @Param("from") LocalDate from);
 }

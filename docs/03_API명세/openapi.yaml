@@ -848,7 +848,9 @@ paths:
     post:
       tags: [ViewingPlan]
       summary: 관람 계획 생성
-      description: REQ-F-401, REQ-F-402. 목표와 제약 조건을 저장한다.
+      description: |
+        REQ-F-401, REQ-F-402. 목표와 제약 조건을 저장한다.
+        시즌당 1개만 유지하며, 같은 시즌 계획이 있으면 교체한다.
       requestBody:
         required: true
         content:
@@ -858,29 +860,66 @@ paths:
               required: [seasonYear, targetCount]
               properties:
                 seasonYear: { type: integer, example: 2026 }
-                targetCount: { type: integer, example: 20 }
-                budgetTotal: { type: integer, example: 600000 }
-                maxCostPerGame: { type: integer, example: 40000 }
+                targetCount: { type: integer, minimum: 1, maximum: 144, example: 20 }
+                budgetTotal: { type: integer, nullable: true, example: 600000 }
+                maxCostPerGame: { type: integer, nullable: true, example: 40000 }
                 availableDays:
                   type: array
-                  items: { type: string, enum: [MON, TUE, WED, THU, FRI, SAT, SUN] }
+                  nullable: true
+                  description: 미지정 시 요일 제약 없음
+                  items: { type: string, enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY] }
                 stadiumIds:
                   type: array
+                  nullable: true
+                  description: 미지정 시 전 구장
                   items: { type: integer, format: int64 }
+                maxPrecipProb:
+                  type: integer
+                  nullable: true
+                  minimum: 0
+                  maximum: 100
+                  description: 이 값을 초과하는 강수 확률의 경기는 제외 (REQ-F-402)
       responses:
         '201':
           description: 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planId: { type: integer, format: int64 }
 
   /viewing-plans/{planId}/generate:
     post:
       tags: [ViewingPlan]
       summary: 후보 일정 자동 편성
       description: |
-        REQ-F-403. 저장된 제약 조건을 만족하는 경기를 선정해 목표 횟수만큼 제안한다.
+        REQ-F-403.
 
-        모든 제약을 만족하는 해가 없으면 `unsatisfied` 배열에 완화가 필요한 제약을 담아 반환한다.
+        **처리 방식** — 제약을 만족하는 경기를 걸러낸 뒤 우선순위로 정렬해 목표 수만큼 고른다.
+        요일·구장·날씨·경기당 예산은 경기 단위로 독립 판정되므로 조합 최적화가 필요하지 않다.
+        경기 간 상호작용이 있는 제약(총 예산, 같은 날 중복)은 순차 선택 과정에서 처리한다.
+
+        **우선순위** — ① 응원팀 경기 ② 과거 승률이 높았던 구장 ③ 이른 날짜
+
+        **경기당 예상 비용** — 사용자의 과거 관람 기록에서 구장별 평균 지출을 사용한다.
+        기록이 없으면 기본값을 적용한다.
+
+        **목표 미달 시** — 제약을 하나씩 풀어 몇 경기가 더 확보되는지 계산해 완화 후보로 제시한다.
+        "조건에 맞는 경기가 없습니다"로 끝내면 사용자가 무엇을 바꿔야 할지 알 수 없기 때문이다.
       parameters:
         - { name: planId, in: path, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stadiumIds:
+                  type: array
+                  nullable: true
+                  items: { type: integer, format: int64 }
       responses:
         '200':
           description: 편성 결과
@@ -889,19 +928,42 @@ paths:
               schema:
                 type: object
                 properties:
+                  targetCount: { type: integer, example: 20 }
+                  fulfilledCount: { type: integer, example: 4 }
+                  estimatedCost: { type: integer, example: 120000 }
                   proposed:
                     type: array
-                    items: { $ref: '#/components/schemas/GameResponse' }
-                  fulfilledCount: { type: integer, example: 14 }
-                  targetCount: { type: integer, example: 20 }
-                  unsatisfied:
+                    items:
+                      type: object
+                      properties:
+                        gameId: { type: integer, format: int64 }
+                        gameDate: { type: string, format: date }
+                        dayOfWeek: { type: string, example: 토 }
+                        startTime: { type: string, example: "17:00" }
+                        stadium: { type: string, example: 잠실야구장 }
+                        matchup: { type: string, example: LG vs 두산 }
+                        cheerTeamGame: { type: boolean }
+                        precipProbability: { type: integer, nullable: true }
+                        estimatedCost: { type: integer }
+                  filteredOut:
                     type: array
-                    description: 목표를 채우지 못한 경우 완화 후보
+                    description: 제약별 제외 경기 수. 편성 결과의 근거를 보여준다
                     items:
                       type: object
                       properties:
                         constraint: { type: string, example: AVAILABLE_DAYS }
-                        message: { type: string, example: '토요일을 추가하면 6경기를 더 채울 수 있어요.' }
+                        label: { type: string, example: 관람 가능 요일 }
+                        excluded: { type: integer, example: 60 }
+                  unsatisfied:
+                    type: array
+                    description: 목표 미달 시 완화 후보
+                    items:
+                      type: object
+                      properties:
+                        constraint: { type: string, example: AVAILABLE_DAYS }
+                        message: { type: string, example: 월·화·수·목·금요일을 추가하면 최대 15경기까지 채울 수 있어요 }
+                        additionalGames: { type: integer, example: 11 }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   # ==================== Admin ====================
   /admin/games:

@@ -11,6 +11,7 @@ const routes = [
   { path: '/stats', name: 'stats', component: () => import('../views/StatsView.vue'), meta: { id: 'SCR-STAT-001' } },
   { path: '/stadiums', name: 'stadiums', component: () => import('../views/StadiumListView.vue'), meta: { id: 'SCR-PARK-001', public: true } },
   { path: '/stadiums/:id', name: 'stadium', component: () => import('../views/StadiumDetailView.vue'), meta: { id: 'SCR-PARK-002', public: true } },
+  { path: '/plan', name: 'plan', component: () => import('../views/PlanView.vue'), meta: { id: 'SCR-PLAN-001' } },
   { path: '/companions', name: 'companions', component: () => import('../views/CompanionListView.vue'), meta: { id: 'SCR-MATE-001' } },
   { path: '/companions/:id', name: 'companion', component: () => import('../views/CompanionDetailView.vue'), meta: { id: 'SCR-MATE-002' } },
 ]
