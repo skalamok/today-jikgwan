@@ -103,11 +103,15 @@ async function generate() {
   <div class="card" v-if="error" style="border-color:#f0c0c0">{{ error }}</div>
 
   <template v-if="result">
-    <div class="card wide">
+    <div class="card accent wide">
       <h2>편성 결과</h2>
-      <div class="big">{{ result.fulfilledCount }}<span style="font-size:15px"> / {{ result.targetCount }}경기</span></div>
-      <div class="muted" style="margin-top:4px">
-        달성률 {{ achievement }}% · 예상 비용 {{ result.estimatedCost.toLocaleString() }}원
+      <div class="row" style="align-items:flex-end">
+        <div class="big">{{ result.fulfilledCount }}<span style="font-size:16px"> / {{ result.targetCount }}경기</span></div>
+        <div class="big" style="font-size:26px">{{ achievement }}%</div>
+      </div>
+      <div class="bar on-dark"><span :style="{ width: achievement + '%' }"></span></div>
+      <div class="muted" style="margin-top:10px">
+        예상 비용 {{ result.estimatedCost.toLocaleString() }}원
       </div>
     </div>
 

@@ -30,19 +30,24 @@ onMounted(async () => {
   </div>
 
   <div v-else>
-    <div class="card">
+    <div class="card accent wide">
       <h2>통산</h2>
-      <div class="big">{{ summary.games }}경기</div>
-      <div class="mid" style="margin-top:4px">
-        {{ summary.wins }}승 {{ summary.draws }}무 {{ summary.losses }}패
-      </div>
-      <div style="margin-top:10px">
+      <div class="row" style="align-items:flex-end">
+        <div>
+          <div class="big">{{ summary.games }}<span style="font-size:17px">경기</span></div>
+          <div class="mid" style="margin-top:6px; opacity:.92">
+            {{ summary.wins }}승 {{ summary.draws }}무 {{ summary.losses }}패
+          </div>
+        </div>
         <!-- REQ-F-305 표본이 부족하면 승률을 산출하지 않는다 -->
-        <span v-if="summary.winRate != null" class="big" style="font-size:22px">
-          승률 {{ rate(summary.winRate) }}
-        </span>
-        <span v-else class="muted">표본 5경기 미만이라 승률을 표시하지 않아요</span>
+        <div v-if="summary.winRate != null" class="big" style="font-size:30px">
+          {{ rate(summary.winRate) }}
+        </div>
       </div>
+      <div v-if="summary.winRate != null" class="bar on-dark">
+        <span :style="{ width: (summary.winRate * 100) + '%' }"></span>
+      </div>
+      <div v-else class="muted" style="margin-top:10px">표본 5경기 미만이라 승률을 표시하지 않아요</div>
       <div class="row" style="margin-top:12px">
         <span class="muted">현재 {{ summary.currentStreak >= 0 ? summary.currentStreak + '연승' : (-summary.currentStreak) + '연패' }}</span>
         <span class="muted">최장 {{ summary.longestWinStreak }}연승</span>
@@ -63,9 +68,12 @@ onMounted(async () => {
         <div class="muted" style="margin-right:10px">
           {{ r.games }}경기 {{ r.wins }}승 {{ r.draws }}무 {{ r.losses }}패
         </div>
-        <div style="min-width:74px; text-align:right">
+        <div style="min-width:78px; text-align:right">
           <span v-if="r.winRate != null" class="mid">{{ rate(r.winRate) }}</span>
-          <span v-else class="muted" style="font-size:11px">표본 부족</span>
+          <span v-else class="chip draw">표본 부족</span>
+          <div v-if="r.winRate != null" class="bar" style="margin-top:5px">
+            <span :style="{ width: (r.winRate * 100) + '%' }"></span>
+          </div>
         </div>
       </div>
     </div>

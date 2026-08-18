@@ -25,8 +25,8 @@ watch(() => route.params.id, load)
 
 <template>
   <div v-if="stadium">
-    <div class="card">
-      <div class="big" style="font-size:20px">{{ stadium.name }}</div>
+    <div class="card accent">
+      <div class="big" style="font-size:22px">{{ stadium.name }}</div>
       <div class="muted" style="margin-top:4px">{{ stadium.homeTeams.join(' · ') }}</div>
       <div class="muted" v-if="stadium.nameEn">{{ stadium.nameEn }}</div>
     </div>
@@ -43,9 +43,11 @@ watch(() => route.params.id, load)
         <div style="flex:1" class="mid">{{ z.name }}</div>
         <div style="text-align:right">
           <!-- REQ-F-305 표본 부족 시 평균을 표시하지 않는다 -->
-          <div v-if="z.avgRating != null" class="mid">★ {{ z.avgRating.toFixed(1) }}</div>
-          <div v-else class="muted" style="font-size:11px">평가 부족</div>
-          <div class="muted" style="font-size:11px">기록 {{ z.ratingCount }}건</div>
+          <div v-if="z.avgRating != null" class="mid" style="font-size:17px; color:var(--accent)">
+            ★ {{ z.avgRating.toFixed(1) }}
+          </div>
+          <span v-else class="chip draw">평가 부족</span>
+          <div class="muted" style="font-size:11px; margin-top:3px">기록 {{ z.ratingCount }}건</div>
         </div>
       </div>
     </div>

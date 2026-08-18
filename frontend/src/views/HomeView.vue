@@ -42,8 +42,8 @@ onMounted(async () => {
 
   <div v-else>
     <!-- A. 기록이 없는 사용자: 가이드와 오늘의 경기를 우선 노출 -->
-    <div class="card" v-if="!hasLogs" style="background:var(--brand-soft); border-color:#d7e3ef">
-      <div class="mid">야구장, 처음 가시나요?</div>
+    <div class="card accent wide" v-if="!hasLogs">
+      <div class="mid" style="font-size:19px">야구장, 처음 가시나요?</div>
       <div class="muted" style="margin:6px 0 12px">
         직관 다녀온 사람들이 남긴 구역별 만족도로 자리를 고를 수 있어요
       </div>
@@ -51,20 +51,29 @@ onMounted(async () => {
     </div>
 
     <!-- B. 기록이 있는 사용자: 전적 요약을 우선 노출 -->
-    <div class="card wide" v-else>
-      <h2>내 직관 전적</h2>
-      <div class="big">
-        {{ summary.games }}경기
-        <span style="font-size:18px; font-weight:700">
-          {{ summary.wins }}승 {{ summary.draws }}무 {{ summary.losses }}패
-        </span>
+    <div class="card accent wide" v-else>
+      <div class="row" style="align-items:flex-start">
+        <div>
+          <h2>내 직관 전적</h2>
+          <div class="big">{{ summary.games }}<span style="font-size:17px; font-weight:700">경기</span></div>
+          <div class="mid" style="margin-top:6px; opacity:.92">
+            {{ summary.wins }}승 {{ summary.draws }}무 {{ summary.losses }}패
+          </div>
+        </div>
+        <div style="text-align:right">
+          <span class="chip warn" v-if="summary.currentStreak > 0">{{ summary.currentStreak }}연승</span>
+          <span class="chip lose" v-else-if="summary.currentStreak < 0">{{ -summary.currentStreak }}연패</span>
+          <div v-if="!summary.smallSample" class="big" style="font-size:26px; margin-top:8px">
+            {{ summary.winRate.toFixed(3).replace(/^0/, '') }}
+          </div>
+        </div>
       </div>
-      <div class="row" style="margin-top:8px">
-        <span :class="summary.smallSample ? 'muted' : 'mid'">{{ winRateText }}</span>
-        <span class="chip" v-if="summary.currentStreak > 0">{{ summary.currentStreak }}연승</span>
-        <span class="chip lose" v-else-if="summary.currentStreak < 0">{{ -summary.currentStreak }}연패</span>
+      <!-- REQ-F-305 표본이 부족하면 승률 대신 안내를 보여준다 -->
+      <div v-if="!summary.smallSample" class="bar on-dark">
+        <span :style="{ width: (summary.winRate * 100) + '%' }"></span>
       </div>
-      <RouterLink to="/stats" class="muted" style="display:block; margin-top:12px">자세히 보기 →</RouterLink>
+      <div v-else class="muted" style="margin-top:10px">{{ winRateText }}</div>
+      <RouterLink to="/stats" class="muted" style="display:block; margin-top:14px">자세히 보기 →</RouterLink>
     </div>
 
     <div class="card">

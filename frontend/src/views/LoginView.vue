@@ -33,10 +33,10 @@ async function submit() {
 
 <template>
   <div>
-    <div class="card" style="text-align:center; padding: 32px 16px;">
-      <div style="font-size:40px">⚾</div>
-      <div class="mid" style="margin-top:8px">오늘의 직관을 기록하세요</div>
-      <div class="muted" style="margin-top:4px">내가 간 경기만의 전적이 쌓입니다</div>
+    <div class="card accent" style="text-align:center; padding: 38px 20px;">
+      <div style="font-size:44px">⚾</div>
+      <div class="big" style="font-size:22px; margin-top:10px">오늘의직관</div>
+      <div class="muted" style="margin-top:6px">내가 간 경기만의 전적이 쌓입니다</div>
     </div>
 
     <div class="card">
