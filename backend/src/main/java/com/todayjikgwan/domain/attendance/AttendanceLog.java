@@ -72,6 +72,13 @@ public class AttendanceLog extends BaseTimeEntity {
     @Column(nullable = false, length = 10)
     private Visibility visibility = Visibility.PRIVATE;
 
+    /** REQ-F-216 기록 시점의 날씨. 예보는 사후 조회가 불가능하므로 기록마다 보관한다 */
+    @Column(name = "weather_sky", length = 10)
+    private String weatherSky;
+
+    @Column(name = "weather_temp", precision = 4, scale = 1)
+    private java.math.BigDecimal weatherTemp;
+
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
@@ -99,6 +106,13 @@ public class AttendanceLog extends BaseTimeEntity {
     public Long cheerTeamId() {
         return cheerTeam == null ? null : cheerTeam.getId();
     }
+
+    public void applyWeather(String sky, java.math.BigDecimal temp) {
+        this.weatherSky = sky;
+        this.weatherTemp = temp;
+    }
+
+    public void softDelete() { this.deletedAt = OffsetDateTime.now(); }
 
     public GameResult result() {
         return game.resultFor(cheerTeamId());

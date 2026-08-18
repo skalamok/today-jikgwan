@@ -1,6 +1,7 @@
 package com.todayjikgwan.api.attendance;
 
 import com.todayjikgwan.api.attendance.dto.AttendanceLogRequest;
+import com.todayjikgwan.api.attendance.dto.AttendanceLogDetail;
 import com.todayjikgwan.api.attendance.dto.AttendanceLogResponse;
 import com.todayjikgwan.api.attendance.dto.PhotoUploadResponse;
 import com.todayjikgwan.service.AttendancePhotoService;
@@ -30,6 +31,23 @@ public class AttendanceLogController {
     @GetMapping
     public List<AttendanceLogResponse> myLogs() {
         return attendanceLogService.myLogs(CurrentUser.id());
+    }
+
+    @GetMapping("/{logId}")
+    public AttendanceLogDetail detail(@PathVariable Long logId) {
+        return attendanceLogService.detail(CurrentUser.id(), logId);
+    }
+
+    @DeleteMapping("/{logId}")
+    public ResponseEntity<Void> delete(@PathVariable Long logId) {
+        attendanceLogService.delete(CurrentUser.id(), logId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{logId}/photos/{photoId}")
+    public ResponseEntity<Void> deletePhoto(@PathVariable Long logId, @PathVariable Long photoId) {
+        attendanceLogService.deletePhoto(CurrentUser.id(), logId, photoId);
+        return ResponseEntity.noContent().build();
     }
 
     /**

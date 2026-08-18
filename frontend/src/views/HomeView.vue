@@ -95,7 +95,7 @@ onMounted(async () => {
 
     <div class="card" v-if="hasLogs">
       <h2>최근 기록</h2>
-      <RouterLink v-for="l in logs.slice(0, 3)" :key="l.id" :to="'/logs'" class="list-item" style="align-items:center">
+      <RouterLink v-for="l in logs.slice(0, 3)" :key="l.id" :to="`/logs/${l.id}`" class="list-item" style="align-items:center">
         <div style="flex:1">
           <div class="mid">{{ l.matchup }}</div>
           <div class="muted">{{ l.gameDate }} · {{ l.stadiumName }}</div>

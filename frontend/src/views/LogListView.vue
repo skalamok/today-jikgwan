@@ -20,7 +20,7 @@ const resultText = { WIN: '승', LOSE: '패', DRAW: '무', NEUTRAL: '중립' }
       <RouterLink to="/logs/new"><button class="btn small">첫 기록 남기기</button></RouterLink>
     </div>
     <div v-else>
-      <div v-for="l in logs" :key="l.id" class="list-item" style="align-items:stretch">
+      <RouterLink v-for="l in logs" :key="l.id" :to="`/logs/${l.id}`" class="list-item" style="align-items:stretch">
         <div class="mark" :class="l.result.toLowerCase()"></div>
         <div style="flex:1; min-width:0">
           <div class="row">
@@ -35,7 +35,7 @@ const resultText = { WIN: '승', LOSE: '패', DRAW: '무', NEUTRAL: '중립' }
             {{ l.totalCost.toLocaleString() }}원
           </div>
         </div>
-      </div>
+      </RouterLink>
     </div>
   </div>
   <RouterLink to="/logs/new"><button class="btn">+ 새 기록</button></RouterLink>

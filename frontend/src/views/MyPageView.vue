@@ -8,15 +8,17 @@ const router = useRouter()
 const stats = ref(null)
 const logs = ref([])
 const blocks = ref([])
+const badges = ref([])
 const loading = ref(true)
 
 onMounted(async () => {
-  const [s, l, b] = await Promise.all([
+  const [s, l, b, bd] = await Promise.all([
     client.get('/stats/me/summary'),
     client.get('/attendance-logs'),
     client.get('/users/me/blocks'),
+    client.get('/users/me/badges'),
   ])
-  stats.value = s.data; logs.value = l.data; blocks.value = b.data
+  stats.value = s.data; logs.value = l.data; blocks.value = b.data; badges.value = bd.data
   loading.value = false
 })
 
@@ -47,6 +49,17 @@ function doLogout() { logout(); router.replace('/login') }
       </div>
     </div>
 
+    <div class="card wide">
+      <h2>배지 {{ badges.filter(b => b.achieved).length }} / {{ badges.length }}</h2>
+      <div class="badges">
+        <div v-for="b in badges" :key="b.code" class="bg" :class="{ on: b.achieved }">
+          <div class="em">{{ b.achieved ? '🏅' : '🔒' }}</div>
+          <div class="nm">{{ b.name }}</div>
+          <div class="ds">{{ b.description }}</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>차단한 사용자</h2>
       <div v-if="!blocks.length" class="muted">차단한 사용자가 없어요</div>
@@ -61,4 +74,29 @@ function doLogout() { logout(); router.replace('/login') }
       <button class="btn ghost" @click="doLogout">로그아웃</button>
     </div>
   </template>
+
+
 </template>
+<style scoped>
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.bg {
+  padding: 14px 10px; border-radius: 12px; background: var(--card-soft);
+  text-align: center; opacity: .5;
+}
+.bg.on { opacity: 1; background: var(--brand-soft); }
+.em { font-size: 24px; }
+.nm { font-size: 12.5px; font-weight: 800; margin-top: 6px; }
+.ds { font-size: 10.5px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+</style>
+
+<style scoped>
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.bg {
+  padding: 14px 10px; border-radius: 12px; background: var(--card-soft);
+  text-align: center; opacity: .5;
+}
+.bg.on { opacity: 1; background: var(--brand-soft); }
+.em { font-size: 24px; }
+.nm { font-size: 12.5px; font-weight: 800; margin-top: 6px; }
+.ds { font-size: 10.5px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+</style>

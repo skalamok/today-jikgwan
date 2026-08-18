@@ -1,7 +1,11 @@
 package com.todayjikgwan.service;
 
 import com.todayjikgwan.api.attendance.dto.AttendanceLogRequest;
+import com.todayjikgwan.api.attendance.dto.AttendanceLogDetail;
 import com.todayjikgwan.api.attendance.dto.AttendanceLogResponse;
+import com.todayjikgwan.domain.attendance.AttendancePhoto;
+import com.todayjikgwan.domain.attendance.AttendancePhotoRepository;
+import com.todayjikgwan.domain.weather.GameWeatherRepository;
 import com.todayjikgwan.common.exception.ApiException;
 import com.todayjikgwan.common.exception.ErrorCode;
 import com.todayjikgwan.config.TodayJikgwanProperties;
@@ -36,6 +40,9 @@ public class AttendanceLogService {
     private final ZoneStatRepository zoneStatRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final AttendancePhotoRepository photoRepository;
+    private final GameWeatherRepository weatherRepository;
+    private final BadgeService badgeService;
     private final StatService statService;
     private final TodayJikgwanProperties properties;
 
@@ -95,6 +102,10 @@ public class AttendanceLogService {
                         ? Visibility.PRIVATE : Visibility.valueOf(request.visibility()))
                 .build());
 
+        // REQ-F-216 예보는 사후 조회가 불가능하므로 기록 시점의 날씨를 복사해 보관한다
+        weatherRepository.findById(game.getId()).ifPresent(w ->
+                saved.applyWeather(w.getSkyCode(), w.getTemperature()));
+
         // REQ-F-110 구역별 만족도 집계에 즉시 반영
         ZoneStat zoneStat = zoneStatRepository.findById(zone.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
@@ -102,6 +113,9 @@ public class AttendanceLogService {
 
         // REQ-F-309 전적 재집계
         statService.recalculate(userId);
+
+        // REQ-F-703 마일스톤 배지 판정
+        badgeService.evaluate(userId);
 
         return AttendanceLogResponse.from(saved);
     }
@@ -128,6 +142,47 @@ public class AttendanceLogService {
             log.info("경기 {} 결과 확정: {}:{} (일치 제보 {}건)",
                     game.getId(), top.getHomeScore(), top.getAwayScore(), top.getCnt());
         }
+    }
+
+    /** REQ-F-214. 비공개 기록은 작성자만 조회할 수 있다 (REQ-N-008) */
+    @Transactional(readOnly = true)
+    public AttendanceLogDetail detail(Long userId, Long logId) {
+        AttendanceLog log = attendanceLogRepository.findById(logId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        boolean mine = log.getUser().getId().equals(userId);
+        if (!mine && log.getVisibility() != Visibility.PUBLIC) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        return AttendanceLogDetail.from(log,
+                photoRepository.findByAttendanceLogIdOrderBySortOrder(logId));
+    }
+
+    /** REQ-F-212. 삭제 후 전적을 재집계한다 */
+    @Transactional
+    public void delete(Long userId, Long logId) {
+        AttendanceLog log = attendanceLogRepository.findById(logId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (!log.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        // 구역 만족도 집계에서도 빼준다
+        zoneStatRepository.findById(log.getStadiumZone().getId())
+                .ifPresent(z -> z.removeRating(log.getZoneRating()));
+        log.softDelete();
+        statService.recalculate(userId);
+    }
+
+    /** REQ-F-215 사진 개별 삭제 */
+    @Transactional
+    public void deletePhoto(Long userId, Long logId, Long photoId) {
+        AttendanceLog log = attendanceLogRepository.findById(logId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (!log.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        photoRepository.findById(photoId)
+                .filter(p -> p.getAttendanceLog().getId().equals(logId))
+                .ifPresent(photoRepository::delete);
     }
 
     @Transactional(readOnly = true)

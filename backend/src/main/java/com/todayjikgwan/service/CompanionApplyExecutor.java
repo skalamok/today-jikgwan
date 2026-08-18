@@ -29,6 +29,7 @@ public class CompanionApplyExecutor {
     private final CompanionPostRepository postRepository;
     private final CompanionApplicationRepository applicationRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ApplyResponse applyOnce(Long postId, Long userId) {
@@ -63,6 +64,10 @@ public class CompanionApplyExecutor {
         int seq = post.confirmOne();                 // 정원 검사 + 카운트 증가
         applicationRepository.save(new CompanionApplication(post, user, seq));
         postRepository.saveAndFlush(post);           // 여기서 @Version 충돌이 감지된다
+
+        notificationService.notifyCompanionConfirmed(userId,
+                "%s vs %s".formatted(post.getGame().getHomeTeam().getShortName(),
+                                     post.getGame().getAwayTeam().getShortName()), postId);
 
         return new ApplyResponse(seq, post.getConfirmedCount(), post.getCapacity());
     }
