@@ -2,22 +2,25 @@ openapi: 3.0.3
 info:
   title: 오늘의직관 API
   description: |
-    KBO 직관 기록 및 관람 정보 서비스 REST API 명세서.
+    오늘의직관 — KBO 직관 기록 서비스의 REST API 명세서.
 
     - 작성자: 이채목
     - 작성일: 2026-08-18
+    - 최종 수정일: 2026-08-19
 
-    ### 데이터 출처
-    경기 데이터는 이용이 명시적으로 허용된 공식 API(TheSportsDB, Korean KBO League ID 4830)에서
-    배치로 동기화하며, 누락분은 운영자가 직접 등록한다 (REQ-F-107, REQ-F-601).
-    외부 데이터가 포함된 응답에는 `dataSource` 필드로 출처를 표기한다 (REQ-NF-014).
-    클라이언트 요청이 외부 API로 직접 전달되지 않는다 (REQ-NF-016).
+    ### 경기 데이터 출처
+    경기 결과는 **운영자만 등록·정정한다** (REQ-F-601, REQ-NF-015). 일반 사용자의 입력이
+    경기 결과에 반영되는 경로는 두지 않는다. 외부 API 도입 여부는 이용 조건을 확인한 뒤
+    정하기로 했고, 데이터 제공 인터페이스로 추상화해 선택을 미뤄 두었다 (REQ-F-107).
+    외부 데이터를 도입하면 서버가 배치로 동기화하며, 클라이언트 요청이 외부로 직접
+    전달되지 않는다 (REQ-NF-016). 응답에 포함된 외부 데이터에는 `dataSource` 로
+    제공처를 표기한다 (REQ-NF-014). 현재 표기 대상은 날씨(기상청)뿐이다.
 
     ### 공통 규칙
     - 인증이 필요한 API는 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
     - 모든 오류 응답은 `ErrorResponse` 형식을 따른다.
     - 목록 조회는 `page`, `size` 쿼리 파라미터를 사용한다 (page는 0부터).
-  version: 0.1.0
+  version: 1.0.0
   contact:
     name: 이채목
 
@@ -29,19 +32,19 @@ servers:
 
 tags:
   - name: Auth
-    description: 인증 (REQ-F-001 ~ 004)
+    description: 인증 (REQ-F-001 ~ 004, REQ-F-009)
   - name: User
-    description: 회원 정보 (REQ-F-005 ~ 007)
+    description: 회원 정보 (REQ-F-005 ~ 008)
   - name: Game
-    description: 경기 정보 (REQ-F-101 ~ 107)
+    description: 경기 정보 (REQ-F-101 ~ 107, REQ-F-112 ~ 113)
   - name: Stadium
-    description: 구장 및 구역별 만족도 (REQ-F-108 ~ 111)
+    description: 구장 및 구역별 만족도 (REQ-F-108 ~ 111, REQ-F-114)
   - name: AttendanceLog
-    description: 직관 기록 (REQ-F-201 ~ 214)
+    description: 직관 기록 (REQ-F-201 ~ 216)
   - name: Stat
-    description: 전적 집계 (REQ-F-301 ~ 309)
+    description: 전적 집계 (REQ-F-301 ~ 310)
   - name: Companion
-    description: 직관 메이트 모집 (REQ-F-501 ~ 506)
+    description: 직관 메이트 모집 (REQ-F-501 ~ 507)
   - name: CompanionChat
     description: 메이트 소통 (REQ-F-510 ~ 513)
   - name: Safety
@@ -49,9 +52,9 @@ tags:
   - name: ViewingPlan
     description: 관람 계획 (REQ-F-401 ~ 404)
   - name: Notification
-    description: 알림
+    description: 알림 (REQ-F-706 ~ 707)
   - name: Admin
-    description: 운영자 기능 (REQ-F-601 ~ 605)
+    description: 운영자 기능 (REQ-F-601 ~ 606)
 
 security:
   - bearerAuth: []
@@ -259,6 +262,7 @@ paths:
     get:
       tags: [User]
       summary: 내 정보 조회
+      description: REQ-F-006. 닉네임, 응원팀, 연결된 소셜 계정, 권한을 함께 반환한다.
       responses:
         '200':
           description: 조회 성공
@@ -790,6 +794,7 @@ paths:
     get:
       tags: [Companion]
       summary: 메이트 모집글 상세
+      description: REQ-F-502. 모집 상태, 정원과 확정 인원, 확정자 목록, 문의 댓글을 함께 반환한다.
       parameters:
         - { $ref: '#/components/parameters/PostId' }
       responses:
