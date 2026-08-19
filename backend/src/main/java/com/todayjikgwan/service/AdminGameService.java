@@ -29,7 +29,6 @@ public class AdminGameService {
 
     private final GameRepository gameRepository;
     private final GameRevisionRepository revisionRepository;
-    private final GameResultReportRepository reportRepository;
     private final AttendanceLogRepository attendanceLogRepository;
     private final StadiumRepository stadiumRepository;
     private final TeamRepository teamRepository;
@@ -60,27 +59,18 @@ public class AdminGameService {
     }
 
     /**
-     * REQ-F-607 운영자 검토 대상.
-     * 이미 시작했는데 결과가 확정되지 않은 경기를, 스코어별 제보 집계와 함께 보여준다.
-     * 제보가 엇갈려 자동 확정 기준에 못 미친 경기를 사람이 판단해 확정하기 위한 화면이다.
+     * REQ-F-606 결과 미등록 경기 목록.
+     *
+     * <p>이미 시작했는데 결과가 등록되지 않은 경기를 모아 보여준다. 경기 결과는
+     * 운영자만 등록·정정하므로(REQ-NF-015), 이 목록이 곧 등록 누락 목록이다.
+     * 관람 기록 건수를 함께 주어 어느 경기를 먼저 처리할지 판단하게 한다.
      */
     @Transactional(readOnly = true)
     public List<Map<String, Object>> unconfirmed() {
-        int threshold = properties.gameReport().confirmThreshold();
         List<Map<String, Object>> result = new ArrayList<>();
-
         for (Game game : gameRepository.findUnconfirmedBefore(OffsetDateTime.now())) {
-            List<Map<String, Object>> reports = reportRepository.tally(game.getId()).stream()
-                    .map(t -> Map.<String, Object>of(
-                            "homeScore", t.getHomeScore(),
-                            "awayScore", t.getAwayScore(),
-                            "count", t.getCnt()))
-                    .toList();
-
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("game", summarize(game));
-            row.put("reports", reports);
-            row.put("threshold", threshold);
             row.put("attendeeCount", attendanceLogRepository.findUserIdsByGame(game.getId()).size());
             result.add(row);
         }

@@ -16,8 +16,5 @@ public record AttendanceLogRequest(
         @Min(0) Integer ticketCost,
         @Min(0) Integer foodCost,
         @Min(0) Integer transportCost,
-        String visibility,
-        // REQ-F-606 경기 결과가 미확정이면 필수
-        @Min(0) Integer reportedHomeScore,
-        @Min(0) Integer reportedAwayScore) {
+        String visibility) {
 }

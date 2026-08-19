@@ -35,7 +35,6 @@ public class AttendanceLogService {
 
     private final AttendanceLogRepository attendanceLogRepository;
     private final GameRepository gameRepository;
-    private final GameResultReportRepository reportRepository;
     private final StadiumZoneRepository zoneRepository;
     private final ZoneStatRepository zoneStatRepository;
     private final TeamRepository teamRepository;
@@ -83,13 +82,8 @@ public class AttendanceLogService {
             cheerTeam = teamRepository.getReferenceById(request.cheerTeamId());
         }
 
-        // REQ-F-606 결과 미확정 경기는 스코어 제보를 함께 받는다
-        if (!game.isResultConfirmed()) {
-            if (request.reportedHomeScore() == null || request.reportedAwayScore() == null) {
-                throw new ApiException(ErrorCode.SCORE_REPORT_REQUIRED);
-            }
-            submitReport(game, user, request.reportedHomeScore(), request.reportedAwayScore());
-        }
+        // REQ-NF-015. 경기 결과는 운영자만 등록·정정한다. 기록 작성이 결과에 영향을 주지 않는다.
+        // 결과가 아직 없는 경기도 기록은 남길 수 있으며, 전적 집계에서만 제외된다 (REQ-F-606).
 
         AttendanceLog saved = attendanceLogRepository.save(AttendanceLog.builder()
                 .user(user)
@@ -124,31 +118,8 @@ public class AttendanceLogService {
         return AttendanceLogResponse.from(saved);
     }
 
-    /**
-     * REQ-F-607 제보를 저장하고, 동일 스코어가 기준 수 이상 일치하면 결과를 확정한다.
-     * 관람 기록 작성자만 제보하므로 일반 사용자 제보보다 신뢰도가 높다.
-     */
-    private void submitReport(Game game, User user, int home, int away) {
-        if (reportRepository.existsByGameIdAndUserId(game.getId(), user.getId())) {
-            return;
-        }
-        reportRepository.save(new GameResultReport(game, user, home, away));
-        reportRepository.flush();
 
-        List<GameResultReportRepository.ReportTally> tally = reportRepository.tally(game.getId());
-        if (tally.isEmpty()) {
-            return;
-        }
-        var top = tally.get(0);
-        int confirmThreshold = properties.gameReport().confirmThreshold();
-        if (top.getCnt() >= confirmThreshold) {
-            game.confirmResult(top.getHomeScore(), top.getAwayScore(), GameSource.USER_REPORT);
-            log.info("경기 {} 결과 확정: {}:{} (일치 제보 {}건)",
-                    game.getId(), top.getHomeScore(), top.getAwayScore(), top.getCnt());
-        }
-    }
-
-    /** REQ-F-214. 비공개 기록은 작성자만 조회할 수 있다 (REQ-N-008) */
+    /** REQ-F-214. 비공개 기록은 작성자만 조회할 수 있다 (REQ-NF-008) */
     @Transactional(readOnly = true)
     public AttendanceLogDetail detail(Long userId, Long logId) {
         AttendanceLog log = attendanceLogRepository.findById(logId)

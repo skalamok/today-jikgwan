@@ -3,9 +3,9 @@ package com.todayjikgwan.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "todayjikgwan")
-public record TodayJikgwanProperties(Storage storage, Stat stat, GameReport gameReport) {
+public record TodayJikgwanProperties(Storage storage, Stat stat) {
 
-    /** 업로드 파일 저장 (REQ-F-203, REQ-N-002, REQ-N-007) */
+    /** 업로드 파일 저장 (REQ-F-203, REQ-NF-002, REQ-NF-007) */
     public record Storage(String baseDir, String publicBaseUrl,
                           int maxPhotosPerLog, long maxFileSizeBytes, int thumbnailMaxPx) { }
 
@@ -13,5 +13,4 @@ public record TodayJikgwanProperties(Storage storage, Stat stat, GameReport game
     public record Stat(int smallSampleThreshold) { }
 
     /** REQ-F-607 제보 확정 기준 */
-    public record GameReport(int confirmThreshold) { }
 }

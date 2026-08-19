@@ -9,7 +9,7 @@ const loading = ref(true)
 const error = ref('')
 const denied = ref(false)
 
-// ── 제보 검토 ────────────────────────────────────────────────
+// ── 결과 미등록 경기 ─────────────────────────────────────────
 const rows = ref([])
 const openId = ref(null)
 const form = ref({})
@@ -34,14 +34,7 @@ async function loadReview() {
 async function open(row) {
   if (openId.value === row.game.id) { openId.value = null; return }
   openId.value = row.game.id
-  // 최다 일치 제보를 기본값으로 채워 둔다. 운영자가 대부분 그대로 확정하기 때문이다.
-  const top = row.reports[0]
-  form.value = {
-    status: 'FINISHED',
-    homeScore: top ? top.homeScore : null,
-    awayScore: top ? top.awayScore : null,
-    reason: '',
-  }
+  form.value = { status: 'FINISHED', homeScore: null, awayScore: null, reason: '' }
   revisions.value = (await client.get(`/admin/games/${row.game.id}/revisions`)).data
 }
 
@@ -179,7 +172,7 @@ function fmt(iso) {
   <div class="card wide">
     <div class="tabs" style="margin-top:0">
       <button :class="{ on: tab === 'review' }" @click="tab = 'review'">
-        제보 검토<span v-if="rows.length" class="cnt">{{ rows.length }}</span>
+        결과 미등록<span v-if="rows.length" class="cnt">{{ rows.length }}</span>
       </button>
       <button :class="{ on: tab === 'register' }" @click="tab = 'register'">경기 등록</button>
       <button :class="{ on: tab === 'zones' }" @click="tab = 'zones'">구장 · 구역</button>
@@ -188,12 +181,12 @@ function fmt(iso) {
     <div v-if="error" class="err">{{ error }}</div>
   </div>
 
-  <!-- REQ-F-607 제보가 엇갈려 자동 확정되지 않은 경기 -->
+  <!-- REQ-F-606 결과가 아직 등록되지 않은 경기. 등록은 운영자만 한다 (REQ-NF-015) -->
   <template v-if="tab === 'review'">
     <div v-if="loading" class="card wide"><div class="skeleton" style="height:56px"></div></div>
     <div v-else-if="!rows.length" class="card wide empty">
       <div class="empty-ico">✅</div>
-      검토할 경기가 없어요
+      결과가 등록되지 않은 경기가 없어요
     </div>
     <div v-else v-for="row in rows" :key="row.game.id" class="card wide">
       <div class="row head" @click="open(row)">
@@ -211,19 +204,14 @@ function fmt(iso) {
           </div>
         </div>
         <div class="tally">
-          <template v-if="row.reports.length">
-            <span v-for="r in row.reports" :key="`${r.homeScore}-${r.awayScore}`" class="pill"
-                  :class="{ top: r.count >= row.threshold }">
-              {{ r.homeScore }}:{{ r.awayScore }} <b>{{ r.count }}</b>
-            </span>
-          </template>
-          <span v-else class="muted" style="font-size:12px">제보 없음</span>
+          <span class="pill">결과 미등록</span>
         </div>
       </div>
 
       <div v-if="openId === row.game.id" class="panel">
         <div class="muted" style="font-size:12px; margin-bottom:10px">
-          확정 기준은 일치 제보 {{ row.threshold }}건입니다. 기준에 못 미쳐 자동 확정되지 않았어요.
+          경기 결과는 운영자만 등록·정정할 수 있습니다. 등록하면 이 경기를 기록한
+          사용자들의 전적이 다시 계산됩니다.
         </div>
 
         <div class="grid2">

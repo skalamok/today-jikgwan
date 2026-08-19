@@ -21,7 +21,6 @@ public enum ErrorCode {
     GAME_NOT_STARTED(HttpStatus.BAD_REQUEST, "아직 시작하지 않은 경기예요."),
     ZONE_NOT_IN_STADIUM(HttpStatus.BAD_REQUEST, "해당 구장의 좌석 구역이 아니에요."),
     CHEER_TEAM_NOT_IN_GAME(HttpStatus.BAD_REQUEST, "이 경기에 출전하지 않은 팀이에요."),
-    SCORE_REPORT_REQUIRED(HttpStatus.BAD_REQUEST, "아직 결과가 확정되지 않은 경기예요. 스코어를 입력해 주세요."),
 
     // 직관 메이트
     COMPANION_POST_FULL(HttpStatus.CONFLICT, "방금 정원이 찼어요."),

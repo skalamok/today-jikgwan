@@ -41,6 +41,14 @@ public class StatService {
     private final TeamRepository teamRepository;
     private final TodayJikgwanProperties properties;
 
+    /**
+     * 차원별 집계(구장별·상대팀별·요일별)에만 적용하는 최소 표본.
+     *
+     * <p>통산 전적에는 적용하지 않는다. 통산은 "1경기 1승"처럼 모수가 함께 보여서
+     * 승률만 따로 떼어 읽히지 않지만, 차원별은 여러 항목이 나란히 놓여 순위처럼 읽힌다.
+     * 잠실 2경기 2승(1.000)과 고척 1경기 1패(0.000)를 나란히 보여주면 실제로는
+     * 아무 의미 없는 서열이 생긴다.
+     */
     private int threshold() {
         return properties.stat().smallSampleThreshold();
     }
@@ -135,11 +143,13 @@ public class StatService {
                 .count();
 
         UserStreak streak = userStreakRepository.findById(userId).orElseGet(() -> new UserStreak(userId));
-        boolean small = stat.getGames() < threshold();
+        // 통산 전적은 1경기부터 승률을 낸다. 첫 기록에서 바로 성취가 보이는 편이
+        // 다음 기록을 남길 이유가 된다 (REQ-F-705 와 같은 맥락).
+        boolean hasGames = stat.getGames() > 0;
 
         return new StatSummaryResponse(
                 season, stat.getGames(), stat.getWins(), stat.getDraws(), stat.getLosses(),
-                small ? null : winRate(stat), small, neutral,
+                hasGames ? winRate(stat) : null, !hasGames, neutral,
                 streak.getCurrentStreak(), streak.getLongestWin(), stat.getTotalCost());
     }
 
