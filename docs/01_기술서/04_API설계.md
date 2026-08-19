@@ -8,8 +8,71 @@
 | 원본 | `docs/03_API명세/openapi.yaml` (OpenAPI 3.0.3) |
 | 버전 | 원본을 따른다. 개정 이력은 `openapi.yaml` 의 info.description 에 있다 |
 
-`openapi.yaml` 에서 자동 생성한 목록이다. 상세 요청 · 응답 스키마는 원본을 참조한다.
-Swagger Editor 에 원본을 붙여넣으면 같은 내용을 화면으로 확인할 수 있다.
+아래 목록은 `openapi.yaml` 에서 생성한다. 전체 요청 · 응답 스키마는 원본에 있고,
+Swagger Editor 에 붙여넣으면 화면으로 확인할 수 있다.
+
+---
+
+## 공통 규칙
+
+| 항목 | 내용 |
+|---|---|
+| 기준 경로 | `/api/v1` |
+| 인증 | `Authorization: Bearer {accessToken}` (JWT). 공개 엔드포인트만 예외 |
+| 형식 | 요청 · 응답 모두 JSON (UTF-8). 사진 업로드만 `multipart/form-data` |
+| 오류 | `{ code, message }` 형태로 통일한다. `code` 는 화면이 분기에 쓰는 값이고 `message` 는 사람이 읽는 문구다 |
+| 목록 | `page` · `size` 로 나눠 주고 응답에 `totalElements` 를 담는다 |
+
+## 주요 요청 · 응답 예시
+
+값 자체가 설계 판단인 세 곳만 싣는다. 나머지는 원본을 본다.
+
+### 1) 직관 기록 작성 — 같은 경기를 두 번 기록할 때
+
+`POST /attendance-logs` (REQ-F-201)
+
+```
+요청
+{ "gameId": 512, "cheerTeamId": 2, "stadiumZoneId": 14,
+  "zoneRating": 4, "memo": "3연승 직관", "visibility": "PRIVATE" }
+
+409 Conflict
+{ "code": "DUPLICATE_LOG", "message": "이미 이 경기 기록이 있어요" }
+```
+
+애플리케이션 검사만 두면 같은 사람이 동시에 두 번 눌렀을 때 뚫린다.
+`attendance_logs (user_id, game_id)` 유일 제약으로 막고 그 위반을 409 로 옮긴다.
+
+### 2) 내 전적 요약 — 표본이 모자란 항목
+
+`GET /stats/me/summary` (REQ-F-305)
+
+```
+200 OK
+{ "total": { "games": 12, "wins": 7, "draws": 1, "losses": 4, "winRate": 0.636 },
+  "byStadium": [
+    { "key": "잠실야구장", "games": 5, "wins": 3, "losses": 2, "winRate": 0.600 },
+    { "key": "고척스카이돔", "games": 3, "wins": 2, "losses": 1, "winRate": null }
+  ] }
+```
+
+통산 승률은 1경기부터 보여주고, 나눠 놓은 집계는 5경기 미만이면 `winRate` 를 `null` 로 준다.
+0 이나 0.667 을 주면 화면이 그것을 순위처럼 늘어놓게 된다. 값을 비워 화면이 판단하지 않게 한다.
+
+### 3) 메이트 신청 — 정원이 찬 순간
+
+`POST /companion-posts/{postId}/applications` (REQ-F-503, 504)
+
+```
+201 Created
+{ "applicationId": 88, "seq": 3, "status": "CONFIRMED" }
+
+409 Conflict
+{ "code": "CAPACITY_FULL", "message": "방금 정원이 찼어요" }
+```
+
+여러 명이 같은 순간에 눌러도 `seq` 가 겹치거나 비지 않는다. 모집글의 버전으로 낙관적 잠금을
+걸어 정원을 넘긴 요청만 409 로 돌려보낸다. 대기자 개념은 두지 않았다.
 
 ---
 
