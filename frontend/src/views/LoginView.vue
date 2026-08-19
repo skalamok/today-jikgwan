@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../store/auth'
 import SocialLoginButtons from '../components/SocialLoginButtons.vue'
+import Logo from '../components/Logo.vue'
 
 const router = useRouter()
 const email = ref('')
@@ -35,8 +36,7 @@ async function submit() {
 <template>
   <div>
     <div class="card accent" style="text-align:center; padding: 38px 20px;">
-      <div style="font-size:44px">⚾</div>
-      <div class="big" style="font-size:22px; margin-top:10px">오늘의직관</div>
+      <Logo :size="30" with-text style="margin:0 auto; --logo-seam:#f0a020" />
       <div class="muted" style="margin-top:6px">내가 간 경기만의 전적이 쌓입니다</div>
     </div>
 

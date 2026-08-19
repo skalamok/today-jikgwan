@@ -21,6 +21,7 @@
   --brand-2: #1f4e79;
   --brand-soft: #eaf1f9;
   --accent: #f0a020;
+  --logo-seam: #f0a020;
 
   /* 데이터 */
   --win: #1d6fd4;
@@ -72,6 +73,7 @@ button { font-family: inherit; }
 .content { flex: 1; padding: 18px 16px 96px; }
 
 /* ---------- 하단 탭 ---------- */
+.tabbar .brand { display: none; }
 .tabbar {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(6, 1fr);
@@ -238,10 +240,10 @@ a.list-item:hover { opacity: .62; }
     border-top: 0; border-right: 1px solid var(--line);
     backdrop-filter: none;
   }
-  .tabbar::before {
-    content: '오늘의직관';
-    position: absolute; top: 24px; left: 22px;
-    font-size: 17px; font-weight: 800; letter-spacing: -0.04em; color: var(--brand);
+  .tabbar .brand {
+    display: block;
+    padding: 4px 14px 22px;
+    color: var(--brand);
   }
   .tabbar a {
     display: flex; align-items: center; gap: 11px;

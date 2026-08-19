@@ -3,6 +3,7 @@ import { RouterView, useRoute } from 'vue-router'
 import { computed, ref, watch } from 'vue'
 import { isAdmin, auth, loadMe } from './store/auth'
 import client from './api/client'
+import Logo from './components/Logo.vue'
 
 const route = useRoute()
 
@@ -53,6 +54,7 @@ const isAuthScreen = computed(() => AUTH_SCREENS.includes(route.name))
     </main>
 
     <nav class="tabbar" v-if="!isAuthScreen">
+      <div class="brand"><Logo :size="26" with-text /></div>
       <RouterLink to="/" :class="{ active: $route.name === 'home' }"><span class="ico">🏠</span>홈</RouterLink>
       <RouterLink to="/games" :class="{ active: $route.name === 'games' }"><span class="ico">📅</span>경기</RouterLink>
       <RouterLink to="/logs" :class="{ active: ['logs','log-new'].includes($route.name) }"><span class="ico">📝</span>기록</RouterLink>
