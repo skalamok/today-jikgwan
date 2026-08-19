@@ -428,7 +428,6 @@ paths:
       description: |
         > **현재 미구현.** 운영자 등록(REQ-F-601)으로 경기 데이터가 채워지고 있어 우선순위를 낮췄다.
 
-        |
         REQ-F-204. 업로드한 사진의 촬영 일시로 해당 일자의 경기를 후보로 반환한다.
         촬영 일시가 없거나 해당일 경기가 없으면 빈 배열을 반환하며, 클라이언트는 수동 선택으로 전환한다.
       requestBody:
@@ -483,7 +482,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  updated: { type: integer, description: 갱신된 경기 수, example: 15 }
+                  updated: { type: integer, description: '갱신된 경기 수', example: 15 }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /standings:
@@ -1184,31 +1183,6 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /admin/games/{gameId}/revisions:
-    get:
-      tags: [Admin]
-      summary: 경기 정정 이력 조회
-      description: REQ-F-603. 이력은 추가 전용이므로 조회만 제공한다.
-      parameters:
-        - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
-      responses:
-        '200':
-          description: 조회 성공
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id: { type: integer, format: int64 }
-                    beforeStatus: { type: string, example: FINISHED }
-                    beforeScore: { type: string, nullable: true, example: '2:0' }
-                    afterStatus: { type: string, example: CANCELED }
-                    afterScore: { type: string, nullable: true }
-                    reason: { type: string, example: 우천 노게임 처리 }
-                    revisedBy: { type: string, example: 운영자 }
-                    revisedAt: { type: string, format: date-time }
-        '403': { $ref: '#/components/responses/Forbidden' }
     post:
       tags: [Admin]
       summary: 경기 결과 정정
@@ -1253,7 +1227,7 @@ paths:
     get:
       tags: [Admin]
       summary: 경기 정정 이력 조회
-      description: REQ-F-603. 이력은 수정·삭제되지 않는다.
+      description: REQ-F-603. 이력은 추가 전용이므로 조회만 제공한다.
       parameters:
         - { name: gameId, in: path, required: true, schema: { type: integer, format: int64 } }
       responses:
@@ -1589,16 +1563,6 @@ components:
         foodCost: { type: integer, minimum: 0, nullable: true }
         transportCost: { type: integer, minimum: 0, nullable: true }
         visibility: { type: string, enum: [PUBLIC, PRIVATE], default: PRIVATE }
-        reportedHomeScore:
-          type: integer
-          minimum: 0
-          nullable: true
-          description: REQ-F-606. 경기 결과가 미확정(resultConfirmed=false)인 경우 필수
-        reportedAwayScore:
-          type: integer
-          minimum: 0
-          nullable: true
-          description: REQ-F-606. 경기 결과가 미확정인 경우 필수
         companions:
           type: array
           maxItems: 10
@@ -1657,8 +1621,8 @@ components:
           description: 표본 5경기 미만이면 null (REQ-F-305)
           example: 0.636
         smallSample: { type: boolean, example: false }
-        neutralCount: { type: integer, description: 승패 집계에서 제외된 중립 관람 수, example: 1 }
-        currentStreak: { type: integer, description: 양수는 연승, 음수는 연패, example: 2 }
+        neutralCount: { type: integer, description: '승패 집계에서 제외된 중립 관람 수', example: 1 }
+        currentStreak: { type: integer, description: '양수는 연승, 음수는 연패', example: 2 }
         longestWinStreak: { type: integer, example: 4 }
         totalCost: { type: integer, nullable: true, example: 312000 }
 

@@ -143,8 +143,8 @@ Swagger Editor 에 원본을 붙여넣으면 같은 내용을 화면으로 확�
 |---|---|---|---|---|---|
 | POST | `/admin/games` | 경기 등록 | 인증 | REQ-F-601, REQ-NF-009 |  |
 | GET | `/admin/games/unconfirmed` | 결과 미등록 경기 조회 | 인증 | REQ-F-606, REQ-NF-015 |  |
-| GET | `/admin/games/{gameId}/revisions` | 경기 정정 이력 조회 | 인증 | REQ-F-603 |  |
 | POST | `/admin/games/{gameId}/revisions` | 경기 결과 정정 | 인증 | REQ-F-602, REQ-F-603, REQ-F-309 |  |
+| GET | `/admin/games/{gameId}/revisions` | 경기 정정 이력 조회 | 인증 | REQ-F-603 |  |
 | PATCH | `/admin/stadiums/{stadiumId}` | 구장 정보 수정 | 인증 | REQ-F-605 |  |
 | GET | `/admin/stadiums/{stadiumId}/zones` | 좌석 구역 목록 (운영자) | 인증 | REQ-F-605 |  |
 | POST | `/admin/stadiums/{stadiumId}/zones` | 좌석 구역 추가 | 인증 | REQ-F-605 |  |
