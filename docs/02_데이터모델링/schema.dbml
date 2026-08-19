@@ -14,10 +14,6 @@ Enum user_status {
   DORMANT
   WITHDRAWN
 }
-Enum auth_token_type {
-  EMAIL_VERIFY
-  PASSWORD_RESET
-}
 Enum game_status {
   SCHEDULED
   IN_PROGRESS
@@ -109,17 +105,6 @@ Table user_social_accounts {
   Note: 'REQ-F-003 소셜 로그인 (구글 · 네이버 · 카카오)'
 }
 
-Table auth_tokens {
-  id         bigint          [pk, increment]
-  user_id    bigint          [not null]
-  type       auth_token_type [not null]
-  token_hash varchar(255)    [not null, unique]
-  expires_at timestamp       [not null, note: '발급 후 30분']
-  used_at    timestamp
-  created_at timestamp       [not null]
-
-  Note: 'REQ-F-001 이메일 인증 / REQ-F-004 비밀번호 재설정'
-}
 
 Table user_team_history {
   id           bigint    [pk, increment]
@@ -463,13 +448,6 @@ Table viewing_plans {
   Indexes { (user_id, season_year) [unique] }
 }
 
-Table viewing_plan_stadiums {
-  id              bigint [pk, increment]
-  viewing_plan_id bigint [not null]
-  stadium_id      bigint [not null]
-
-  Note: '이동 가능한 구장 (제약 조건)'
-}
 
 Table viewing_plan_items {
   id              bigint           [pk, increment]
@@ -506,7 +484,6 @@ Table notifications {
 
 Ref: users.favorite_team_id            > teams.id
 Ref: user_social_accounts.user_id      > users.id
-Ref: auth_tokens.user_id               > users.id
 Ref: user_team_history.user_id         > users.id
 Ref: user_team_history.team_id         > teams.id
 
@@ -552,8 +529,6 @@ Ref: user_blocks.user_id               > users.id
 Ref: user_blocks.blocked_id            > users.id
 
 Ref: viewing_plans.user_id             > users.id
-Ref: viewing_plan_stadiums.viewing_plan_id > viewing_plans.id
-Ref: viewing_plan_stadiums.stadium_id  > stadiums.id
 Ref: viewing_plan_items.viewing_plan_id > viewing_plans.id
 Ref: viewing_plan_items.game_id        > games.id
 
@@ -565,7 +540,6 @@ Ref: notifications.user_id             > users.id
 
 TableGroup "회원 · 인증" {
   users
-  auth_tokens
   user_social_accounts
   user_team_history
   user_blocks
@@ -605,7 +579,6 @@ TableGroup "직관 메이트" {
 TableGroup "관람 계획" {
   viewing_plans
   viewing_plan_items
-  viewing_plan_stadiums
 }
 
 TableGroup "운영 · 알림" {
