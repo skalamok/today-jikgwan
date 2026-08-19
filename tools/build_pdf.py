@@ -37,8 +37,9 @@ SOURCES = [
     ("00_프로젝트_목표정의.md", "프로젝트 개요"),
     ("01_요구사항정의서.md", "요구사항 정의서"),
     ("02_화면설계서.md", "화면 설계서"),
-    ("03_부록_경기데이터_확보정책.md", "부록 A. 경기 데이터 확보 정책"),
-    ("04_부록_API_요약.md", "부록 B. API 엔드포인트 요약"),
+    ("03_데이터모델.md", "데이터 모델"),
+    ("04_부록_경기데이터_확보정책.md", "부록 A. 경기 데이터 확보 정책"),
+    ("05_부록_API_요약.md", "부록 B. API 엔드포인트 요약"),
 ]
 
 CSS = """
@@ -212,6 +213,8 @@ img.logo, img.mark { border: 0; }
 img.mobile { max-width: 58mm; max-height: 108mm; }
 img.pc { max-width: 160mm; max-height: 108mm; }
 img.flow { max-width: 170mm; }
+/* ERD 는 세로로 길어 폭을 다 쓰고 높이 제한을 두지 않는다 */
+img.erd { max-width: 178mm; }
 figure { page-break-inside: avoid; margin: 0; }
 /* 그림 바로 앞의 설명 문단은 그림과 떨어지지 않게 둔다 */
 p + figure { page-break-before: avoid; }
@@ -277,7 +280,8 @@ def md_to_html(md, doc_dir):
         m = re.match(r"^!\[[^\]]*\]\(([^)]+)\)$", s)
         if m:
             src = os.path.normpath(os.path.join(doc_dir, m.group(1)))
-            cls = "pc" if src.endswith("-PC.png") else "flow" if "/FLOW-" in src else "mobile"
+            cls = ("pc" if src.endswith("-PC.png") else "erd" if "/erd/" in src
+                   else "flow" if "/FLOW-" in src else "mobile")
             out.append('<figure><img class="%s" src="file://%s"></figure>' % (cls, src))
             i += 1
             continue

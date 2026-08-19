@@ -8,7 +8,7 @@ import io, os, re, yaml
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(BASE, "docs", "03_API명세", "openapi.yaml")
-OUT = os.path.join(BASE, "docs", "01_기술서", "04_부록_API_요약.md")
+OUT = os.path.join(BASE, "docs", "01_기술서", "05_부록_API_요약.md")
 METHODS = ("get", "post", "put", "patch", "delete")
 
 spec = yaml.safe_load(io.open(SRC, encoding="utf-8"))
