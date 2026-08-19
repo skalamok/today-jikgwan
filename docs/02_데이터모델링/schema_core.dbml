@@ -1,0 +1,199 @@
+// =====================================================================
+// 오늘의직관 - 핵심 데이터 모델 (발표용 축약본)
+// 작성자: 이채목 / 작성일: 2026-08-19
+//
+// 전체 30개 테이블 중 서비스의 중심 흐름에 해당하는 8개만 추렸다.
+// 관람 기록(attendance_logs)이 쌓이면 개인 전적(user_stats)과
+// 구역 만족도(zone_stats)로 파생되는 구조를 보여주기 위한 것이다.
+// 전체 모델은 schema.dbml 을 참조한다.
+// =====================================================================
+
+// ---------- ENUM ----------
+Enum game_source {
+  EXTERNAL
+  MANUAL
+  USER_REPORT
+}
+Enum game_status {
+  SCHEDULED
+  IN_PROGRESS
+  FINISHED
+  CANCELED
+  SUSPENDED
+}
+Enum stat_dimension {
+  TOTAL
+  SEASON
+  STADIUM
+  OPPONENT
+  DAY_OF_WEEK
+  COMPANION
+}
+Enum user_role {
+  MEMBER
+  ADMIN
+}
+Enum user_status {
+  ACTIVE
+  DORMANT
+  WITHDRAWN
+}
+Enum visibility {
+  PUBLIC
+  PRIVATE
+}
+
+// ---------- 핵심 테이블 ----------
+Table users {
+  id                bigint       [pk, increment]
+  email             varchar(255) [unique, note: '소셜 전용 계정은 null 허용']
+  password_hash     varchar(255) [note: 'REQ-N-006 단방향 해시']
+  nickname          varchar(30)  [not null, unique]
+  profile_image_url varchar(500)
+  favorite_team_id  bigint       [note: '현재 응원팀. 변경 이력은 user_team_history']
+  role              user_role    [not null, default: 'MEMBER']
+  status            user_status  [not null, default: 'ACTIVE']
+  email_verified_at timestamp
+  created_at        timestamp    [not null]
+  updated_at        timestamp    [not null]
+  withdrawn_at      timestamp    [note: 'REQ-F-007 탈퇴 시 식별정보 파기, 통계 기여분은 익명 보존']
+
+  Note: '서비스 회원. 관리자는 role=ADMIN'
+}
+
+Table teams {
+  id               bigint       [pk, increment]
+  name             varchar(50)  [not null, unique]
+  name_en          varchar(100)
+  short_name       varchar(10)  [not null]
+  home_stadium_id  bigint
+  external_ref     varchar(50)  [unique, note: 'TheSportsDB idTeam. 외부 동기화 대조용']
+  logo_url         varchar(500)
+  homepage_url     varchar(500) [note: 'REQ-F-110 구단 공식 채널']
+  ticket_url       varchar(500) [note: 'REQ-F-110']
+  instagram_url    varchar(500) [note: 'REQ-F-110']
+  youtube_url      varchar(500) [note: 'REQ-F-110']
+  is_active        boolean      [not null, default: true]
+}
+
+Table stadiums {
+  id        bigint       [pk, increment]
+  name      varchar(50)  [not null, unique]
+  name_en   varchar(100)
+  address   varchar(255)
+  capacity  int
+  latitude  decimal(10,7)
+  longitude decimal(10,7)
+  grid_nx   int          [note: 'REQ-F-112 기상청 단기예보 격자 X. 위경도를 람베르트 정각원추 도법으로 변환한 값']
+  grid_ny   int          [note: 'REQ-F-112 기상청 단기예보 격자 Y']
+
+  Note: 'REQ-F-108, REQ-F-109, REQ-F-112'
+}
+
+Table stadium_zones {
+  id         bigint      [pk, increment]
+  stadium_id bigint      [not null]
+  name       varchar(50) [not null, note: '예: 3루 내야 지정석']
+  sort_order int         [not null, default: 0]
+  is_active  boolean     [not null, default: true]
+
+  Indexes { (stadium_id, name) [unique] }
+  Note: 'REQ-F-605 운영자가 관리. 구역별 만족도 집계 단위'
+}
+
+Table games {
+  id           bigint      [pk, increment]
+  season_year  int         [not null]
+  game_date    date        [not null]
+  start_at     timestamp   [not null]
+  stadium_id   bigint      [not null]
+  home_team_id bigint      [not null]
+  away_team_id bigint      [not null]
+  home_score   int
+  away_score   int
+  status       game_status [not null, default: 'SCHEDULED']
+  source       game_source [not null, default: 'EXTERNAL', note: 'REQ-F-107 결과 확정 경로']
+  external_ref varchar(100) [note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
+  synced_at    timestamp   [note: 'REQ-F-106 마지막 동기화 시각']
+  result_confirmed boolean [not null, default: false, note: 'REQ-F-608 미확정 경기는 화면에서 구분 표시']
+  confirmed_at timestamp   [note: '결과 확정 시각']
+  created_at   timestamp   [not null]
+  updated_at   timestamp   [not null]
+
+  Indexes {
+    (game_date)
+    (season_year, home_team_id)
+    (season_year, away_team_id)
+    (result_confirmed)
+    (external_ref) [unique]
+  }
+  Note: '외부 API(TheSportsDB) 동기화가 1차 출처이며, 누락·불일치 시 사용자 제보로 보완한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
+}
+
+Table attendance_logs {
+  id              bigint     [pk, increment]
+  user_id         bigint     [not null]
+  game_id         bigint     [not null]
+  cheer_team_id   bigint     [note: 'null 이면 중립 관람 → 승패 집계 제외 (REQ-F-202)']
+  stadium_zone_id bigint     [not null, note: 'REQ-F-205']
+  zone_rating     tinyint    [not null, note: 'REQ-F-206 시야 만족도 1~5. 필수']
+  memo            varchar(1000)
+  game_rating     tinyint    [note: 'REQ-F-211 경기 만족도 1~5']
+  ticket_cost     int
+  food_cost       int
+  transport_cost  int
+  visibility      visibility [not null, default: 'PRIVATE', note: 'REQ-F-208']
+  weather_sky     varchar(10) [note: 'REQ-F-216 기록 시점의 날씨. 사후 조회가 불가능하므로 기록마다 보관한다']
+  weather_temp    decimal(4,1)
+  created_at      timestamp  [not null]
+  updated_at      timestamp  [not null]
+  deleted_at      timestamp
+
+  Indexes {
+    (user_id, game_id) [unique, note: 'REQ-F-201 동일 경기 1건 제한']
+    (user_id, created_at)
+    (stadium_zone_id)
+  }
+  Note: '관람 기록 1건. 전적·구역만족도 집계의 원천 데이터'
+}
+
+Table user_stats {
+  id            bigint         [pk, increment]
+  user_id       bigint         [not null]
+  dimension     stat_dimension [not null]
+  dimension_key varchar(50)    [not null, note: 'STADIUM=구장ID, OPPONENT=팀ID, DAY_OF_WEEK=MON..SUN, TOTAL=ALL']
+  season_year   int            [not null, note: '0 = 통산']
+  games         int            [not null, default: 0]
+  wins          int            [not null, default: 0]
+  draws         int            [not null, default: 0]
+  losses        int            [not null, default: 0]
+  total_cost    int            [not null, default: 0]
+  updated_at    timestamp      [not null]
+
+  Indexes { (user_id, dimension, dimension_key, season_year) [unique] }
+  Note: 'REQ-N-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
+}
+
+Table zone_stats {
+  stadium_zone_id bigint    [pk]
+  rating_sum      int       [not null, default: 0]
+  rating_count    int       [not null, default: 0]
+  avg_rating      decimal(3,2)
+  updated_at      timestamp [not null]
+
+  Note: 'REQ-F-110 구역별 만족도. rating_count < 5 이면 화면에서 평균을 표시하지 않는다 (REQ-F-305)'
+}
+
+// ---------- 관계 ----------
+Ref: users.favorite_team_id            > teams.id
+Ref: teams.home_stadium_id             > stadiums.id
+Ref: stadium_zones.stadium_id          > stadiums.id
+Ref: games.stadium_id                  > stadiums.id
+Ref: games.home_team_id                > teams.id
+Ref: games.away_team_id                > teams.id
+Ref: attendance_logs.user_id           > users.id
+Ref: attendance_logs.game_id           > games.id
+Ref: attendance_logs.cheer_team_id     > teams.id
+Ref: attendance_logs.stadium_zone_id   > stadium_zones.id
+Ref: user_stats.user_id                > users.id
+Ref: zone_stats.stadium_zone_id        - stadium_zones.id
