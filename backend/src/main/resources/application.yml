@@ -77,6 +77,9 @@ todayjikgwan:
       # REQ-NF-016 하루 4회 배치
       sync-cron: "0 10 2,8,14,20 * * *"
     thesportsdb:
+      # REQ-F-107 기본은 꺼 둔다. 켜지 않으면 운영자 등록만으로 동작한다.
+      # 무료 공용 키는 한도가 낮고 KBO 데이터의 정확도를 검증하지 못했다.
+      enabled: ${JIKGWAN_TSDB_ENABLED:false}
       base-url: https://www.thesportsdb.com/api/v1/json
       api-key: "123"          # 무료 공용 테스트 키. 운영 시 전용 키로 교체 (REQ-NF-017)
       league-id: "4830"

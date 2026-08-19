@@ -3,6 +3,7 @@ package com.todayjikgwan.api.admin;
 import com.todayjikgwan.domain.game.GameStatus;
 import com.todayjikgwan.security.CurrentUser;
 import com.todayjikgwan.service.AdminGameService;
+import com.todayjikgwan.service.gamedata.GameSyncService;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminGameController {
 
     private final AdminGameService adminGameService;
+    private final GameSyncService gameSyncService;
 
     @PostMapping
     public ResponseEntity<Map<String, Long>> register(@RequestBody RegisterRequest request) {
@@ -56,4 +58,19 @@ public class AdminGameController {
             Integer homeScore,
             Integer awayScore,
             String reason) { }
+
+    /**
+     * REQ-F-107 경기 데이터 동기화.
+     *
+     * 붙어 있는 제공자를 모두 물어본다. 켜진 외부 제공자가 없으면 아무 일도 일어나지
+     * 않으며 그것이 기본 상태다. 운영자가 확정한 결과는 덮어쓰지 않는다 (REQ-NF-015).
+     */
+    @PostMapping("/sync")
+    public Map<String, Object> sync(
+            @RequestParam(required = false)
+            @org.springframework.format.annotation.DateTimeFormat(
+                    iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate date) {
+        return gameSyncService.sync(date == null ? java.time.LocalDate.now() : date);
+    }
 }

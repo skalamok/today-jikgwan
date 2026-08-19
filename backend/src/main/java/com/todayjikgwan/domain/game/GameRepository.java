@@ -26,6 +26,9 @@ public interface GameRepository extends JpaRepository<Game, Long> {
             + "order by g.startAt")
     List<Game> findUpcomingInSeason(@Param("season") int season, @Param("from") LocalDate from);
 
+    /** REQ-F-107 외부 제공자가 준 식별자로 이미 들어온 경기인지 본다 */
+    java.util.Optional<Game> findByExternalRef(String externalRef);
+
     /** REQ-F-103 단건 조회. 목록과 같은 값을 채우려면 연관을 함께 가져와야 한다 */
     @Query("select g from Game g "
             + "join fetch g.homeTeam join fetch g.awayTeam join fetch g.stadium "

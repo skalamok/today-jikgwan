@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TeamRepository extends JpaRepository<Team, Long> {
     Optional<Team> findByExternalRef(String externalRef);
     List<Team> findByHomeStadiumId(Long stadiumId);
+    Optional<Team> findByName(String name);
 }

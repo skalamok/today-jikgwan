@@ -86,6 +86,18 @@ public class Game extends BaseTimeEntity {
         return g;
     }
 
+    /** REQ-F-107 외부 제공자가 준 경기임을 표시한다 */
+    public void markExternal(String externalRef, GameSource source) {
+        this.externalRef = externalRef;
+        this.source = source;
+    }
+
+    /** REQ-F-107 동기화 시각과 출처를 남긴다. revise() 가 MANUAL 로 되돌린 것을 다시 세운다 */
+    public void markSynced(GameSource source) {
+        this.source = source;
+        this.syncedAt = OffsetDateTime.now();
+    }
+
     public boolean isResultConfirmed() {
         return resultConfirmed && homeScore != null && awayScore != null;
     }
