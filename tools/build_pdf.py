@@ -112,6 +112,13 @@ th, td {
 th { background: #e9edf2; font-weight: 700; text-align: left; }
 tr { page-break-inside: avoid; }
 
+/* 태스크 표: 상태별로 행을 구분한다 */
+tr.st-done { background: #eef7f0; }
+tr.st-done td:last-child { color: #1d6b3a; font-weight: 700; }
+tr.st-wip  { background: #fff8e8; }
+tr.st-wip  td:last-child { color: #9a6a00; font-weight: 700; }
+tr.st-todo td:last-child { color: #8a94a6; }
+
 thead { display: table-header-group; }
 
 /* ---------- 요구사항 표 ---------- */
@@ -245,7 +252,10 @@ def md_to_html(md, doc_dir):
             t += ["<th>%s</th>" % md_inline(c) for c in rows[0]]
             t.append("</tr></thead><tbody>")
             for r in rows[1:]:
-                t.append("<tr>" + "".join("<td>%s</td>" % md_inline(c) for c in r) + "</tr>")
+                # 상태 열(완료·진행·예정)이 있으면 행에 표시해 한눈에 보이게 한다
+                st = next((c for c in r if c in ("완료", "진행", "예정")), "")
+                cls = ' class="st-%s"' % {"완료": "done", "진행": "wip", "예정": "todo"}[st] if st else ""
+                t.append("<tr%s>" % cls + "".join("<td>%s</td>" % md_inline(c) for c in r) + "</tr>")
             t.append("</tbody></table>")
             out.append("".join(t))
             continue

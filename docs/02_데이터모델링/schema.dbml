@@ -84,7 +84,7 @@ Table users {
   updated_at        timestamp    [not null]
   withdrawn_at      timestamp    [note: 'REQ-F-007 탈퇴 시 식별정보 파기, 통계 기여분은 익명 보존']
 
-  Note: '서비스 회원. 관리자는 role=ADMIN'
+  Note: '[MVP] 서비스 회원. 관리자는 role=ADMIN'
 }
 
 Table user_social_accounts {
@@ -102,7 +102,7 @@ Table user_social_accounts {
     (user_id, provider) [unique, note: '한 계정에 같은 제공자를 두 번 연결하지 않는다']
     user_id
   }
-  Note: 'REQ-F-003 소셜 로그인 (구글 · 네이버 · 카카오)'
+  Note: '[확장] REQ-F-003 소셜 로그인 (구글 · 네이버 · 카카오)'
 }
 
 
@@ -112,7 +112,7 @@ Table user_team_history {
   team_id      bigint    [not null]
   changed_at   timestamp [not null]
 
-  Note: 'REQ-F-005 응원팀은 승패 판정 기준이므로 변경 이력을 보관한다'
+  Note: '[MVP] REQ-F-005 응원팀은 승패 판정 기준이므로 변경 이력을 보관한다'
 }
 
 // =====================================================================
@@ -132,6 +132,8 @@ Table teams {
   instagram_url    varchar(500) [note: 'REQ-F-110']
   youtube_url      varchar(500) [note: 'REQ-F-110']
   is_active        boolean      [not null, default: true]
+
+  Note: '[MVP]'
 }
 
 Table stadiums {
@@ -145,7 +147,7 @@ Table stadiums {
   grid_nx   int          [note: 'REQ-F-112 기상청 단기예보 격자 X. 위경도를 람베르트 정각원추 도법으로 변환한 값']
   grid_ny   int          [note: 'REQ-F-112 기상청 단기예보 격자 Y']
 
-  Note: 'REQ-F-108, REQ-F-109, REQ-F-112'
+  Note: '[MVP] REQ-F-108, REQ-F-109, REQ-F-112'
 }
 
 Table stadium_zones {
@@ -156,7 +158,7 @@ Table stadium_zones {
   is_active  boolean     [not null, default: true]
 
   Indexes { (stadium_id, name) [unique] }
-  Note: 'REQ-F-605 운영자가 관리. 구역별 만족도 집계 단위'
+  Note: '[MVP] REQ-F-605 운영자가 관리. 구역별 만족도 집계 단위'
 }
 
 Table games {
@@ -185,7 +187,7 @@ Table games {
     (result_confirmed)
     (external_ref) [unique]
   }
-  Note: '경기 결과는 운영자만 등록·정정한다 (REQ-NF-015). 외부 API 동기화를 붙일 경우에도 같은 경로로 반영한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
+  Note: '[MVP] 경기 결과는 운영자만 등록·정정한다 (REQ-NF-015). 외부 API 동기화를 붙일 경우에도 같은 경로로 반영한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
 }
 
 Table game_weather {
@@ -197,7 +199,7 @@ Table game_weather {
   alert_title    varchar(100) [note: '기상특보 발효 시']
   fetched_at     timestamp    [not null, note: 'REQ-NF-024 배치 동기화 시각']
 
-  Note: 'REQ-F-112, REQ-F-113. 기상청 단기예보 API 결과를 경기 단위로 캐시한다. 구장 좌표(stadiums.latitude/longitude)로 격자 변환하여 조회'
+  Note: '[확장] REQ-F-112, REQ-F-113. 기상청 단기예보 API 결과를 경기 단위로 캐시한다. 구장 좌표(stadiums.latitude/longitude)로 격자 변환하여 조회'
 }
 
 
@@ -215,7 +217,7 @@ Table game_revisions {
   revised_at   timestamp   [not null]
 
   Indexes { (game_id, revised_at) }
-  Note: 'REQ-F-603 추가 전용(append-only). 수정·삭제하지 않는다. 개인 전적에 영향을 주는 변경의 감사 근거'
+  Note: '[MVP] REQ-F-603 추가 전용(append-only). 수정·삭제하지 않는다. 개인 전적에 영향을 주는 변경의 감사 근거'
 }
 
 // =====================================================================
@@ -246,7 +248,7 @@ Table attendance_logs {
     (user_id, created_at)
     (stadium_zone_id)
   }
-  Note: '관람 기록 1건. 전적·구역만족도 집계의 원천 데이터'
+  Note: '[MVP] 관람 기록 1건. 전적·구역만족도 집계의 원천 데이터'
 }
 
 Table attendance_photos {
@@ -260,7 +262,7 @@ Table attendance_photos {
   sort_order        int          [not null, default: 0]
   created_at        timestamp    [not null]
 
-  Note: '기록당 최대 10장 (REQ-F-203)'
+  Note: '[MVP] 기록당 최대 10장 (REQ-F-203)'
 }
 
 Table attendance_companions {
@@ -269,7 +271,7 @@ Table attendance_companions {
   companion_user_id bigint      [note: '회원인 경우']
   companion_name    varchar(30) [note: '비회원인 경우 이름만 기록']
 
-  Note: 'REQ-F-209 둘 중 하나는 반드시 존재해야 한다'
+  Note: '[확장] REQ-F-209 둘 중 하나는 반드시 존재해야 한다'
 }
 
 // =====================================================================
@@ -290,7 +292,7 @@ Table user_stats {
   updated_at    timestamp      [not null]
 
   Indexes { (user_id, dimension, dimension_key, season_year) [unique] }
-  Note: 'REQ-NF-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
+  Note: '[MVP] REQ-NF-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
 }
 
 Table user_streaks {
@@ -300,7 +302,7 @@ Table user_streaks {
   last_game_date  date
   updated_at      timestamp [not null]
 
-  Note: 'REQ-F-306 무승부는 연승을 끊지 않는다'
+  Note: '[확장] REQ-F-306 무승부는 연승을 끊지 않는다'
 }
 
 Table zone_stats {
@@ -310,7 +312,7 @@ Table zone_stats {
   avg_rating      decimal(3,2)
   updated_at      timestamp [not null]
 
-  Note: 'REQ-F-110 구역별 만족도. rating_count < 5 이면 화면에서 평균을 표시하지 않는다 (REQ-F-305)'
+  Note: '[MVP] REQ-F-110 구역별 만족도. rating_count < 5 이면 화면에서 평균을 표시하지 않는다 (REQ-F-305)'
 }
 
 // =====================================================================
@@ -323,6 +325,8 @@ Table badges {
   name        varchar(50)  [not null]
   description varchar(255)
   icon_url    varchar(500)
+
+  Note: '[확장]'
 }
 
 Table user_badges {
@@ -332,7 +336,7 @@ Table user_badges {
   achieved_at timestamp [not null]
 
   Indexes { (user_id, badge_id) [unique] }
-  Note: 'REQ-F-703 기록 1건만으로도 성취가 발생하도록 설계'
+  Note: '[확장] REQ-F-703 기록 1건만으로도 성취가 발생하도록 설계'
 }
 
 // =====================================================================
@@ -352,7 +356,7 @@ Table companion_posts {
   closed_at       timestamp
 
   Indexes { (game_id, status) }
-  Note: 'REQ-F-501. confirmed_count 는 capacity 를 초과할 수 없다 (REQ-F-504)'
+  Note: '[확장] REQ-F-501. confirmed_count 는 capacity 를 초과할 수 없다 (REQ-F-504)'
 }
 
 Table companion_applications {
@@ -365,7 +369,7 @@ Table companion_applications {
   canceled_at       timestamp
 
   Indexes { (companion_post_id, user_id) [unique, note: '중복 지원 차단'] }
-  Note: 'REQ-F-503~506. 대기자 개념은 두지 않는다'
+  Note: '[확장] REQ-F-503~506. 대기자 개념은 두지 않는다'
 }
 
 // =====================================================================
@@ -381,7 +385,7 @@ Table companion_comments {
   deleted_at        timestamp
 
   Indexes { (companion_post_id, created_at) }
-  Note: 'REQ-F-510 모집글 공개 문의. 지원 전 질문 용도이며 누구나 열람한다'
+  Note: '[확장] REQ-F-510 모집글 공개 문의. 지원 전 질문 용도이며 누구나 열람한다'
 }
 
 Table companion_messages {
@@ -392,7 +396,7 @@ Table companion_messages {
   created_at        timestamp [not null]
 
   Indexes { (companion_post_id, created_at) }
-  Note: 'REQ-F-511 확정자 전용 비공개 대화. REQ-NF-023 에 따라 경기 종료 후 90일 보존'
+  Note: '[확장] REQ-F-511 확정자 전용 비공개 대화. REQ-NF-023 에 따라 경기 종료 후 90일 보존'
 }
 
 Table companion_message_reads {
@@ -402,7 +406,7 @@ Table companion_message_reads {
   last_read_at      timestamp [not null]
 
   Indexes { (companion_post_id, user_id) [unique] }
-  Note: '미읽음 개수 산출용. 메시지마다 읽음 행을 쌓지 않고 마지막 읽은 시각만 보관한다'
+  Note: '[확장] 미읽음 개수 산출용. 메시지마다 읽음 행을 쌓지 않고 마지막 읽은 시각만 보관한다'
 }
 
 Table reports {
@@ -421,7 +425,7 @@ Table reports {
     (status, created_at)
     (reporter_id, target_type, target_id) [unique, note: '동일 대상 중복 신고 방지']
   }
-  Note: 'REQ-F-508. 신고된 대화는 검토 종료 시까지 보존한다 (REQ-NF-023)'
+  Note: '[확장] REQ-F-508. 신고된 대화는 검토 종료 시까지 보존한다 (REQ-NF-023)'
 }
 
 Table user_blocks {
@@ -431,7 +435,7 @@ Table user_blocks {
   created_at    timestamp [not null]
 
   Indexes { (user_id, blocked_id) [unique] }
-  Note: 'REQ-F-509 차단한 사용자의 모집 글은 노출되지 않고 상호 지원이 불가능하다'
+  Note: '[확장] REQ-F-509 차단한 사용자의 모집 글은 노출되지 않고 상호 지원이 불가능하다'
 }
 
 Table viewing_plans {
@@ -446,6 +450,8 @@ Table viewing_plans {
   created_at        timestamp   [not null]
 
   Indexes { (user_id, season_year) [unique] }
+
+  Note: '[확장]'
 }
 
 
@@ -457,7 +463,7 @@ Table viewing_plan_items {
   created_at      timestamp        [not null]
 
   Indexes { (viewing_plan_id, game_id) [unique] }
-  Note: 'REQ-F-403 편성 결과. REQ-F-404 실제 기록과 대조하여 달성률 산출'
+  Note: '[확장] REQ-F-403 편성 결과. REQ-F-404 실제 기록과 대조하여 달성률 산출'
 }
 
 // =====================================================================
@@ -475,7 +481,7 @@ Table notifications {
   created_at timestamp    [not null]
 
   Indexes { (user_id, created_at) }
-  Note: 'REQ-F-604 정정으로 전적이 변경된 사용자에게 안내'
+  Note: '[확장] REQ-F-604 정정으로 전적이 변경된 사용자에게 안내'
 }
 
 // =====================================================================
