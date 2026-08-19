@@ -25,6 +25,7 @@ SOURCES = [
     ("01_요구사항정의서.md", "요구사항 정의서"),
     ("02_화면설계서.md", "화면 설계서"),
     ("03_부록_경기데이터_확보정책.md", "부록 A. 경기 데이터 확보 정책"),
+    ("04_부록_API_요약.md", "부록 B. API 엔드포인트 요약"),
 ]
 
 CSS = """
@@ -133,6 +134,15 @@ table.req8 th:nth-child(6), table.req8 td:nth-child(6) { width: 7%; white-space:
 table.req8 th:nth-child(7), table.req8 td:nth-child(7) { width: 5%; white-space: nowrap; text-align: center; }
 table.req8 th:nth-child(8), table.req8 td:nth-child(8) { width: 19%; }
 
+/* API 요약 표(6열): 메서드 / 경로 / 설명 / 인증 / 요구사항 / 비고 */
+table.api { table-layout: fixed; font-size: 7.8pt; }
+table.api th:nth-child(1), table.api td:nth-child(1) { width: 8%; white-space: nowrap; text-align: center; }
+table.api th:nth-child(2), table.api td:nth-child(2) { width: 30%; word-break: break-all; }
+table.api th:nth-child(3), table.api td:nth-child(3) { width: 28%; }
+table.api th:nth-child(4), table.api td:nth-child(4) { width: 7%; white-space: nowrap; text-align: center; }
+table.api th:nth-child(5), table.api td:nth-child(5) { width: 19%; }
+table.api th:nth-child(6), table.api td:nth-child(6) { width: 8%; white-space: nowrap; text-align: center; }
+
 /* 디스크립션 표(5열): NO / 매핑 요구사항 ID / UI 요소명 / 로직 / 이동 화면 */
 table.desc { table-layout: fixed; }
 table.desc th:nth-child(1), table.desc td:nth-child(1) { width: 5%; }
@@ -214,6 +224,8 @@ def md_to_html(md, doc_dir):
             first = rows[0][0]
             if ncol >= 8 and first.startswith("요구사항"):
                 cls = ' class="req req%d"' % ncol
+            elif ncol == 6 and first == "메서드":
+                cls = ' class="api"'
             elif ncol == 5 and first == "NO":
                 cls = ' class="desc"'
             else:
