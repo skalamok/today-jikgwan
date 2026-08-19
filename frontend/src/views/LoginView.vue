@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../store/auth'
+import SocialLoginButtons from '../components/SocialLoginButtons.vue'
 
 const router = useRouter()
 const email = ref('')
@@ -63,6 +64,8 @@ async function submit() {
       <button class="btn" :disabled="!canSubmit" @click="submit">
         {{ loading ? '로그인 중…' : '로그인' }}
       </button>
+
+      <SocialLoginButtons />
 
       <div class="row" style="margin-top:14px; justify-content:center; gap:16px">
         <RouterLink to="/signup" class="muted">회원가입</RouterLink>

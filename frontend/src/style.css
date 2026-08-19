@@ -274,6 +274,15 @@ a.list-item:hover { opacity: .62; }
   .content > div:not(.card):not(.empty) { display: contents; }
   .content > .btn, .content > a > .btn, .content > .empty { grid-column: 1 / -1; }
   .content > a { grid-column: 1 / -1; }
+
+  /* 로그인·회원가입·소셜 콜백: 사이드바가 없으니 빈 열을 남기지 않는다 */
+  .app.auth { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "main"; }
+  .app.auth .content {
+    grid-template-columns: minmax(0, 420px);
+    justify-content: center;
+    align-content: start;
+    padding-top: 40px;
+  }
   .card.wide { grid-column: 1 / -1; }
 
   .btn { max-width: 340px; }
