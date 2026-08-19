@@ -38,8 +38,14 @@ public class AttendanceLogController {
         return attendanceLogService.detail(CurrentUser.id(), logId);
     }
 
-    /** REQ-F-212 기록 수정. 수정된 기록 전체를 돌려준다. */
-    @PatchMapping("/{logId}")
+    /**
+     * REQ-F-212 기록 수정.
+     *
+     * <p><b>보낸 값으로 기록 전체를 바꾼다.</b> 처음에는 PATCH 로 두었는데, 요청에 없는
+     * 필드가 지워지는 것을 모르고 비용 없이 보냈다가 실제로 비용이 날아갔다.
+     * 부분 갱신이 아니므로 메서드를 PUT 으로 바로잡았다. 화면은 언제나 전체 폼을 보낸다.
+     */
+    @PutMapping("/{logId}")
     public AttendanceLogDetail update(@PathVariable Long logId,
                                       @Valid @RequestBody AttendanceLogRequest request) {
         return attendanceLogService.update(CurrentUser.id(), logId, request);

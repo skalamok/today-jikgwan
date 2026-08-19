@@ -77,7 +77,7 @@ async function save() {
     body.companions = (form.value.companions || [])
       .map((c) => ({ name: (c.name || '').trim() }))
       .filter((c) => c.name)
-    log.value = (await client.patch(`/attendance-logs/${route.params.id}`, body)).data
+    log.value = (await client.put(`/attendance-logs/${route.params.id}`, body)).data
     editing.value = false
   } catch (e) {
     toast.value = e.response?.data?.message || '수정하지 못했어요'

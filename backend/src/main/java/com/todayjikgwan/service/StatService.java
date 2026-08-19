@@ -3,6 +3,8 @@ package com.todayjikgwan.service;
 import com.todayjikgwan.api.stat.dto.StatItemResponse;
 import com.todayjikgwan.api.stat.dto.StatSummaryResponse;
 import com.todayjikgwan.config.TodayJikgwanProperties;
+import com.todayjikgwan.domain.attendance.AttendanceCompanion;
+import com.todayjikgwan.domain.attendance.AttendanceCompanionRepository;
 import com.todayjikgwan.domain.attendance.AttendanceLog;
 import com.todayjikgwan.domain.attendance.AttendanceLogRepository;
 import com.todayjikgwan.domain.game.GameResult;
@@ -39,6 +41,8 @@ public class StatService {
     private final UserStreakRepository userStreakRepository;
     private final StadiumRepository stadiumRepository;
     private final TeamRepository teamRepository;
+    private final AttendanceCompanionRepository companionRepository;
+    private final com.todayjikgwan.domain.user.UserRepository userRepository;
     private final TodayJikgwanProperties properties;
 
     /**
@@ -78,6 +82,24 @@ public class StatService {
             }
             accumulate(buffer, userId, StatDimension.DAY_OF_WEEK,
                     log.getGame().getGameDate().getDayOfWeek().name(), UserStat.SEASON_ALL, result, cost);
+
+            // REQ-F-307 함께 간 사람별. 한 기록에 여러 명이면 각자에게 같은 경기가 한 번씩 들어간다.
+            // 비용은 첫 사람에게만 더한다. 사람 수만큼 곱해지면 총액이 실제보다 커진다
+            boolean firstCompanion = true;
+            for (AttendanceCompanion c : companionRepository.findByAttendanceLogId(log.getId())) {
+                String key = c.getCompanionUser() != null
+                        ? "u:" + c.getCompanionUser().getId()
+                        : "n:" + c.getCompanionName();
+                accumulate(buffer, userId, StatDimension.COMPANION, key, UserStat.SEASON_ALL,
+                        result, firstCompanion ? cost : 0);
+                firstCompanion = false;
+            }
+
+            // REQ-F-310 날씨별. 기록 시점에 예보를 받아 둔 경기에만 값이 있다
+            if (log.getWeatherSky() != null && !log.getWeatherSky().isBlank()) {
+                accumulate(buffer, userId, StatDimension.WEATHER, log.getWeatherSky(),
+                        UserStat.SEASON_ALL, result, cost);
+            }
         }
         userStatRepository.saveAll(buffer.values());
         recalculateStreak(userId, logs);
@@ -178,6 +200,11 @@ public class StatService {
             case DAY_OF_WEEK -> DayOfWeek.valueOf(key)
                     .getDisplayName(TextStyle.SHORT, Locale.KOREAN);
             case SEASON -> key + " 시즌";
+            // 회원은 지금 닉네임을 따라가고, 비회원은 적어 둔 이름을 그대로 쓴다
+            case COMPANION -> key.startsWith("u:")
+                    ? userRepository.findById(Long.valueOf(key.substring(2)))
+                            .map(u -> u.getNickname()).orElse("(탈퇴한 사용자)")
+                    : key.substring(2);
             default -> key;
         };
     }
