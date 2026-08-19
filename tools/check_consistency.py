@@ -176,6 +176,15 @@ for pth, item in api["paths"].items():
         if mth in ("post", "put", "patch"): want.add("400")
         if want - codes:
             no_err.append(f"{mth.upper()} {pth} {sorted(want - codes)}")
+# 200 을 주면서 본문 스키마가 없으면 무엇이 오는지 알 수 없다. 본문이 없으면 204 다
+no_body = [f"{m.upper()} {pth}"
+           for pth, item in api["paths"].items()
+           for m, op in item.items()
+           if m in ("get", "post", "put", "patch", "delete")
+           and op.get("responses", {}).get("200") is not None
+           and "content" not in op["responses"]["200"]]
+check("200 응답에 본문 스키마", not no_body, no_body)
+
 ids = [o.get("operationId") for i in api["paths"].values() for m, o in i.items()
        if m in ("get", "post", "put", "patch", "delete")]
 check("모든 오퍼레이션에 operationId", not no_id, no_id[:5])

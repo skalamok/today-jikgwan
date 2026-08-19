@@ -284,8 +284,8 @@ paths:
               properties:
                 email: { type: string, format: email }
       responses:
-        '200':
-          description: 요청 접수됨
+        '202':
+          description: 요청 접수됨. 계정 존재 여부와 무관하게 같은 응답을 준다 (REQ-NF-008)
         '400':
           $ref: '#/components/responses/BadRequest'
 
@@ -739,7 +739,10 @@ paths:
             schema: { $ref: '#/components/schemas/AttendanceLogRequest' }
       responses:
         '200':
-          description: 수정 성공
+          description: 수정 성공. 수정된 기록 전체를 돌려준다
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceLogDetail' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -1194,6 +1197,11 @@ paths:
       responses:
         '200':
           description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BlockedUserResponse' }
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -1513,8 +1521,8 @@ paths:
                 gridNx: { type: integer, description: 기상청 단기예보 격자 X }
                 gridNy: { type: integer, description: 기상청 단기예보 격자 Y }
       responses:
-        '200':
-          description: 수정 성공
+        '204':
+          description: 수정 성공. 응답 본문 없음
         '403': { $ref: '#/components/responses/Forbidden' }
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -1607,8 +1615,8 @@ paths:
                 sortOrder: { type: integer }
                 active: { type: boolean }
       responses:
-        '200':
-          description: 수정 성공
+        '204':
+          description: 수정 성공. 응답 본문 없음
         '409':
           description: 이름 중복 (DUPLICATE_ZONE)
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -1690,6 +1698,14 @@ components:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   schemas:
+    BlockedUserResponse:
+      type: object
+      description: 차단한 사용자 1건. 탈퇴한 사용자는 닉네임을 "(탈퇴한 사용자)" 로 돌려준다
+      properties:
+        userId: { type: integer, format: int64 }
+        nickname: { type: string }
+        blockedAt: { type: string, format: date-time }
+
     ErrorResponse:
       type: object
       properties:
