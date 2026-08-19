@@ -62,9 +62,16 @@ body {
 /* ---------- 목차 ---------- */
 .toc { page-break-after: always; padding-top: 8mm; }
 .toc h2 { font-size: 16pt; border-bottom: 2px solid #1a1a1a; padding-bottom: 3mm; }
-.toc ul { list-style: none; padding: 0; margin: 6mm 0 0; }
-.toc li { padding: 2.4mm 0; border-bottom: 1px dotted #ccc; font-size: 11pt; }
-.toc li.lv2 { padding-left: 8mm; font-size: 10pt; color: #444; }
+.toc ul {
+  list-style: none; padding: 0; margin: 6mm 0 0;
+  column-count: 2; column-gap: 10mm;
+}
+.toc li {
+  padding: 1.7mm 0; border-bottom: 1px dotted #ccc; font-size: 10pt;
+  break-inside: avoid;
+}
+.toc li.lv1 { font-weight: 700; margin-top: 2mm; break-after: avoid; }
+.toc li.lv2 { padding-left: 6mm; font-size: 9pt; color: #444; }
 
 /* ---------- 본문 ---------- */
 .part { page-break-before: always; }
@@ -310,6 +317,9 @@ def build():
             '<div class="no">PART %d</div><h1>%s</h1></div>%s</section>' % (idx, title, body)
         )
         toc.append((1, "PART %d. %s" % (idx, title)))
+        # 부록 B 는 태그별 소제목이 열둘이라 목차만 길어진다. 파트 제목으로 갈음한다.
+        if "API 엔드포인트 요약" in title:
+            continue
         for lv, text, _ in headings:
             if lv == 2 and not text.startswith("0-"):
                 toc.append((2, text))
