@@ -102,3 +102,12 @@ body {
 .flow .arw { font-size: 13px; color: #666; flex: none; }
 .flow .legend { display: flex; gap: 14px; padding: 9px 14px; background: #fafafa; border-top: 2px solid #333; font-size: 10px; color: #444; }
 .flow .sw { display: inline-block; width: 16px; height: 10px; border: 1.5px solid #333; margin-right: 4px; vertical-align: -1px; }
+
+/* 데스크톱 폼 화면: 왼쪽은 순서에 속하지 않는 곁가지, 오른쪽은 입력 순서 한 줄기 */
+.frame.pc .aside { grid-column: span 1; border: 1.5px solid #333; background: #fafafa; padding: 12px; }
+.frame.pc .main { grid-column: span 2; }
+.frame.pc .main > .blk { margin-bottom: 8px; }
+.frame.pc .drop { border: 2px dashed #999; background: #fff; padding: 26px 10px; text-align: center; font-size: 12px; color: #555; }
+.frame.pc .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+.frame.pc .thumbs div { border: 1.5px solid #333; background: #fff; height: 44px; font-size: 10px; color: #777; display: flex; align-items: center; justify-content: center; }
+.frame.pc .seq { counter-reset: none; }

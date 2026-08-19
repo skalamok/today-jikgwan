@@ -6,18 +6,27 @@
 <div class="f-nav"><div>홈</div><div>경기</div><div class="on">기록</div><div>전적</div><div>구장</div></div>
 <div class="f-body">
 
-<div class="bp span-all">브레이크포인트 900px 이상: <b>폼 화면이므로 단일 컬럼을 유지한다.</b> ①부터 ⑪까지가 곧 작성 순서라 다단으로 나누면 사용자가 어디까지 채웠는지 잃는다. 폼 폭만 560px 로 넓히고 저장 버튼은 320px 로 제한한다 (9장 규칙)</div>
+<div class="bp span-all">브레이크포인트 900px 이상: 사진(①)과 공개 범위(⑩)를 왼쪽으로 뺀다. 둘 다 작성 순서에 속하지 않고 언제 건드려도 되는 항목이다. <b>입력 순서(②~⑨⑪)는 오른쪽 한 줄기로 유지한다.</b> 모바일에서 스크롤해야 보이던 사진 목록이 입력하는 내내 옆에 남는다</div>
 
-<div class="span-all" style="max-width:560px; margin:0 auto">
-  <div class="blk"><span class="n">①</span>
-    <div class="lab">사진</div>
-    <div class="row"><span class="pill">＋</span><span class="pill">사진</span><span class="pill">사진</span><span class="s">0/10</span></div>
-    <div class="note">최대 10장 · 10MB 이하 · JPEG/PNG · 위치정보 제거 후 저장 (REQ-NF-007)</div>
-  </div>
+<div class="aside">
+  <span class="n" style="position:static; display:inline-flex">①</span>
+  <div class="lab" style="margin-top:6px">사진</div>
+  <div class="drop">이곳에 끌어다 놓거나 눌러서 고르기</div>
+  <div class="thumbs"><div>사진 1</div><div>사진 2</div><div>＋</div></div>
+  <div class="row" style="margin-top:6px"><span class="s">2 / 10</span><span class="s">각 10MB 이하</span></div>
+  <div class="note">JPEG / PNG · 업로드 시 위치 메타데이터 제거 (REQ-NF-007)<br>첫 장의 촬영 일시로 ②의 경기 후보를 자동 조회한다</div>
+  <div class="divider"></div>
+  <span class="n" style="position:static; display:inline-flex">⑩</span>
+  <div class="lab" style="margin-top:6px">공개 범위</div>
+  <div class="row"><span class="pill">공개</span><span class="pill fill">비공개</span></div>
+  <div class="note">기본 비공개. 비공개여도 구역 점수는 익명으로 집계에 반영된다</div>
+</div>
+
+<div class="main">
   <div class="blk"><span class="n">②</span>
     <div class="lab">어느 경기였나요? *</div>
-    <div class="inp">2026.08.10 잠실 · 두산 5 : 3 롯데</div>
-    <div class="note">사진 촬영 일시로 자동 추천 · 없으면 수동 선택 (REQ-F-204)</div>
+    <div class="row"><div class="inp" style="flex:1">2026.08.10 잠실 · 두산 5 : 3 롯데</div><span class="pill">변경</span></div>
+    <div class="note">사진에서 찾은 경기를 기본 선택. 메타데이터가 없으면 날짜로 직접 고른다 (REQ-F-204)</div>
   </div>
   <div class="blk"><span class="n">③</span>
     <div class="lab">어느 팀 응원하셨어요? *</div>
@@ -25,29 +34,22 @@
     <div class="note">중립 선택 시 승패 집계에서 제외</div>
   </div>
   <div class="blk"><span class="n">④⑤</span>
-    <div class="lab">좌석 구역 *</div>
-    <div class="inp">3루 내야 지정석 ▾</div>
-    <div class="divider"></div>
-    <div class="lab">이 구역 어땠나요? *</div>
-    <div class="stars">★ ★ ★ ★ ☆</div>
-    <div class="note">필수. 구장 상세의 집계 입력원이므로 생략 불가 (REQ-F-206)</div>
+    <div class="row"><div style="flex:1"><div class="lab">좌석 구역 *</div><div class="inp">3루 내야 지정석 ▾</div></div>
+      <div style="flex:1"><div class="lab">이 구역 어땠나요? *</div><div class="stars">★ ★ ★ ★ ☆</div></div></div>
+    <div class="note">구역과 그 구역 점수는 한 몸이라 나란히 둔다. 점수는 필수 (REQ-F-206)</div>
   </div>
   <div class="blk"><span class="n">⑥</span>
     <div class="lab">오늘의 한마디</div>
-    <div class="inp" style="min-height:44px">그날의 기억을 남겨보세요</div>
-    <div class="note" style="text-align:right">0/1000</div>
+    <div class="inp" style="min-height:56px">그날의 기억을 남겨보세요</div>
+    <div class="note" style="text-align:right">0 / 1000</div>
   </div>
   <div class="blk"><span class="n">⑦⑧⑨</span>
-    <div class="lab">직관 메이트 / 비용 / 경기 평점</div>
-    <div class="row"><span class="inp" style="flex:1">티켓</span><span class="inp" style="flex:1">먹거리</span><span class="inp" style="flex:1">교통</span></div>
+    <div class="lab">직관 메이트 · 비용 · 경기 평점</div>
+    <div class="row"><span class="inp" style="flex:1">＋ 메이트 추가</span><span class="inp" style="flex:1">티켓</span><span class="inp" style="flex:1">먹거리</span><span class="inp" style="flex:1">교통</span></div>
     <div class="stars" style="margin-top:6px">★ ☆ ☆ ☆ ☆</div>
+    <div class="note">선택 항목. 모바일에서 세 줄이던 것이 한 줄에 들어간다</div>
   </div>
-  <div class="blk"><span class="n">⑩</span>
-    <div class="lab">공개 범위</div>
-    <div class="row"><span class="pill">공개</span><span class="pill fill">비공개</span></div>
-    <div class="note">기본 비공개 · 비공개여도 구역 점수는 익명 집계에 반영</div>
-  </div>
-  <div class="blk btn off" style="max-width:320px"><span class="n">⑪</span>저장하기 (②③④⑤ 입력 시 활성화)</div>
-  <div class="note">중복 시 409 → "이미 이 경기 기록이 있어요" 모달</div>
+  <div class="blk btn off" style="max-width:320px"><span class="n">⑪</span>저장하기</div>
+  <div class="note">②③④⑤ 가 채워져야 활성화 · 중복 시 409 → "이미 이 경기 기록이 있어요" 모달</div>
 </div>
 </div></div></body></html>
