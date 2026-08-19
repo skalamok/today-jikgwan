@@ -1,6 +1,7 @@
 package com.todayjikgwan.service;
 
 import com.todayjikgwan.api.stadium.dto.*;
+import com.todayjikgwan.api.team.dto.TeamResponse;
 import com.todayjikgwan.common.exception.ApiException;
 import com.todayjikgwan.common.exception.ErrorCode;
 import com.todayjikgwan.config.TodayJikgwanProperties;
@@ -69,7 +70,7 @@ public class StadiumService {
         }
 
         return new StadiumDetailResponse(stadium.getId(), stadium.getName(), stadium.getNameEn(),
-                stadium.getCapacity(), homeTeamNames(stadiumId), zones, myRecord);
+                stadium.getCapacity(), homeTeams(stadiumId), zones, myRecord);
     }
 
     /** REQ-F-111. 공개 기록만, 작성자 미노출. */
@@ -82,9 +83,17 @@ public class StadiumService {
                 .toList();
     }
 
+    /** 목록에는 이름만 있으면 된다 */
     private List<String> homeTeamNames(Long stadiumId) {
         return teamRepository.findByHomeStadiumId(stadiumId).stream()
                 .map(Team::getName)
+                .toList();
+    }
+
+    /** REQ-F-114 상세에는 연고 구단의 공식 채널까지 함께 준다 */
+    private List<TeamResponse> homeTeams(Long stadiumId) {
+        return teamRepository.findByHomeStadiumId(stadiumId).stream()
+                .map(TeamResponse::from)
                 .toList();
     }
 }

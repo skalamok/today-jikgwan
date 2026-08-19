@@ -1,11 +1,16 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../api/client'
 import TeamMark from '../components/TeamMark.vue'
 
 const route = useRoute()
 const stadium = ref(null)
+
+/* REQ-F-114 링크가 하나라도 있는 구단만 보여준다. 아직 확인하지 못한 링크는 비어 있다 */
+const channelTeams = computed(() =>
+  (stadium.value?.homeTeams || []).filter((t) => t.channels
+    && Object.values(t.channels).some((v) => v)))
 const selectedZone = ref(null)
 const reviews = ref([])
 
@@ -29,9 +34,26 @@ watch(() => route.params.id, load)
     <div class="card accent">
       <div class="big" style="font-size:22px">{{ stadium.name }}</div>
       <div class="row" style="justify-content:flex-start; gap:7px; margin-top:10px">
-        <TeamMark v-for="t in stadium.homeTeams" :key="t" :name="t" size="sm" />
+        <TeamMark v-for="t in stadium.homeTeams" :key="t.id" :name="t.name" size="sm" />
       </div>
       <div class="muted" v-if="stadium.nameEn">{{ stadium.nameEn }}</div>
+    </div>
+
+    <!-- REQ-F-114 구단 공식 채널. 확인된 링크만 그린다 -->
+    <div class="card" v-if="channelTeams.length">
+      <h2>구단 공식 채널</h2>
+      <div v-for="t in channelTeams" :key="t.id" class="ch">
+        <span class="ch-name">{{ t.shortName }}</span>
+        <a v-if="t.channels.homepageUrl" :href="t.channels.homepageUrl" target="_blank"
+           rel="noopener noreferrer" class="ch-link">홈페이지</a>
+        <a v-if="t.channels.ticketUrl" :href="t.channels.ticketUrl" target="_blank"
+           rel="noopener noreferrer" class="ch-link">예매</a>
+        <a v-if="t.channels.instagramUrl" :href="t.channels.instagramUrl" target="_blank"
+           rel="noopener noreferrer" class="ch-link">인스타그램</a>
+        <a v-if="t.channels.youtubeUrl" :href="t.channels.youtubeUrl" target="_blank"
+           rel="noopener noreferrer" class="ch-link">유튜브</a>
+      </div>
+      <p class="note">새 탭으로 열립니다</p>
     </div>
 
     <div class="card">

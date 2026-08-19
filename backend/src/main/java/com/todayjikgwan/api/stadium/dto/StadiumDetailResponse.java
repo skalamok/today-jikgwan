@@ -1,5 +1,6 @@
 package com.todayjikgwan.api.stadium.dto;
 
+import com.todayjikgwan.api.team.dto.TeamResponse;
 import java.util.List;
 
 public record StadiumDetailResponse(
@@ -7,7 +8,7 @@ public record StadiumDetailResponse(
         String name,
         String nameEn,
         Integer capacity,
-        List<String> homeTeams,
+        List<TeamResponse> homeTeams,
         List<ZoneStatResponse> zones,
         MyRecord myRecord) {
 

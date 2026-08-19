@@ -1,9 +1,9 @@
 package com.todayjikgwan.api.team;
 
+import com.todayjikgwan.api.team.dto.TeamResponse;
 import com.todayjikgwan.domain.team.Team;
 import com.todayjikgwan.domain.team.TeamRepository;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +15,12 @@ public class TeamController {
 
     private final TeamRepository teamRepository;
 
+    /** 응원팀 선택과 구단 공식 채널(REQ-F-114)에 함께 쓴다 */
     @GetMapping
-    public List<Map<String, Object>> list() {
+    public List<TeamResponse> list() {
         return teamRepository.findAll().stream()
                 .filter(Team::isActive)
-                .map(t -> Map.<String, Object>of(
-                        "id", t.getId(), "name", t.getName(), "shortName", t.getShortName()))
+                .map(TeamResponse::from)
                 .toList();
     }
 }
