@@ -191,6 +191,19 @@ check("모든 오퍼레이션에 operationId", not no_id, no_id[:5])
 check("operationId 중복 없음", len(ids) == len(set(ids)))
 check("공통 오류 응답 참조", not no_err, no_err[:5])
 
+# 문서에 적은 오류 코드가 실제 ErrorCode 에 있는지 본다.
+# DUPLICATE_LOG 처럼 있을 법한 이름을 지어 적어도 눈으로는 걸리지 않는다
+ec_path = os.path.join(BASE, "backend/src/main/java/com/todayjikgwan/common/exception/ErrorCode.java")
+if os.path.exists(ec_path):
+    real_codes = set(re.findall(r"^\s{4}([A-Z][A-Z0-9_]+)\(", io.open(ec_path, encoding="utf-8").read(), re.M))
+    doc_codes = set()
+    for _f in glob.glob(os.path.join(BASE, "docs/01_기술서/*.md")):
+        t = io.open(_f, encoding="utf-8").read()
+        doc_codes |= set(re.findall(r'"code":\s*"([A-Z][A-Z0-9_]+)"', t))
+    doc_codes |= set(re.findall(r'"code":\s*"([A-Z][A-Z0-9_]+)"', raw_api))
+    ghost_codes = sorted(doc_codes - real_codes)
+    check("문서의 오류 코드 실재", not ghost_codes, ghost_codes)
+
 print("\n■ 규모 수치")
 real = {"기능 요구사항": len(re.findall(r'^\| REQ-F-\d{3} \|', req, re.M)),
         "비기능": len(re.findall(r'^\| REQ-NF-\d{3} \|', req, re.M)),
