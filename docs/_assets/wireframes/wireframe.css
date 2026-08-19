@@ -86,3 +86,19 @@ body {
 
 /* 미획득·비활성 상태 */
 .pill.off { border-color: #bbb; color: #999; }
+
+/* =====================================================================
+   화면 흐름도. 와이어프레임과 같은 톤으로 그려 문서 안에서 따로 놀지 않게 한다
+   ===================================================================== */
+.flow { width: 1000px; background: #fff; border: 2px solid #333; }
+.flow .lane { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px dashed #bbb; }
+.flow .lane:last-child { border-bottom: 0; }
+.flow .lane-t { width: 92px; flex: none; font-size: 11px; font-weight: 700; color: #333; }
+.flow .node { border: 1.5px solid #333; padding: 7px 9px; font-size: 11px; line-height: 1.35; min-width: 96px; }
+.flow .node b { display: block; font-size: 11px; }
+.flow .node .id { font-size: 9px; color: #666; }
+.flow .node.mvp { background: #f2f2f2; }
+.flow .node.ext { background: #fff; border-style: dashed; }
+.flow .arw { font-size: 13px; color: #666; flex: none; }
+.flow .legend { display: flex; gap: 14px; padding: 9px 14px; background: #fafafa; border-top: 2px solid #333; font-size: 10px; color: #444; }
+.flow .sw { display: inline-block; width: 16px; height: 10px; border: 1.5px solid #333; margin-right: 4px; vertical-align: -1px; }

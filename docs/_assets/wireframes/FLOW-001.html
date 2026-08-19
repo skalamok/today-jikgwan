@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>화면 흐름도</title><link rel="stylesheet" href="wireframe.css"></head>
+<body><div class="frame" style="width:1000px">
+<div class="f-head"><span>화면 흐름도 — 사용자가 지나는 순서</span><span class="sid">FLOW-001</span></div>
+<div class="flow">
+
+<div class="lane"><div class="lane-t">진입</div>
+  <div class="node mvp"><b>로그인</b><span class="id">SCR-AUTH-001</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>회원가입</b><span class="id">SCR-AUTH-002</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>소셜 콜백</b><span class="id">SCR-AUTH-004</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>홈 대시보드</b><span class="id">SCR-MAIN-001</span></div>
+</div>
+
+<div class="lane"><div class="lane-t">기록 없음</div>
+  <div class="node mvp"><b>홈 — 빈 상태</b><span class="id">SCR-MAIN-001 A</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>첫 직관 가이드</b><span class="id">SCR-GUIDE-001</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>구장 목록</b><span class="id">SCR-PARK-001</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>구장 상세</b><span class="id">SCR-PARK-002</span></div>
+</div>
+
+<div class="lane"><div class="lane-t">기록 남기기</div>
+  <div class="node mvp"><b>경기 일정 · 결과</b><span class="id">SCR-GAME-001</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>경기 상세</b><span class="id">SCR-GAME-002</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>직관 기록 작성</b><span class="id">SCR-LOG-001</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>기록 상세</b><span class="id">SCR-LOG-003</span></div>
+</div>
+
+<div class="lane"><div class="lane-t">쌓인 뒤</div>
+  <div class="node mvp"><b>내 기록 목록</b><span class="id">SCR-LOG-002</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>내 전적 요약</b><span class="id">SCR-STAT-001</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>전적 상세 분석</b><span class="id">SCR-STAT-002</span></div>
+  <div class="arw">→</div>
+  <div class="node mvp"><b>마이페이지 · 배지</b><span class="id">SCR-MY-001</span></div>
+</div>
+
+<div class="lane"><div class="lane-t">확장</div>
+  <div class="node ext"><b>메이트 구하기</b><span class="id">SCR-MATE-001</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>모집글 상세</b><span class="id">SCR-MATE-002</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>메이트 대화방</b><span class="id">SCR-MATE-003</span></div>
+  <div class="arw">·</div>
+  <div class="node ext"><b>관람 계획 편성</b><span class="id">SCR-PLAN-001</span></div>
+</div>
+
+<div class="lane"><div class="lane-t">운영자</div>
+  <div class="node mvp"><b>경기 데이터 관리</b><span class="id">SCR-ADM-001</span></div>
+  <div class="arw">→</div>
+  <div class="node ext"><b>알림 목록</b><span class="id">SCR-NOTI-001</span></div>
+  <div class="node" style="border:0; background:none; color:#555; font-size:10px">결과를 정정하면 그 경기를 기록한 사용자에게 알림이 간다 (REQ-F-604)</div>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#f2f2f2"></span>MVP</span>
+  <span><span class="sw" style="border-style:dashed"></span>확장</span>
+  <span>실선 화살표는 사용자가 이어서 지나는 순서다. 화면 ID 순서와 흐름 순서를 함께 맞췄다.</span>
+</div>
+</div></div></body></html>

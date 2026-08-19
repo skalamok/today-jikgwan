@@ -49,7 +49,7 @@ def main():
 
     try:
         for name in names:
-            w, h = SIZES["PC" if name.endswith("-PC") else "MOBILE"]
+            w, h = SIZES["PC" if name.endswith("-PC") or name.startswith("FLOW") else "MOBILE"]
             out = os.path.join(SRC, name + ".png")
             subprocess.run([
                 CHROME, "--headless", "--disable-gpu", "--hide-scrollbars",

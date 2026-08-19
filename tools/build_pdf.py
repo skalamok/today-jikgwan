@@ -158,20 +158,26 @@ table.req9 th:nth-child(8), table.req9 td:nth-child(8) { width: 12%; }
 table.req9 th:nth-child(9), table.req9 td:nth-child(9) { width: 18.5%; }
 
 /* 8열: 비기능 요구사항 (관련 화면 ID 열 없음) */
-/* 기능 요구사항 - 범위 열이 붙어 10칸. 좁은 칸은 줄바꿈을 막아 "로그 인" 처럼 끊기지 않게 한다 */
+/* 기능 요구사항 - 범위 열이 붙어 10칸.
+   좁은 칸은 데이터만 줄바꿈을 막는다. 머리글까지 막으면 "요구사항 ID" 가 칸을 넘친다 */
 table.req10 { font-size: 7.6pt; }
 table.req10 th, table.req10 td { padding: 0.9mm 1.1mm; }
-table.req10 th:nth-child(1), table.req10 td:nth-child(1) { width: 8%; white-space: nowrap; }
-table.req10 th:nth-child(2), table.req10 td:nth-child(2) { width: 4.5%; white-space: nowrap; }
-table.req10 th:nth-child(3), table.req10 td:nth-child(3) { width: 5.5%; white-space: nowrap; }
+table.req10 td:nth-child(1) {  width: 8%; white-space: nowrap; }
+table.req10 td:nth-child(2) {  width: 4.5%; white-space: nowrap; }
+table.req10 td:nth-child(3) {  width: 5.5%; white-space: nowrap; }
 table.req10 th:nth-child(4), table.req10 td:nth-child(4) { width: 9.5%; }
 table.req10 th:nth-child(5), table.req10 td:nth-child(5) { width: 28%; }
-table.req10 th:nth-child(6), table.req10 td:nth-child(6) { width: 4.5%; white-space: nowrap; text-align: center; }
-table.req10 th:nth-child(7), table.req10 td:nth-child(7) { width: 5.5%; white-space: nowrap; text-align: center; }
-table.req10 th:nth-child(8), table.req10 td:nth-child(8) { width: 4.5%; white-space: nowrap; text-align: center; }
+table.req10 td:nth-child(6) {  width: 4.5%; white-space: nowrap; text-align: center; }
+table.req10 td:nth-child(7) {  width: 5.5%; white-space: nowrap; text-align: center; }
+table.req10 td:nth-child(8) {  width: 4.5%; white-space: nowrap; text-align: center; }
 table.req10 th:nth-child(9), table.req10 td:nth-child(9) { width: 12%; }
 table.req10 th:nth-child(10), table.req10 td:nth-child(10) { width: 18%; }
-
+table.req10 th:nth-child(1) { width: 8%; }
+table.req10 th:nth-child(2) { width: 4.5%; }
+table.req10 th:nth-child(3) { width: 5.5%; }
+table.req10 th:nth-child(6) { width: 4.5%; }
+table.req10 th:nth-child(7) { width: 5.5%; }
+table.req10 th:nth-child(8) { width: 4.5%; }
 table.req8 th:nth-child(1), table.req8 td:nth-child(1) { width: 9%; white-space: nowrap; }
 table.req8 th:nth-child(2), table.req8 td:nth-child(2) { width: 6%; }
 table.req8 th:nth-child(3), table.req8 td:nth-child(3) { width: 6%; }
@@ -209,6 +215,14 @@ figure { page-break-inside: avoid; margin: 0; }
 /* 그림 바로 앞의 설명 문단은 그림과 떨어지지 않게 둔다 */
 p + figure { page-break-before: avoid; }
 """
+
+
+ID_CELL = re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$")
+
+
+def keep_id(cell):
+    """G-4, REQ-F-001, SCR-GAME-001 처럼 통째로 읽어야 하는 칸은 줄바꿈을 막는다."""
+    return ('<span style="white-space:nowrap">%s</span>' % cell) if ID_CELL.match(cell.strip()) else cell
 
 
 def md_inline(t):
@@ -291,7 +305,7 @@ def md_to_html(md, doc_dir):
                 # 상태 열(완료·진행·예정)이 있으면 행에 표시해 한눈에 보이게 한다
                 st = next((c for c in r if c in ("완료", "진행", "예정")), "")
                 cls = ' class="st-%s"' % {"완료": "done", "진행": "wip", "예정": "todo"}[st] if st else ""
-                t.append("<tr%s>" % cls + "".join("<td>%s</td>" % md_inline(c) for c in r) + "</tr>")
+                t.append("<tr%s>" % cls + "".join("<td>%s</td>" % keep_id(md_inline(c)) for c in r) + "</tr>")
             t.append("</tbody></table>")
             out.append("".join(t))
             continue
@@ -365,7 +379,7 @@ def build():
   <h1>프로젝트 기술서</h1>
   <div class="desc">KBO 직관 기록 서비스</div>
   <div class="meta">
-    작성자 · 이채목<br>작성일 · 2026-08-18<br>버전 · v1.0
+    작성자 · 울산 U133 이채목<br>작성일 · 2026-08-18<br>버전 · v1.3
   </div>
 </div>
 <div class="toc"><h2>목차</h2><ul>%s</ul></div>
