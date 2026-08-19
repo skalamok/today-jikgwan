@@ -145,7 +145,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | GET | `/attendance-logs` | 내 직관 기록 목록 | MVP | 인증 | REQ-F-213 |  |
 | POST | `/attendance-logs` | 직관 기록 작성 | MVP | 인증 | REQ-F-201, REQ-F-309 |  |
 | GET | `/attendance-logs/{logId}` | 기록 상세 조회 | MVP | 인증 | REQ-F-214, REQ-NF-008 |  |
-| PATCH | `/attendance-logs/{logId}` | 기록 수정 | MVP | 인증 | REQ-F-212 |  |
+| PUT | `/attendance-logs/{logId}` | 기록 수정 | MVP | 인증 | REQ-F-212 |  |
 | DELETE | `/attendance-logs/{logId}` | 기록 삭제 | MVP | 인증 | REQ-F-212 |  |
 | POST | `/attendance-logs/{logId}/photos` | 사진 업로드 | MVP | 인증 | REQ-F-203, REQ-NF-007, REQ-NF-002 |  |
 | DELETE | `/attendance-logs/{logId}/photos/{photoId}` | 사진 삭제 | 확장 | 인증 | REQ-F-209 |  |
