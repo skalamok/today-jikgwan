@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
-<title>SCRUTH-001 로그인</title><link rel="stylesheet" href="wireframe.css"></head>
+<title>SCR-AUTH-001 로그인</title><link rel="stylesheet" href="wireframe.css"></head>
 <body><div class="frame">
-<div class="f-head"><span>로그인</span><span class="sid">SCRUTH-001</span></div>
+<div class="f-head"><span>로그인</span><span class="sid">SCR-AUTH-001</span></div>
 <div class="f-body">
 
 <div class="blk plain center" style="padding:22px 10px">
@@ -11,22 +11,33 @@
 </div>
 
 <div class="blk"><span class="n">①</span>
+  <div class="lab">소셜 로그인</div>
+  <div class="btn off" style="margin-bottom:6px">구글로 계속하기</div>
+  <div class="btn off" style="margin-bottom:6px">네이버로 계속하기</div>
+  <div class="btn off">카카오로 계속하기</div>
+  <div class="note">서버에 키가 등록된 제공자만 노출 · 미등록 제공자는 버튼 자체를 그리지 않음</div>
+</div>
+
+<div class="divider"></div>
+<div class="blk plain center s">또는</div>
+
+<div class="blk"><span class="n">②</span>
   <div class="lab">이메일</div>
   <div class="inp">example@email.com</div>
   <div class="note">Blur 시 형식 검증 · 오류 시 하단 문구 표시</div>
 </div>
 
-<div class="blk"><span class="n">②</span>
+<div class="blk"><span class="n">③</span>
   <div class="lab">비밀번호</div>
   <div class="row"><div class="inp" style="flex:1">●●●●●●●●</div><span class="pill">👁</span></div>
   <div class="note">마스킹 기본 · 아이콘 클릭 시 평문 토글</div>
 </div>
 
-<div class="blk btn off"><span class="n">③</span>로그인 (초기 비활성)</div>
-<div class="note">①② 가 모두 유효해야 활성화</div>
+<div class="blk btn off"><span class="n">④</span>로그인 (초기 비활성)</div>
+<div class="note">②③ 이 모두 유효해야 활성화</div>
 
 <div class="divider"></div>
-<div class="blk plain center"><span class="n">④</span>
+<div class="blk plain center"><span class="n">⑤</span>
   <span class="t">회원가입</span> &nbsp;·&nbsp; <span class="t">둘러보기</span>
 </div>
 </div>
