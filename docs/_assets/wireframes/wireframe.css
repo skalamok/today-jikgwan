@@ -29,8 +29,9 @@ body {
 .blk.btn.ghost { background: #fff; border: 2px solid #333; color: #222; }
 
 .n {
+  /* 번호가 둘 이상 붙는 블록이 있어 고정 폭 대신 알약 모양으로 늘어나게 둔다 */
   position: absolute; left: -9px; top: -9px;
-  width: 19px; height: 19px; border-radius: 50%;
+  min-width: 19px; height: 19px; padding: 0 4px; border-radius: 10px;
   background: #333; color: #fff; font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
