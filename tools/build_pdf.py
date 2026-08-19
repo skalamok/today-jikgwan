@@ -59,6 +59,7 @@ body {
 
 /* ---------- 본문 ---------- */
 .part { page-break-before: always; }
+h2.new-page { page-break-before: always; margin-top: 0; }
 .part-head {
   border-bottom: 2.5px solid #1a1a1a; padding-bottom: 3mm; margin: 0 0 7mm;
 }
@@ -101,32 +102,35 @@ th, td {
 }
 th { background: #e9edf2; font-weight: 700; text-align: left; }
 tr { page-break-inside: avoid; }
+
 thead { display: table-header-group; }
 
 /* ---------- 요구사항 표 ---------- */
 /* 열 너비를 고정하지 않으면 ID·분류 열이 글자 단위로 쪼개진다 */
 table.req { font-size: 7.4pt; table-layout: fixed; }
 table.req th, table.req td { padding: 1.1mm 1.4mm; }
+/* 분류 열 머리글은 3글자라 좁은 폭에서 접힌다. 머리글만 줄바꿈을 막는다 */
+table.req th:nth-child(2), table.req th:nth-child(3) { white-space: nowrap; }
 
 /* 9열: 기능 요구사항 (ID/대분류/중분류/요구사항명/상세/중요도/난이도/관련화면/비고) */
 table.req9 th:nth-child(1), table.req9 td:nth-child(1) { width: 8.5%; white-space: nowrap; }
 table.req9 th:nth-child(2), table.req9 td:nth-child(2) { width: 5.5%; }
 table.req9 th:nth-child(3), table.req9 td:nth-child(3) { width: 5.5%; }
 table.req9 th:nth-child(4), table.req9 td:nth-child(4) { width: 10%; }
-table.req9 th:nth-child(5), table.req9 td:nth-child(5) { width: 32%; }
-table.req9 th:nth-child(6), table.req9 td:nth-child(6) { width: 5%; }
-table.req9 th:nth-child(7), table.req9 td:nth-child(7) { width: 4.5%; }
+table.req9 th:nth-child(5), table.req9 td:nth-child(5) { width: 28%; }
+table.req9 th:nth-child(6), table.req9 td:nth-child(6) { width: 7%; white-space: nowrap; text-align: center; }
+table.req9 th:nth-child(7), table.req9 td:nth-child(7) { width: 5%; white-space: nowrap; text-align: center; }
 table.req9 th:nth-child(8), table.req9 td:nth-child(8) { width: 12%; }
-table.req9 th:nth-child(9), table.req9 td:nth-child(9) { width: 17%; }
+table.req9 th:nth-child(9), table.req9 td:nth-child(9) { width: 18.5%; }
 
 /* 8열: 비기능 요구사항 (관련 화면 ID 열 없음) */
 table.req8 th:nth-child(1), table.req8 td:nth-child(1) { width: 9%; white-space: nowrap; }
 table.req8 th:nth-child(2), table.req8 td:nth-child(2) { width: 6%; }
 table.req8 th:nth-child(3), table.req8 td:nth-child(3) { width: 6%; }
 table.req8 th:nth-child(4), table.req8 td:nth-child(4) { width: 12%; }
-table.req8 th:nth-child(5), table.req8 td:nth-child(5) { width: 38%; }
-table.req8 th:nth-child(6), table.req8 td:nth-child(6) { width: 5%; }
-table.req8 th:nth-child(7), table.req8 td:nth-child(7) { width: 5%; }
+table.req8 th:nth-child(5), table.req8 td:nth-child(5) { width: 35.5%; }
+table.req8 th:nth-child(6), table.req8 td:nth-child(6) { width: 7%; white-space: nowrap; text-align: center; }
+table.req8 th:nth-child(7), table.req8 td:nth-child(7) { width: 5%; white-space: nowrap; text-align: center; }
 table.req8 th:nth-child(8), table.req8 td:nth-child(8) { width: 19%; }
 
 /* 디스크립션 표(5열): NO / 매핑 요구사항 ID / UI 요소명 / 로직 / 이동 화면 */
@@ -185,7 +189,9 @@ def md_to_html(md, doc_dir):
             text = m.group(2).strip()
             anchor = "h%d" % len(headings)
             headings.append((lv, re.sub(r"[*~`]", "", text), anchor))
-            out.append('<h%d id="%s">%s</h%d>' % (lv, anchor, md_inline(text), lv))
+            # 분량이 큰 장은 새 페이지에서 시작해 앞 장의 표와 섞이지 않게 한다
+            cls = ' class="new-page"' if text.startswith(("3. 기능 요구사항", "4. 비기능 요구사항")) else ""
+            out.append('<h%d id="%s"%s>%s</h%d>' % (lv, anchor, cls, md_inline(text), lv))
             i += 1
             continue
 

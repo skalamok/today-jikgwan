@@ -9,9 +9,9 @@ info:
 
     ### 데이터 출처
     경기 데이터는 이용이 명시적으로 허용된 공식 API(TheSportsDB, Korean KBO League ID 4830)에서
-    배치로 동기화하며, 누락·불일치는 사용자 제보로 보완한다 (REQ-F-107, REQ-N-013).
-    외부 데이터가 포함된 응답에는 `dataSource` 필드로 출처를 표기한다 (REQ-N-014).
-    클라이언트 요청이 외부 API로 직접 전달되지 않는다 (REQ-N-016).
+    배치로 동기화하며, 누락분은 운영자가 직접 등록한다 (REQ-F-107, REQ-F-601).
+    외부 데이터가 포함된 응답에는 `dataSource` 필드로 출처를 표기한다 (REQ-NF-014).
+    클라이언트 요청이 외부 API로 직접 전달되지 않는다 (REQ-NF-016).
 
     ### 공통 규칙
     - 인증이 필요한 API는 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
@@ -386,7 +386,7 @@ paths:
                     items: { $ref: '#/components/schemas/GameResponse' }
                   dataSource:
                     type: string
-                    description: REQ-N-014 출처 표기
+                    description: REQ-NF-014 출처 표기
                     example: 'TheSportsDB'
                   syncedAt:
                     type: string
@@ -394,7 +394,7 @@ paths:
                     description: REQ-F-106 마지막 동기화 시각
                   stale:
                     type: boolean
-                    description: REQ-N-010 동기화 실패로 마지막 성공 데이터를 반환한 경우 true
+                    description: REQ-NF-010 동기화 실패로 마지막 성공 데이터를 반환한 경우 true
                     example: false
 
   /games/{gameId}:
@@ -422,7 +422,7 @@ paths:
       tags: [Game]
       summary: 촬영 일시 기반 경기 후보 조회
       description: |
-        > **현재 미구현.** 운영자 등록(REQ-F-601)과 사용자 제보(REQ-F-606)로 경기 데이터가 채워지고 있어 우선순위를 낮췄다.
+        > **현재 미구현.** 운영자 등록(REQ-F-601)으로 경기 데이터가 채워지고 있어 우선순위를 낮췄다.
 
         |
         REQ-F-204. 업로드한 사진의 촬영 일시로 해당 일자의 경기를 후보로 반환한다.
@@ -610,7 +610,7 @@ paths:
     get:
       tags: [AttendanceLog]
       summary: 기록 상세 조회
-      description: REQ-F-214, REQ-N-008. 비공개 기록은 작성자만 조회할 수 있다.
+      description: REQ-F-214, REQ-NF-008. 비공개 기록은 작성자만 조회할 수 있다.
       parameters:
         - { $ref: '#/components/parameters/LogId' }
       responses:
@@ -657,7 +657,7 @@ paths:
       summary: 사진 업로드
       description: |
         REQ-F-203. 기록당 최대 10장, 1장당 10MB 이하.
-        서버는 저장 전에 **위치 메타데이터를 제거하고**(REQ-N-007) 썸네일을 생성한다(REQ-N-002).
+        서버는 저장 전에 **위치 메타데이터를 제거하고**(REQ-NF-007) 썸네일을 생성한다(REQ-NF-002).
         일부 파일이 실패해도 나머지는 정상 처리하며, 실패 목록을 응답에 포함한다.
       parameters:
         - { $ref: '#/components/parameters/LogId' }
@@ -714,7 +714,7 @@ paths:
       description: |
         REQ-F-301, REQ-F-305, REQ-F-306.
 
-        **소표본 표시 정책**: 표본이 기준(5경기) 미만인 항목은 `winRate`를 null로 반환하고
+        **소표본 표시 정책**: 차원별 집계에서 표본이 기준(5경기) 미만인 항목은 `winRate`를 null로 반환하고
         `smallSample=true`를 함께 내린다. 클라이언트는 승률 대신 전적만 표시한다.
       parameters:
         - { name: season, in: query, schema: { type: integer }, description: '미지정 시 통산' }
@@ -805,7 +805,7 @@ paths:
       tags: [Companion]
       summary: 메이트 참여 신청 (선착순 확정)
       description: |
-        REQ-F-503, REQ-F-504, REQ-F-505, REQ-N-011.
+        REQ-F-503, REQ-F-504, REQ-F-505, REQ-NF-011.
 
         **동시 요청 시에도 확정 인원이 정원을 초과하지 않아야 한다.**
         서버는 게시글 행에 대한 잠금 또는 낙관적 락(version)으로 정합성을 보장하며,
@@ -964,7 +964,7 @@ paths:
       summary: 신고
       description: |
         REQ-F-508. 모집 글·댓글·대화 메시지·사용자를 신고한다.
-        신고된 대화는 검토 종료 시까지 보존한다 (REQ-N-023).
+        신고된 대화는 검토 종료 시까지 보존한다 (REQ-NF-023).
       requestBody:
         required: true
         content:
@@ -1147,7 +1147,7 @@ paths:
     post:
       tags: [Admin]
       summary: 경기 등록
-      description: REQ-F-601, REQ-N-009. 운영자 권한이 필요하다.
+      description: REQ-F-601, REQ-NF-009. 운영자 권한이 필요하다.
       requestBody:
         required: true
         content:
@@ -1161,10 +1161,10 @@ paths:
   /admin/games/unconfirmed:
     get:
       tags: [Admin]
-      summary: 결과 미확정 경기 조회
+      summary: 결과 미등록 경기 조회
       description: |
-        REQ-F-607. 사용자 제보가 기준 수만큼 일치하지 않아 결과가 확정되지 않은 경기를 조회한다.
-        제보가 서로 엇갈리는 경기를 운영자가 검토해 직접 확정할 수 있다.
+        REQ-F-606. 이미 시작했는데 결과가 등록되지 않은 경기를 조회한다.
+        경기 결과는 운영자만 등록·정정하므로(REQ-NF-015) 이 목록이 곧 등록 누락 목록이다.
       responses:
         '200':
           description: 조회 성공
@@ -1176,16 +1176,6 @@ paths:
                   type: object
                   properties:
                     game: { $ref: '#/components/schemas/GameResponse' }
-                    reports:
-                      type: array
-                      description: 스코어별 제보 집계
-                      items:
-                        type: object
-                        properties:
-                          homeScore: { type: integer, example: 5 }
-                          awayScore: { type: integer, example: 3 }
-                          count: { type: integer, example: 2 }
-                    threshold: { type: integer, description: 확정 기준 제보 수, example: 3 }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /admin/games/{gameId}/revisions:
@@ -1426,7 +1416,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
     Forbidden:
-      description: 권한 없음 (REQ-N-008, REQ-N-009)
+      description: 권한 없음 (REQ-NF-008, REQ-NF-009)
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -1487,7 +1477,7 @@ components:
           enum: [SCHEDULED, IN_PROGRESS, FINISHED, CANCELED, SUSPENDED]
         resultConfirmed:
           type: boolean
-          description: REQ-F-608. false 이면 화면에 "확인 중" 배지를 표시한다
+          description: REQ-F-606. false 이면 화면에 "확인 중" 배지를 표시하고 전적 집계에서 제외한다
           example: true
 
     StandingResponse:
@@ -1521,7 +1511,7 @@ components:
         fetchedAt: { type: string, format: date-time }
         dataSource:
           type: string
-          description: REQ-N-024 출처 표기
+          description: REQ-NF-024 출처 표기
           example: 기상청 단기예보 (공공데이터포털, 공공누리 출처표시)
 
     TeamChannels:

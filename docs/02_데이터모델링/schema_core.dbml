@@ -47,7 +47,7 @@ Enum visibility {
 Table users {
   id                bigint       [pk, increment]
   email             varchar(255) [unique, note: '소셜 전용 계정은 null 허용']
-  password_hash     varchar(255) [note: 'REQ-N-006 단방향 해시']
+  password_hash     varchar(255) [note: 'REQ-NF-006 단방향 해시']
   nickname          varchar(30)  [not null, unique]
   profile_image_url varchar(500)
   favorite_team_id  bigint       [note: '현재 응원팀. 변경 이력은 user_team_history']
@@ -115,7 +115,7 @@ Table games {
   source       game_source [not null, default: 'EXTERNAL', note: 'REQ-F-107 결과 확정 경로']
   external_ref varchar(100) [note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
   synced_at    timestamp   [note: 'REQ-F-106 마지막 동기화 시각']
-  result_confirmed boolean [not null, default: false, note: 'REQ-F-608 미확정 경기는 화면에서 구분 표시']
+  result_confirmed boolean [not null, default: false, note: 'REQ-F-606 미확정 경기는 화면에서 구분 표시하고 전적 집계에서 제외']
   confirmed_at timestamp   [note: '결과 확정 시각']
   created_at   timestamp   [not null]
   updated_at   timestamp   [not null]
@@ -127,7 +127,7 @@ Table games {
     (result_confirmed)
     (external_ref) [unique]
   }
-  Note: '외부 API(TheSportsDB) 동기화가 1차 출처이며, 누락·불일치 시 사용자 제보로 보완한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
+  Note: '경기 결과는 운영자만 등록·정정한다 (REQ-NF-015). 외부 API 동기화를 붙일 경우에도 같은 경로로 반영한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
 }
 
 Table attendance_logs {
@@ -171,7 +171,7 @@ Table user_stats {
   updated_at    timestamp      [not null]
 
   Indexes { (user_id, dimension, dimension_key, season_year) [unique] }
-  Note: 'REQ-N-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
+  Note: 'REQ-NF-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
 }
 
 Table zone_stats {

@@ -77,7 +77,7 @@ Enum plan_item_status {
 Table users {
   id                bigint       [pk, increment]
   email             varchar(255) [unique, note: '소셜 전용 계정은 null 허용']
-  password_hash     varchar(255) [note: 'REQ-N-006 단방향 해시']
+  password_hash     varchar(255) [note: 'REQ-NF-006 단방향 해시']
   nickname          varchar(30)  [not null, unique]
   profile_image_url varchar(500)
   favorite_team_id  bigint       [note: '현재 응원팀. 변경 이력은 user_team_history']
@@ -188,7 +188,7 @@ Table games {
   source       game_source [not null, default: 'EXTERNAL', note: 'REQ-F-107 결과 확정 경로']
   external_ref varchar(100) [note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
   synced_at    timestamp   [note: 'REQ-F-106 마지막 동기화 시각']
-  result_confirmed boolean [not null, default: false, note: 'REQ-F-608 미확정 경기는 화면에서 구분 표시']
+  result_confirmed boolean [not null, default: false, note: 'REQ-F-606 미확정 경기는 화면에서 구분 표시하고 전적 집계에서 제외']
   confirmed_at timestamp   [note: '결과 확정 시각']
   created_at   timestamp   [not null]
   updated_at   timestamp   [not null]
@@ -200,7 +200,7 @@ Table games {
     (result_confirmed)
     (external_ref) [unique]
   }
-  Note: '외부 API(TheSportsDB) 동기화가 1차 출처이며, 누락·불일치 시 사용자 제보로 보완한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
+  Note: '경기 결과는 운영자만 등록·정정한다 (REQ-NF-015). 외부 API 동기화를 붙일 경우에도 같은 경로로 반영한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
 }
 
 Table game_weather {
@@ -210,25 +210,11 @@ Table game_weather {
   precip_type    varchar(10)  [note: '없음 / 비 / 비눈 / 눈 / 소나기']
   precip_prob    int          [note: '강수 확률 (%)']
   alert_title    varchar(100) [note: '기상특보 발효 시']
-  fetched_at     timestamp    [not null, note: 'REQ-N-024 배치 동기화 시각']
+  fetched_at     timestamp    [not null, note: 'REQ-NF-024 배치 동기화 시각']
 
   Note: 'REQ-F-112, REQ-F-113. 기상청 단기예보 API 결과를 경기 단위로 캐시한다. 구장 좌표(stadiums.latitude/longitude)로 격자 변환하여 조회'
 }
 
-Table game_result_reports {
-  id          bigint    [pk, increment]
-  game_id     bigint    [not null]
-  user_id     bigint    [not null]
-  home_score  int       [not null]
-  away_score  int       [not null]
-  reported_at timestamp [not null]
-
-  Indexes {
-    (game_id, user_id) [unique, note: '사용자당 경기별 1건']
-    (game_id, home_score, away_score) [note: '일치 제보 집계용']
-  }
-  Note: 'REQ-F-606, REQ-F-607 관람 기록 작성자만 제보할 수 있다. 동일 스코어 제보가 기준 수(3건) 이상 일치하면 games.result_confirmed 를 true 로 확정한다'
-}
 
 Table game_revisions {
   id           bigint      [pk, increment]
@@ -282,8 +268,8 @@ Table attendance_photos {
   id                bigint       [pk, increment]
   attendance_log_id bigint       [not null]
   original_url      varchar(500) [not null]
-  thumbnail_url     varchar(500) [not null, note: 'REQ-N-002']
-  taken_at          timestamp    [note: 'REQ-F-204 경기 자동 매칭에 사용. 위치정보는 REQ-N-007에 따라 제거']
+  thumbnail_url     varchar(500) [not null, note: 'REQ-NF-002']
+  taken_at          timestamp    [note: 'REQ-F-204 경기 자동 매칭에 사용. 위치정보는 REQ-NF-007에 따라 제거']
   file_size         int
   mime_type         varchar(50)
   sort_order        int          [not null, default: 0]
@@ -319,7 +305,7 @@ Table user_stats {
   updated_at    timestamp      [not null]
 
   Indexes { (user_id, dimension, dimension_key, season_year) [unique] }
-  Note: 'REQ-N-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
+  Note: 'REQ-NF-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
 }
 
 Table user_streaks {
@@ -376,7 +362,7 @@ Table companion_posts {
   capacity        int         [not null, note: '작성자 포함 정원']
   confirmed_count int         [not null, default: 1]
   status          post_status [not null, default: 'OPEN']
-  version         int         [not null, default: 0, note: 'REQ-N-011 낙관적 락 (또는 확정 시 행 잠금)']
+  version         int         [not null, default: 0, note: 'REQ-NF-011 낙관적 락 (또는 확정 시 행 잠금)']
   created_at      timestamp   [not null]
   closed_at       timestamp
 
@@ -421,7 +407,7 @@ Table companion_messages {
   created_at        timestamp [not null]
 
   Indexes { (companion_post_id, created_at) }
-  Note: 'REQ-F-511 확정자 전용 비공개 대화. REQ-N-023 에 따라 경기 종료 후 90일 보존'
+  Note: 'REQ-F-511 확정자 전용 비공개 대화. REQ-NF-023 에 따라 경기 종료 후 90일 보존'
 }
 
 Table companion_message_reads {
@@ -450,7 +436,7 @@ Table reports {
     (status, created_at)
     (reporter_id, target_type, target_id) [unique, note: '동일 대상 중복 신고 방지']
   }
-  Note: 'REQ-F-508. 신고된 대화는 검토 종료 시까지 보존한다 (REQ-N-023)'
+  Note: 'REQ-F-508. 신고된 대화는 검토 종료 시까지 보존한다 (REQ-NF-023)'
 }
 
 Table user_blocks {
@@ -531,8 +517,6 @@ Ref: games.stadium_id                  > stadiums.id
 Ref: games.home_team_id                > teams.id
 Ref: games.away_team_id                > teams.id
 Ref: game_weather.game_id              - games.id
-Ref: game_result_reports.game_id       > games.id
-Ref: game_result_reports.user_id       > users.id
 Ref: game_revisions.game_id            > games.id
 Ref: game_revisions.revised_by         > users.id
 
@@ -593,7 +577,6 @@ TableGroup "경기 · 구장" {
   stadium_zones
   games
   game_weather
-  game_result_reports
   game_revisions
 }
 

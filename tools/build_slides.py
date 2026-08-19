@@ -96,25 +96,25 @@ S.append("""<section class="s cover">
 <div class="tag">SKALA MINI PROJECT</div>
 <div class="rule"></div>
 <h1>오늘의직관</h1>
-<div class="sub">KBO 직관 기록 및 관람 정보 서비스</div>
-<div class="desc">흩어진 직관 경험을 기록으로 모아, 나만의 전적을 만든다</div>
+<div class="sub">KBO 직관 기록 서비스</div>
+<div class="desc">직관한 경기를 기록하면 그대로 나만의 전적이 된다</div>
 <div class="meta">이채목<br>2026.08.20</div>
 </section>""")
 
 # 2 문제 정의
 slide("", head("PROBLEM", "직관을 다녀오면, 아무것도 남지 않는다",
-               "티켓은 서랍에, 사진은 갤러리에, 감상은 메모장에. 셋은 서로 연결되지 않는다.") + """
+               "티켓은 어딘가에 두고 잃어버린다. 사진은 갤러리에, 후기는 인스타에 흩어진다.") + """
 <div class="body">
   <div class="cols">
     <div class="box"><h3>🎟️ 티켓</h3><p>실물로 서랍에 쌓인다.<br>언제 어느 경기였는지<br>시간이 지나면 알 수 없다</p></div>
     <div class="box"><h3>📷 사진</h3><p>갤러리에 수천 장 중<br>하나로 묻힌다.<br>찾으려면 날짜를 기억해야 한다</p></div>
-    <div class="box"><h3>📝 감상</h3><p>SNS나 메모장에 흩어진다.<br>어느 경기 이야기인지<br>연결이 끊긴다</p></div>
+    <div class="box"><h3>📝 후기</h3><p>인스타에 남는다.<br>어느 경기 이야기인지<br>사진·티켓과 연결이 끊긴다</p></div>
   </div>
   <div class="box dark" style="margin-top:7mm">
     <h3>그래서 생기는 진짜 문제</h3>
     <p style="font-size:11pt">개별 경기 결과는 어디서든 볼 수 있다. 그런데
-    <span style="color:#ffd666; font-weight:700">내가 직접 간 경기만 추린 전적</span>은 어떤 서비스도 제공하지 않는다.<br>
-    팬들이 말하는 "내가 가면 이긴다"는 확인할 방법이 없는 체감에 머문다.</p>
+    <span style="color:#ffd666; font-weight:700">내가 간 경기만 골라낸 전적</span>은 본인이 직접 세지 않으면 만들어지지 않는다.<br>
+    팬들이 말하는 "내가 가면 이긴다"도 그래서 확인할 방법 없는 체감에 머문다.</p>
   </div>
 </div>""")
 
@@ -144,7 +144,7 @@ slide("", head("SOLUTION", "기록을 모으고, 데이터를 되돌려준다") 
 </div>""" % img("docs/_assets/screens/app-park.png"))
 
 # 4 사용자 여정
-slide("", head("USER JOURNEY", "라이트 유저가 헤비 유저가 되는 순환",
+slide("", head("USER JOURNEY", "처음 가는 팬이 자주 가는 팬이 되는 순환",
                "기록이 쌓여야 가치가 생기는 서비스는, 1년에 한두 번 가는 사람에게 줄 것이 없다.") + """
 <div class="body">
   <div class="flow">
@@ -156,11 +156,11 @@ slide("", head("USER JOURNEY", "라이트 유저가 헤비 유저가 되는 순�
     <div class="arw">›</div>
     <div class="step"><div class="n">STEP 4</div><div class="t">보상</div><div class="d">데이터가 없어도<br>배지·카드로<br>즉시 성취</div></div>
     <div class="arw">›</div>
-    <div class="step"><div class="n">STEP 5</div><div class="t">정착</div><div class="d">전적 심화<br>동행·계획</div></div>
+    <div class="step"><div class="n">STEP 5</div><div class="t">정착</div><div class="d">전적 심화<br>메이트·계획</div></div>
   </div>
   <div class="cols2" style="margin-top:8mm">
     <div class="box"><h3>소비자로 들어와서</h3>
-      <p>라이트 유저는 남이 쌓은 구역 만족도를 보고 자리를 고른다</p></div>
+      <p>처음 가는 팬은 앞선 사용자들이 쌓은 구역 만족도를 보고 자리를 고른다</p></div>
     <div class="box"><h3>생산자가 되어 나간다</h3>
       <p>다녀와서 남긴 평가 한 줄이 다음 사람의 정보가 된다.<br>
       <b>사용자가 늘수록 구장 정보가 정확해지는 구조</b></p></div>
@@ -174,23 +174,23 @@ slide("", head("DELIVERABLES", "산출물") + """
     <div class="box"><div class="big">81<span style="font-size:12pt">+24</span></div>
       <div class="mid" style="margin-top:2mm">요구사항</div>
       <p class="small">기능 81 · 비기능 24<br>모두 화면 ID와 교차 참조</p></div>
-    <div class="box"><div class="big">23<span style="font-size:12pt">/7</span></div>
+    <div class="box"><div class="big">24<span style="font-size:12pt">/7</span></div>
       <div class="mid" style="margin-top:2mm">화면</div>
-      <p class="small">전체 23개 정의<br>핵심 7개 상세 설계</p></div>
+      <p class="small">전체 24개 정의<br>핵심 7개 상세 설계</p></div>
     <div class="box"><div class="big">30</div>
       <div class="mid" style="margin-top:2mm">테이블</div>
-      <p class="small">9개 도메인<br>사전 집계 테이블 3</p></div>
+      <p class="small">7개 기능 영역<br>사전 집계 테이블 3</p></div>
   </div>
   <div class="cols" style="margin-top:6mm">
-    <div class="box"><div class="big">42</div>
+    <div class="box"><div class="big">55</div>
       <div class="mid" style="margin-top:2mm">API 오퍼레이션</div>
-      <p class="small">엔드포인트 32<br>OpenAPI 3.0</p></div>
-    <div class="box"><div class="big">35</div>
+      <p class="small">경로 43<br>OpenAPI 3.0</p></div>
+    <div class="box"><div class="big">45</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
-      <p class="small">개요 + 요구사항<br>+ 화면 설계</p></div>
-    <div class="box dark"><div class="big">4/4</div>
-      <div class="mid" style="margin-top:2mm">기술 과제</div>
-      <p class="small">집계 · 동시성 · 이력<br>제약조건 편성 모두 구현</p></div>
+      <p class="small">개요 · 요구사항 · 화면 설계<br>+ 부록 A</p></div>
+    <div class="box dark"><div class="big">6/6</div>
+      <div class="mid" style="margin-top:2mm">설계 판단 지점</div>
+      <p class="small">파생 지표 · 소표본 · 동시성<br>이력 · 제약 편성 · 외부 데이터</p></div>
   </div>
 </div>""")
 
@@ -202,7 +202,7 @@ slide("", head("REQUIREMENTS", "요구사항 정의서 — 추적성",
     <table>
       <tr><th>대역</th><th>그룹</th><th>대역</th><th>그룹</th></tr>
       <tr><td>0xx</td><td>회원</td><td>4xx</td><td>관람 계획</td></tr>
-      <tr><td>1xx</td><td>경기 · 구장</td><td>5xx</td><td>동행</td></tr>
+      <tr><td>1xx</td><td>경기 · 구장</td><td>5xx</td><td>직관 메이트</td></tr>
       <tr><td>2xx</td><td>직관 기록</td><td>6xx</td><td>운영</td></tr>
       <tr><td>3xx</td><td>전적 집계</td><td>7xx</td><td>온보딩 · 성장</td></tr>
     </table>
@@ -273,7 +273,7 @@ slide("", head("DATA MODEL", "데이터 모델링 — 핵심 설계 결정") + "
       <tr><td>경기 · 구장</td><td>teams, stadiums, stadium_zones,<br>games, game_result_reports,<br>game_revisions</td></tr>
       <tr><td><b>직관 기록</b></td><td><b>attendance_logs</b>, attendance_photos,<br>attendance_companions</td></tr>
       <tr><td>집계</td><td>user_stats, user_streaks, zone_stats</td></tr>
-      <tr><td>동행</td><td>companion_posts,<br>companion_applications</td></tr>
+      <tr><td>직관 메이트</td><td>companion_posts,<br>companion_applications</td></tr>
       <tr><td>계획 · 성장 · 알림</td><td>viewing_plans(3), badges(2),<br>notifications</td></tr>
     </table>
     <div class="small" style="margin-top:3mm">전체 ERD 는 제출한 <code>schema.dbml</code> 참조</div>
@@ -307,28 +307,28 @@ slide("", head("DESIGN DECISION 1", "외부 데이터를 쓸 수 있는지부터
   </div>
 
   <div class="cols2" style="margin-top:5mm">
-    <div class="box"><h3>결정</h3><p>외부 자동 수집을 전면 배제.
-    공식 API 와 사용자 제보를 <b>이중 출처</b>로 두고, 어느 한쪽이 비어도 메우는 구조로 설계</p></div>
+    <div class="box"><h3>결정</h3><p>웹 페이지 수집은 배제하고 <b>경기 결과는 운영자만 등록·정정</b>하도록 했다.
+    외부 경로는 데이터 제공 인터페이스로 추상화해 선택을 뒤로 미뤘다</p></div>
     <div class="box"><h3>배운 것</h3><p>공개된 안내 문구만으로 이용 가능 여부를 판단하면 안 된다.
     <b>권리자에게 직접 확인하는 절차</b>가 필요하다</p></div>
   </div>
 </div>""")
 
 # 10 설계 결정 2 — 소표본
-slide("", head("DESIGN DECISION 2", "2경기 2승을 승률 1.000 으로 보여주지 않는다") + """
+slide("", head("DESIGN DECISION 2", "승률을 언제부터 보여줄 것인가") + """
 <div class="body">
   <div class="cols2">
-    <div class="box" style="border-color:#e8b4b4; background:#fdf6f6">
-      <h3 class="bad">그대로 계산하면</h3>
-      <p style="font-size:12pt">고척스카이돔 <b>2경기 2승 · 승률 1.000</b></p>
-      <p style="margin-top:2mm">"고척에서 나는 무패다" 라는 잘못된 인상을 준다.
-      표본 2개로는 아무것도 말할 수 없다</p>
-    </div>
     <div class="box" style="border-color:#b4c8e8; background:#f6f9fd">
-      <h3 class="good">적용한 정책</h3>
-      <p style="font-size:12pt">고척스카이돔 <b>2경기 2승 <span style="color:#6b7076">(표본 부족)</span></b></p>
-      <p style="margin-top:2mm">표본 5경기 미만은 승률을 <b>산출하지 않고</b> 전적만 표시.
-      승률 순위에서도 제외</p>
+      <h3 class="good">통산은 첫 기록부터 보여준다</h3>
+      <p style="font-size:12pt"><b>1경기 1승 · 승률 1.000</b></p>
+      <p style="margin-top:2mm">모수(1경기)가 함께 보여 오해가 적다.
+      <b>첫 기록에서 바로 성취가 보이는 편이 다음 기록을 남길 이유가 된다</b></p>
+    </div>
+    <div class="box" style="border-color:#e8b4b4; background:#fdf6f6">
+      <h3 class="bad">쪼갠 집계는 다르다</h3>
+      <p style="font-size:12pt">잠실 <b>2경기 2승 1.000</b> · 고척 <b>1경기 1패 0.000</b></p>
+      <p style="margin-top:2mm">나란히 놓이면 순위처럼 읽힌다. 실제로는 아무 의미 없는 서열이다.
+      표본 5경기 미만은 <b>승률을 산출하지 않고</b> 전적만 표시한다</p>
     </div>
   </div>
 
@@ -337,7 +337,7 @@ slide("", head("DESIGN DECISION 2", "2경기 2승을 승률 1.000 으로 보여�
     <table style="margin-top:2mm">
       <tr><th>요구사항</th><th>화면 설계</th><th>API</th><th>데이터 모델</th></tr>
       <tr>
-        <td>REQ-F-305<br>기준값 5경기</td>
+        <td>REQ-F-305<br>차원별 기준 5경기</td>
         <td>SCR-STAT-001 ⑤<br>SCR-PARK-002 ②</td>
         <td><code>winRate: null</code><br><code>smallSample: true</code></td>
         <td><code>zone_stats</code><br><code>.rating_count</code></td>
@@ -356,7 +356,7 @@ slide("", head("DESIGN DECISION 3", "30명이 동시에 눌러도 정원은 넘�
   <div>
     <div class="box" style="margin-bottom:4mm">
       <h3>문제</h3>
-      <p>동행 모집 정원이 3명인데 여러 명이 같은 순간 참여를 누르면
+      <p>메이트 모집 정원이 3명인데 여러 명이 같은 순간 신청을 누르면
       확인 후 증가시키는 방식은 <b>정원을 넘긴다</b></p>
     </div>
     <div class="box">
@@ -396,22 +396,23 @@ slide("", head("VERIFICATION", "설계대로 구현하여 동작을 확인했다
     <img class="shot" src="%s">
   </div>
   <div>
-    <table style="font-size:8.5pt">
+    <table style="font-size:8pt">
       <tr><th>검증 항목</th><th>결과</th></tr>
-      <tr><td>회원가입 · 로그인</td><td>JWT 발급</td></tr>
-      <tr><td>이메일 중복</td><td>409 DUPLICATE_EMAIL</td></tr>
       <tr><td>기록 작성</td><td>승패 자동 판정</td></tr>
-      <tr><td>동일 경기 중복</td><td>409 + 기존 기록 ID 반환</td></tr>
+      <tr><td>동일 경기 중복</td><td>409 + 기존 기록 ID</td></tr>
       <tr><td>전적 재집계</td><td>6경기 5승 1패 .833</td></tr>
       <tr><td>소표본 정책</td><td>표본 2건 → 평균 미표시</td></tr>
-      <tr><td>동행 선착순</td><td>30명 중 3명만 확정</td></tr>
+      <tr><td>메이트 선착순</td><td>30명 중 3명만 확정</td></tr>
       <tr><td>사진 위치정보</td><td>GPS 4태그 → <b>0태그</b></td></tr>
+      <tr><td>소셜 로그인</td><td>3개 제공자 인가 URL 생성</td></tr>
+      <tr><td>결과 정정 재계산</td><td>8경기 5승3패 → 7경기 5승2패</td></tr>
+      <tr><td>운영자 권한</td><td>일반 회원 접근 시 403</td></tr>
     </table>
     <div class="box dark" style="margin-top:4mm">
-      <h3>구현 중 발견한 설계 누락</h3>
-      <p>화면에서 응원팀을 보낼 때 <b>팀 ID 가 필요</b>한데
-      경기 조회 API 가 팀 이름만 반환하고 있었다.
-      API 명세에 <code>homeTeamId</code> · <code>awayTeamId</code> 를 추가했다</p>
+      <h3>구현하니 드러난 설계 누락</h3>
+      <p>좌석 구역을 <b>비활성으로 돌려도 일반 화면에 그대로 노출</b>되고 있었다.
+      조회 경로를 나누고, 목록에서 빠져도 ID 를 직접 보내는 경로가 남아
+      기록 작성 시점에도 막았다. 설계서에 없던 규칙이다</p>
     </div>
   </div>
 </div>""" % img("docs/_assets/screens/app-stats.png"))
@@ -421,14 +422,14 @@ slide("", head("NEXT", "정리") + """
 <div class="body">
   <div class="cols">
     <div class="box"><h3>수행한 것</h3>
-      <ul><li>요구사항 81 + 비기능 24</li><li>화면 23 (상세 7)</li>
-      <li>테이블 30 · API 42</li><li>설계 검증용 구현</li></ul></div>
+      <ul><li>요구사항 81 + 비기능 24</li><li>화면 24 (상세 7)</li>
+      <li>테이블 30 · API 55</li><li>설계 검증용 구현 (화면 20)</li></ul></div>
     <div class="box"><h3>범위에서 제외한 것</h3>
       <ul><li>실시간 스코어보드<br><span class="small">데이터 제공처 유료 구독 전제</span></li>
       <li>선수 개인 기록<br><span class="small">데이터 확보 경로 없음</span></li></ul></div>
     <div class="box"><h3>다음 단계</h3>
-      <ul><li>배지 · 카드 공유</li><li>동행 대화방</li>
-      <li>운영자 화면</li><li>공개 배포</li></ul></div>
+      <ul><li>티켓 카드 공유</li><li>모바일 웹 최적화</li>
+      <li>실시간 대화(WebSocket)</li><li>공개 배포</li></ul></div>
   </div>
   <div class="box dark" style="margin-top:7mm; text-align:center; padding:8mm">
     <p style="font-size:13pt; color:#fff">
