@@ -49,6 +49,9 @@ async function openEdit() {
     foodCost: l.foodCost ?? null,
     transportCost: l.transportCost ?? null,
     visibility: l.visibility,
+    // 상세는 표시용 이름만 주므로 수정 폼도 이름으로 다룬다.
+    // 회원을 다시 고르는 것은 이 화면의 일이 아니다
+    companions: (l.companions || []).map((n) => ({ name: n })),
   }
   if (!zones.value.length) {
     const list = await client.get('/stadiums')
@@ -71,6 +74,9 @@ async function save() {
   try {
     const body = { ...form.value }
     if (body.memo === '') body.memo = null
+    body.companions = (form.value.companions || [])
+      .map((c) => ({ name: (c.name || '').trim() }))
+      .filter((c) => c.name)
     log.value = (await client.patch(`/attendance-logs/${route.params.id}`, body)).data
     editing.value = false
   } catch (e) {
@@ -120,6 +126,11 @@ async function save() {
     <div class="card" v-if="log.memo">
       <h2>그날의 한마디</h2>
       <p style="font-size:15px; line-height:1.65">{{ log.memo }}</p>
+    </div>
+
+    <div class="card" v-if="log.companions && log.companions.length">
+      <h2>함께 간 사람</h2>
+      <div class="kv" v-for="(n, i) in log.companions" :key="i"><span>{{ n }}</span></div>
     </div>
 
     <div class="card" v-if="log.totalCost">
@@ -177,6 +188,17 @@ async function save() {
       </div>
 
       <div class="field">
+        <label>함께 간 사람</label>
+        <div v-for="(c, i) in form.companions" :key="i" class="row2">
+          <input v-model="c.name" maxlength="30" placeholder="이름" />
+          <button type="button" class="mini" @click="form.companions.splice(i, 1)">×</button>
+        </div>
+        <button type="button" class="mini wide" @click="form.companions.push({ name: '' })">
+          ＋ 사람 추가
+        </button>
+      </div>
+
+      <div class="field">
         <label>비용</label>
         <div class="costs">
           <input v-model.number="form.ticketCost" type="number" min="0" placeholder="티켓" />
@@ -224,6 +246,11 @@ async function save() {
   border: 0; background: none; font-size: 24px; color: #d8dde3; cursor: pointer; padding: 0;
 }
 .stars button.on { color: #f5a623; }
+.row2 { display: flex; gap: 6px; margin-bottom: 6px; }
+.row2 input { flex: 1; }
+.mini { border: 1px solid #d8dde3; background: #fff; border-radius: 8px; padding: 8px 12px;
+        font-size: 13px; cursor: pointer; font-family: inherit; }
+.mini.wide { width: 100%; }
 .costs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .err { color: #c0392b; font-size: 13px; margin: 0 0 10px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }

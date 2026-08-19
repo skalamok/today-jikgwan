@@ -16,11 +16,12 @@ public record AttendanceLogDetail(
         Short zoneRating, Short gameRating, String memo, String visibility,
         Integer ticketCost, Integer foodCost, Integer transportCost, Integer totalCost,
         String weatherSky, Double weatherTemp,
-        List<Photo> photos, OffsetDateTime createdAt) {
+        List<Photo> photos, List<String> companions, OffsetDateTime createdAt) {
 
     public record Photo(Long id, String originalUrl, String thumbnailUrl, OffsetDateTime takenAt) { }
 
-    public static AttendanceLogDetail from(AttendanceLog l, List<AttendancePhoto> photos) {
+    public static AttendanceLogDetail from(AttendanceLog l, List<AttendancePhoto> photos,
+                                           List<String> companions) {
         Game g = l.getGame();
         String matchup = g.isResultConfirmed()
                 ? "%s %d : %d %s".formatted(g.getHomeTeam().getShortName(), g.getHomeScore(),
@@ -36,6 +37,7 @@ public record AttendanceLogDetail(
                 l.getWeatherSky(), l.getWeatherTemp() == null ? null : l.getWeatherTemp().doubleValue(),
                 photos.stream().map(p -> new Photo(p.getId(), p.getOriginalUrl(),
                         p.getThumbnailUrl(), p.getTakenAt())).toList(),
+                companions,
                 l.getCreatedAt());
     }
 }

@@ -16,5 +16,9 @@ public record AttendanceLogRequest(
         @Min(0) Integer ticketCost,
         @Min(0) Integer foodCost,
         @Min(0) Integer transportCost,
-        String visibility) {
+        String visibility,
+        /** REQ-F-209 함께 간 사람. 회원이면 userId, 아니면 name 만 채운다 */
+        java.util.List<Companion> companions) {
+
+    public record Companion(Long userId, @Size(max = 30) String name) { }
 }

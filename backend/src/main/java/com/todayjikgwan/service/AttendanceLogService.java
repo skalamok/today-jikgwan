@@ -3,6 +3,8 @@ package com.todayjikgwan.service;
 import com.todayjikgwan.api.attendance.dto.AttendanceLogRequest;
 import com.todayjikgwan.api.attendance.dto.AttendanceLogDetail;
 import com.todayjikgwan.api.attendance.dto.AttendanceLogResponse;
+import com.todayjikgwan.domain.attendance.AttendanceCompanion;
+import com.todayjikgwan.domain.attendance.AttendanceCompanionRepository;
 import com.todayjikgwan.domain.attendance.AttendancePhoto;
 import com.todayjikgwan.domain.attendance.AttendancePhotoRepository;
 import com.todayjikgwan.domain.weather.GameWeatherRepository;
@@ -40,6 +42,7 @@ public class AttendanceLogService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final AttendancePhotoRepository photoRepository;
+    private final AttendanceCompanionRepository companionRepository;
     private final GameWeatherRepository weatherRepository;
     private final BadgeService badgeService;
     private final StatService statService;
@@ -104,6 +107,8 @@ public class AttendanceLogService {
         weatherRepository.findById(game.getId()).ifPresent(w ->
                 saved.applyWeather(w.getSkyCode(), w.getTemperature()));
 
+        replaceCompanions(saved, request.companions());   // REQ-F-209
+
         // REQ-F-110 구역별 만족도 집계에 즉시 반영
         ZoneStat zoneStat = zoneStatRepository.findById(zone.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
@@ -129,7 +134,33 @@ public class AttendanceLogService {
             throw new ApiException(ErrorCode.FORBIDDEN);
         }
         return AttendanceLogDetail.from(log,
-                photoRepository.findByAttendanceLogIdOrderBySortOrder(logId));
+                photoRepository.findByAttendanceLogIdOrderBySortOrder(logId),
+                companionRepository.findByAttendanceLogId(logId).stream()
+                        .map(AttendanceCompanion::displayName).toList());
+    }
+
+    /**
+     * REQ-F-209 함께 간 사람을 다시 쓴다.
+     *
+     * 한 명씩 고쳐 넣는 대신 통째로 지우고 다시 넣는다. 목록이 짧고 순서에 뜻이 없어
+     * 어느 줄이 바뀌었는지 따지는 것보다 이 편이 단순하다.
+     */
+    private void replaceCompanions(AttendanceLog log, List<AttendanceLogRequest.Companion> input) {
+        companionRepository.deleteByAttendanceLogId(log.getId());
+        if (input == null || input.isEmpty()) {
+            return;
+        }
+        for (AttendanceLogRequest.Companion c : input) {
+            User member = c.userId() == null ? null
+                    : userRepository.findById(c.userId())
+                            .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+            String name = c.name() == null ? null : c.name().trim();
+            // 회원도 이름도 없으면 남길 것이 없다
+            if (member == null && (name == null || name.isEmpty())) {
+                continue;
+            }
+            companionRepository.save(new AttendanceCompanion(log, member, name));
+        }
     }
 
     /**
@@ -201,6 +232,8 @@ public class AttendanceLogService {
                 request.gameRating(), request.ticketCost(), request.foodCost(),
                 request.transportCost(),
                 request.visibility() == null ? null : Visibility.valueOf(request.visibility()));
+
+        replaceCompanions(log, request.companions());   // REQ-F-209
 
         // REQ-F-216 경기를 옮기면 그 경기의 날씨로 다시 채운다
         weatherRepository.findById(game.getId())

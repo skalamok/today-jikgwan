@@ -13,6 +13,10 @@ const zones = ref([])
 const stadiumZoneId = ref(null)
 const zoneRating = ref(0)
 const memo = ref('')
+/* REQ-F-209 함께 간 사람. 회원이 아닐 수도 있어 이름만 적는 줄도 허용한다 */
+const companions = ref([])
+function addCompanion() { companions.value.push({ name: '' }) }
+function removeCompanion(i) { companions.value.splice(i, 1) }
 const gameRating = ref(0)
 const ticketCost = ref('')
 const foodCost = ref('')
@@ -63,6 +67,9 @@ async function submit() {
       foodCost: foodCost.value === '' ? null : Number(foodCost.value),
       transportCost: transportCost.value === '' ? null : Number(transportCost.value),
       visibility: visibility.value,
+      companions: companions.value
+        .map((c) => ({ name: (c.name || '').trim() }))
+        .filter((c) => c.name),
     }
     const { data } = await client.post('/attendance-logs', body)
 
@@ -150,6 +157,15 @@ async function submit() {
       <label>⑥ 오늘의 한마디</label>
       <textarea v-model="memo" maxlength="1000" placeholder="그날의 기억을 남겨보세요"></textarea>
       <div class="muted" style="text-align:right">{{ memo.length }}/1000</div>
+    </div>
+    <div class="field">
+      <label>⑦ 함께 간 사람</label>
+      <div v-for="(c, i) in companions" :key="i" class="row" style="gap:6px; margin-bottom:6px">
+        <input v-model="c.name" maxlength="30" placeholder="이름" style="flex:1" />
+        <button type="button" class="chip" @click="removeCompanion(i)">×</button>
+      </div>
+      <button type="button" class="chip" @click="addCompanion">＋ 사람 추가</button>
+      <p class="note">서비스를 쓰지 않는 사람도 이름만으로 남길 수 있어요</p>
     </div>
     <div class="field">
       <label>⑧ 비용</label>
