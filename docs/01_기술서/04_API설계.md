@@ -218,6 +218,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | 메서드 | 경로 | 설명 | 범위 | 인증 | 관련 요구사항 | 비고 |
 |---|---|---|---|---|---|---|
 | POST | `/admin/games` | 경기 등록 | MVP | 인증 | REQ-F-601, REQ-NF-009 |  |
+| POST | `/admin/games/sync` | 경기 데이터 동기화 | MVP | 인증 | REQ-F-107, REQ-NF-015 |  |
 | GET | `/admin/games/unconfirmed` | 결과 미등록 경기 조회 | MVP | 인증 | REQ-F-606, REQ-NF-015 |  |
 | POST | `/admin/games/{gameId}/revisions` | 경기 결과 정정 | MVP | 인증 | REQ-F-602, REQ-F-603, REQ-F-309 |  |
 | GET | `/admin/games/{gameId}/revisions` | 경기 정정 이력 조회 | MVP | 인증 | REQ-F-603 |  |
@@ -229,4 +230,4 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 
 ---
 
-총 43개 경로 · 55개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
+총 44개 경로 · 56개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.

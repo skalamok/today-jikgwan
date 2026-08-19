@@ -1397,6 +1397,67 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /admin/games/sync:
+    post:
+      operationId: syncGames
+      x-scope: MVP
+      tags: [Admin]
+      summary: 경기 데이터 동기화
+      description: |
+        REQ-F-107. 붙어 있는 제공자를 모두 물어보고 우리 쪽 경기로 옮긴다.
+        켜진 외부 제공자가 없으면 아무 일도 일어나지 않으며 그것이 기본 상태다.
+        운영자가 확정한 결과는 덮어쓰지 않는다 (REQ-NF-015).
+      parameters:
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+          description: 생략하면 당일
+      responses:
+        '200':
+          description: 동기화 결과. 제공자별로 만든 수 · 고친 수 · 걸러낸 수를 준다
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date: { type: string, format: date }
+                  created: { type: integer }
+                  updated: { type: integer }
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        provider: { type: string }
+                        enabled: { type: boolean }
+                        created: { type: integer }
+                        updated: { type: integer }
+                        skipped: { type: integer }
+                        unmatchedSample:
+                          type: array
+                          items: { type: string }
+                          description: 우리 데이터와 이름이 맞지 않아 걸러낸 경기
+                        reason: { type: string }
+              example:
+                date: '2025-08-19'
+                created: 0
+                updated: 0
+                providers:
+                  - { provider: 운영자 등록, enabled: true, created: 0, updated: 0, skipped: 0 }
+                  - provider: TheSportsDB
+                    enabled: true
+                    created: 0
+                    updated: 0
+                    skipped: 3
+                    unmatchedSample: ['Hanwha Eagles vs Doosan Bears @ Daejeon Hanbat Baseball Stadium']
+                    reason: 구단 · 구장 이름이 우리 데이터와 맞지 않는다. 대응표가 있어야 쓸 수 있다
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /admin/games/unconfirmed:
     get:
       operationId: listUnconfirmedGames

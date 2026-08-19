@@ -1,0 +1,603 @@
+// =====================================================================
+// 오늘의직관 (today-jikgwan) - Data Model
+// 작성자: 울산 U133 이채목 / 최종 수정일: 2026-08-19 / 버전 v1.2
+// dbdiagram.io 에 붙여넣어 ERD 생성
+//
+// 개정 이력
+//   v0.1  2026-08-18  초안. 회원 · 경기 · 직관 기록 · 전적 중심으로 작성
+//   v0.2  2026-08-18  직관 메이트, 관람 계획, 배지 · 알림 테이블 추가
+//   v0.3  2026-08-19  사용자 제보 기반 결과 확정을 제거해 game_result_reports 삭제 (V8)
+//   v1.0  2026-08-19  미사용 테이블 auth_tokens, viewing_plan_stadiums 삭제 (V9).
+//                     소셜 계정 컬럼 보강 (V7)
+//   v1.1  2026-08-19  Enum 값을 한 줄에 하나씩 적도록 정리. 그전까지 파서를 통과하지
+//                     못하던 것을 tools/check_consistency.py 가 검사하도록 함
+//   v1.2  2026-08-19  각 테이블 Note 앞에 [MVP] / [확장] 을 붙여 범위를 표시
+// =====================================================================
+
+// ---------- ENUM ----------
+Enum user_role {
+  MEMBER
+  ADMIN
+}
+Enum user_status {
+  ACTIVE
+  DORMANT
+  WITHDRAWN
+}
+Enum game_status {
+  SCHEDULED
+  IN_PROGRESS
+  FINISHED
+  CANCELED
+  SUSPENDED
+}
+Enum game_source {
+  EXTERNAL
+  MANUAL
+  USER_REPORT
+}
+Enum visibility {
+  PUBLIC
+  PRIVATE
+}
+Enum stat_dimension {
+  TOTAL
+  SEASON
+  STADIUM
+  OPPONENT
+  DAY_OF_WEEK
+  COMPANION
+}
+Enum post_status {
+  OPEN
+  FULL
+  CLOSED
+  ENDED
+}
+Enum application_status {
+  CONFIRMED
+  CANCELED
+}
+Enum report_target {
+  POST
+  COMMENT
+  MESSAGE
+  USER
+}
+Enum report_status {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+Enum plan_item_status {
+  PROPOSED
+  CONFIRMED
+  DONE
+  MISSED
+}
+
+// =====================================================================
+// 1. 회원
+// =====================================================================
+
+Table users {
+  id                bigint       [pk, increment]
+  email             varchar(255) [unique, note: '소셜 전용 계정은 null 허용']
+  password_hash     varchar(255) [note: 'REQ-NF-006 단방향 해시']
+  nickname          varchar(30)  [not null, unique]
+  profile_image_url varchar(500)
+  favorite_team_id  bigint       [note: '현재 응원팀. 변경 이력은 user_team_history']
+  role              user_role    [not null, default: 'MEMBER']
+  status            user_status  [not null, default: 'ACTIVE']
+  email_verified_at timestamp
+  created_at        timestamp    [not null]
+  updated_at        timestamp    [not null]
+  withdrawn_at      timestamp    [note: 'REQ-F-007 탈퇴 시 식별정보 파기, 통계 기여분은 익명 보존']
+
+  Note: '[MVP] 서비스 회원. 관리자는 role=ADMIN'
+}
+
+Table user_social_accounts {
+  id               bigint       [pk, increment]
+  user_id          bigint       [not null]
+  provider         varchar(20)  [not null, note: 'GOOGLE | NAVER | KAKAO']
+  provider_user_id varchar(100) [not null]
+  email            varchar(255) [note: '제공자가 알려준 이메일. 카카오는 비즈앱 심사 대상이라 없을 수 있다']
+  linked_at        timestamp    [not null]
+  created_at       timestamp    [not null]
+  updated_at       timestamp    [not null]
+
+  Indexes {
+    (provider, provider_user_id) [unique, note: '계정 식별 키. 이메일이 아니라 이 조합으로 찾는다']
+    (user_id, provider) [unique, note: '한 계정에 같은 제공자를 두 번 연결하지 않는다']
+    user_id
+  }
+  Note: '[확장] REQ-F-003 소셜 로그인 (구글 · 네이버 · 카카오)'
+}
+
+
+Table user_team_history {
+  id           bigint    [pk, increment]
+  user_id      bigint    [not null]
+  team_id      bigint    [not null]
+  changed_at   timestamp [not null]
+
+  Note: '[MVP] REQ-F-005 응원팀은 승패 판정 기준이므로 변경 이력을 보관한다'
+}
+
+// =====================================================================
+// 2. 경기 · 구장 (외부 데이터 + 운영자 등록)
+// =====================================================================
+
+Table teams {
+  id               bigint       [pk, increment]
+  name             varchar(50)  [not null, unique]
+  name_en          varchar(100)
+  short_name       varchar(10)  [not null]
+  home_stadium_id  bigint
+  external_ref     varchar(50)  [unique, note: 'TheSportsDB idTeam. 외부 동기화 대조용']
+  logo_url         varchar(500)
+  homepage_url     varchar(500) [note: 'REQ-F-110 구단 공식 채널']
+  ticket_url       varchar(500) [note: 'REQ-F-110']
+  instagram_url    varchar(500) [note: 'REQ-F-110']
+  youtube_url      varchar(500) [note: 'REQ-F-110']
+  is_active        boolean      [not null, default: true]
+
+  Note: '[MVP]'
+}
+
+Table stadiums {
+  id        bigint       [pk, increment]
+  name      varchar(50)  [not null, unique]
+  name_en   varchar(100)
+  address   varchar(255)
+  capacity  int
+  latitude  decimal(10,7)
+  longitude decimal(10,7)
+  grid_nx   int          [note: 'REQ-F-112 기상청 단기예보 격자 X. 위경도를 람베르트 정각원추 도법으로 변환한 값']
+  grid_ny   int          [note: 'REQ-F-112 기상청 단기예보 격자 Y']
+
+  Note: '[MVP] REQ-F-108, REQ-F-109, REQ-F-112'
+}
+
+Table stadium_zones {
+  id         bigint      [pk, increment]
+  stadium_id bigint      [not null]
+  name       varchar(50) [not null, note: '예: 3루 내야 지정석']
+  sort_order int         [not null, default: 0]
+  is_active  boolean     [not null, default: true]
+
+  Indexes { (stadium_id, name) [unique] }
+  Note: '[MVP] REQ-F-605 운영자가 관리. 구역별 만족도 집계 단위'
+}
+
+Table games {
+  id           bigint      [pk, increment]
+  season_year  int         [not null]
+  game_date    date        [not null]
+  start_at     timestamp   [not null]
+  stadium_id   bigint      [not null]
+  home_team_id bigint      [not null]
+  away_team_id bigint      [not null]
+  home_score   int
+  away_score   int
+  status       game_status [not null, default: 'SCHEDULED']
+  source       game_source [not null, default: 'EXTERNAL', note: 'REQ-F-107 결과 확정 경로']
+  external_ref varchar(100) [note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
+  synced_at    timestamp   [note: 'REQ-F-106 마지막 동기화 시각']
+  result_confirmed boolean [not null, default: false, note: 'REQ-F-606 미확정 경기는 화면에서 구분 표시하고 전적 집계에서 제외']
+  confirmed_at timestamp   [note: '결과 확정 시각']
+  created_at   timestamp   [not null]
+  updated_at   timestamp   [not null]
+
+  Indexes {
+    (game_date)
+    (season_year, home_team_id)
+    (season_year, away_team_id)
+    (result_confirmed)
+    (external_ref) [unique]
+  }
+  Note: '[MVP] 경기 결과는 운영자만 등록·정정한다 (REQ-NF-015). 외부 API 동기화를 붙일 경우에도 같은 경로로 반영한다 (REQ-F-107). 팀 순위는 이 테이블의 결과로부터 직접 산출한다 (REQ-F-104)'
+}
+
+Table game_weather {
+  game_id        bigint    [pk, note: '경기 1건당 1행']
+  temperature    decimal(4,1) [note: '섭씨']
+  sky_code       varchar(10)  [note: '맑음 / 구름많음 / 흐림']
+  precip_type    varchar(10)  [note: '없음 / 비 / 비눈 / 눈 / 소나기']
+  precip_prob    int          [note: '강수 확률 (%)']
+  alert_title    varchar(100) [note: '기상특보 발효 시']
+  fetched_at     timestamp    [not null, note: 'REQ-NF-024 배치 동기화 시각']
+
+  Note: '[확장] REQ-F-112, REQ-F-113. 기상청 단기예보 API 결과를 경기 단위로 캐시한다. 구장 좌표(stadiums.latitude/longitude)로 격자 변환하여 조회'
+}
+
+
+Table game_revisions {
+  id           bigint      [pk, increment]
+  game_id      bigint      [not null]
+  before_status game_status
+  before_home_score int
+  before_away_score int
+  after_status  game_status [not null]
+  after_home_score  int
+  after_away_score  int
+  reason       varchar(255) [not null, note: '우천 노게임, 서스펜디드 등']
+  revised_by   bigint      [not null]
+  revised_at   timestamp   [not null]
+
+  Indexes { (game_id, revised_at) }
+  Note: '[MVP] REQ-F-603 추가 전용(append-only). 수정·삭제하지 않는다. 개인 전적에 영향을 주는 변경의 감사 근거'
+}
+
+// =====================================================================
+// 3. 직관 기록  ★ 서비스 핵심
+// =====================================================================
+
+Table attendance_logs {
+  id              bigint     [pk, increment]
+  user_id         bigint     [not null]
+  game_id         bigint     [not null]
+  cheer_team_id   bigint     [note: 'null 이면 중립 관람 → 승패 집계 제외 (REQ-F-202)']
+  stadium_zone_id bigint     [not null, note: 'REQ-F-205']
+  zone_rating     tinyint    [not null, note: 'REQ-F-206 시야 만족도 1~5. 필수']
+  memo            varchar(1000)
+  game_rating     tinyint    [note: 'REQ-F-211 경기 만족도 1~5']
+  ticket_cost     int
+  food_cost       int
+  transport_cost  int
+  visibility      visibility [not null, default: 'PRIVATE', note: 'REQ-F-208']
+  weather_sky     varchar(10) [note: 'REQ-F-216 기록 시점의 날씨. 사후 조회가 불가능하므로 기록마다 보관한다']
+  weather_temp    decimal(4,1)
+  created_at      timestamp  [not null]
+  updated_at      timestamp  [not null]
+  deleted_at      timestamp
+
+  Indexes {
+    (user_id, game_id) [unique, note: 'REQ-F-201 동일 경기 1건 제한']
+    (user_id, created_at)
+    (stadium_zone_id)
+  }
+  Note: '[MVP] 관람 기록 1건. 전적·구역만족도 집계의 원천 데이터'
+}
+
+Table attendance_photos {
+  id                bigint       [pk, increment]
+  attendance_log_id bigint       [not null]
+  original_url      varchar(500) [not null]
+  thumbnail_url     varchar(500) [not null, note: 'REQ-NF-002']
+  taken_at          timestamp    [note: 'REQ-F-204 경기 자동 매칭에 사용. 위치정보는 REQ-NF-007에 따라 제거']
+  file_size         int
+  mime_type         varchar(50)
+  sort_order        int          [not null, default: 0]
+  created_at        timestamp    [not null]
+
+  Note: '[MVP] 기록당 최대 10장 (REQ-F-203)'
+}
+
+Table attendance_companions {
+  id                bigint      [pk, increment]
+  attendance_log_id bigint      [not null]
+  companion_user_id bigint      [note: '회원인 경우']
+  companion_name    varchar(30) [note: '비회원인 경우 이름만 기록']
+
+  Note: '[확장] REQ-F-209 둘 중 하나는 반드시 존재해야 한다'
+}
+
+// =====================================================================
+// 4. 집계 (사전 집계 테이블)
+// =====================================================================
+
+Table user_stats {
+  id            bigint         [pk, increment]
+  user_id       bigint         [not null]
+  dimension     stat_dimension [not null]
+  dimension_key varchar(50)    [not null, note: 'STADIUM=구장ID, OPPONENT=팀ID, DAY_OF_WEEK=MON..SUN, TOTAL=ALL']
+  season_year   int            [not null, note: '0 = 통산']
+  games         int            [not null, default: 0]
+  wins          int            [not null, default: 0]
+  draws         int            [not null, default: 0]
+  losses        int            [not null, default: 0]
+  total_cost    int            [not null, default: 0]
+  updated_at    timestamp      [not null]
+
+  Indexes { (user_id, dimension, dimension_key, season_year) [unique] }
+  Note: '[MVP] REQ-NF-003 매 조회마다 원시 기록을 계산하지 않는다. REQ-F-309 기록 변경·결과 정정 시 재계산'
+}
+
+Table user_streaks {
+  user_id         bigint    [pk]
+  current_streak  int       [not null, default: 0, note: '양수=연승, 음수=연패']
+  longest_win     int       [not null, default: 0]
+  last_game_date  date
+  updated_at      timestamp [not null]
+
+  Note: '[확장] REQ-F-306 무승부는 연승을 끊지 않는다'
+}
+
+Table zone_stats {
+  stadium_zone_id bigint    [pk]
+  rating_sum      int       [not null, default: 0]
+  rating_count    int       [not null, default: 0]
+  avg_rating      decimal(3,2)
+  updated_at      timestamp [not null]
+
+  Note: '[MVP] REQ-F-110 구역별 만족도. rating_count < 5 이면 화면에서 평균을 표시하지 않는다 (REQ-F-305)'
+}
+
+// =====================================================================
+// 5. 성장 (배지)
+// =====================================================================
+
+Table badges {
+  id          bigint       [pk, increment]
+  code        varchar(50)  [not null, unique, note: 'FIRST_LOG, FIRST_WIN, ALL_STADIUMS ...']
+  name        varchar(50)  [not null]
+  description varchar(255)
+  icon_url    varchar(500)
+
+  Note: '[확장] REQ-F-703 배지 정의. 코드와 달성 조건을 데이터로 두어 배지를 늘릴 때 코드를 고치지 않는다'
+}
+
+Table user_badges {
+  id          bigint    [pk, increment]
+  user_id     bigint    [not null]
+  badge_id    bigint    [not null]
+  achieved_at timestamp [not null]
+
+  Indexes { (user_id, badge_id) [unique] }
+  Note: '[확장] REQ-F-703 기록 1건만으로도 성취가 발생하도록 설계'
+}
+
+// =====================================================================
+// 6. 직관 메이트  ★ 동시성 제어 지점
+// =====================================================================
+
+Table companion_posts {
+  id              bigint      [pk, increment]
+  game_id         bigint      [not null]
+  author_id       bigint      [not null]
+  intro           varchar(500)
+  capacity        int         [not null, note: '작성자 포함 정원']
+  confirmed_count int         [not null, default: 1]
+  status          post_status [not null, default: 'OPEN']
+  version         int         [not null, default: 0, note: 'REQ-NF-011 낙관적 락 (또는 확정 시 행 잠금)']
+  created_at      timestamp   [not null]
+  closed_at       timestamp
+
+  Indexes { (game_id, status) }
+  Note: '[확장] REQ-F-501. confirmed_count 는 capacity 를 초과할 수 없다 (REQ-F-504)'
+}
+
+Table companion_applications {
+  id                bigint             [pk, increment]
+  companion_post_id bigint             [not null]
+  user_id           bigint             [not null]
+  status            application_status [not null, default: 'CONFIRMED']
+  seq               int                [not null, note: '확정 순번. 선착순 근거']
+  applied_at        timestamp          [not null]
+  canceled_at       timestamp
+
+  Indexes { (companion_post_id, user_id) [unique, note: '중복 지원 차단'] }
+  Note: '[확장] REQ-F-503~506. 대기자 개념은 두지 않는다'
+}
+
+// =====================================================================
+// 7. 관람 계획  ★ 제약조건 편성
+// =====================================================================
+
+Table companion_comments {
+  id                bigint    [pk, increment]
+  companion_post_id bigint    [not null]
+  user_id           bigint    [not null]
+  content           varchar(500) [not null]
+  created_at        timestamp [not null]
+  deleted_at        timestamp
+
+  Indexes { (companion_post_id, created_at) }
+  Note: '[확장] REQ-F-510 모집글 공개 문의. 지원 전 질문 용도이며 누구나 열람한다'
+}
+
+Table companion_messages {
+  id                bigint    [pk, increment]
+  companion_post_id bigint    [not null, note: '모집 글 1건당 대화방 1개이므로 별도 room 테이블을 두지 않는다']
+  user_id           bigint    [not null]
+  content           varchar(1000) [not null]
+  created_at        timestamp [not null]
+
+  Indexes { (companion_post_id, created_at) }
+  Note: '[확장] REQ-F-511 확정자 전용 비공개 대화. REQ-NF-023 에 따라 경기 종료 후 90일 보존'
+}
+
+Table companion_message_reads {
+  id                bigint    [pk, increment]
+  companion_post_id bigint    [not null]
+  user_id           bigint    [not null]
+  last_read_at      timestamp [not null]
+
+  Indexes { (companion_post_id, user_id) [unique] }
+  Note: '[확장] REQ-F-511 미읽음 개수 산출용. 메시지마다 읽음 행을 쌓지 않고 마지막 읽은 시각만 보관한다'
+}
+
+Table reports {
+  id           bigint        [pk, increment]
+  reporter_id  bigint        [not null]
+  target_type  report_target [not null]
+  target_id    bigint        [not null, note: '모집글 / 댓글 / 메시지 / 사용자 ID']
+  reason       varchar(255)  [not null]
+  status       report_status [not null, default: 'PENDING']
+  created_at   timestamp     [not null]
+  reviewed_at  timestamp
+  reviewed_by  bigint
+
+  Indexes {
+    (target_type, target_id)
+    (status, created_at)
+    (reporter_id, target_type, target_id) [unique, note: '동일 대상 중복 신고 방지']
+  }
+  Note: '[확장] REQ-F-508. 신고된 대화는 검토 종료 시까지 보존한다 (REQ-NF-023)'
+}
+
+Table user_blocks {
+  id            bigint    [pk, increment]
+  user_id       bigint    [not null]
+  blocked_id    bigint    [not null]
+  created_at    timestamp [not null]
+
+  Indexes { (user_id, blocked_id) [unique] }
+  Note: '[확장] REQ-F-509 차단한 사용자의 모집 글은 노출되지 않고 상호 지원이 불가능하다'
+}
+
+Table viewing_plans {
+  id                bigint      [pk, increment]
+  user_id           bigint      [not null]
+  season_year       int         [not null]
+  target_count      int         [not null, note: 'REQ-F-401 목표 관람 횟수']
+  budget_total      int
+  max_cost_per_game int
+  available_days    varchar(30) [note: 'REQ-F-402 예: MON,WED,SAT']
+  max_precip_prob   int         [note: 'REQ-F-403 이 강수확률(%)을 넘는 경기는 편성에서 제외한다']
+  created_at        timestamp   [not null]
+
+  Indexes { (user_id, season_year) [unique] }
+
+  Note: '[확장]'
+}
+
+
+Table viewing_plan_items {
+  id              bigint           [pk, increment]
+  viewing_plan_id bigint           [not null]
+  game_id         bigint           [not null]
+  status          plan_item_status [not null, default: 'PROPOSED']
+  created_at      timestamp        [not null]
+
+  Indexes { (viewing_plan_id, game_id) [unique] }
+  Note: '[확장] REQ-F-403 편성 결과. REQ-F-404 실제 기록과 대조하여 달성률 산출'
+}
+
+// =====================================================================
+// 8. 알림
+// =====================================================================
+
+Table notifications {
+  id         bigint       [pk, increment]
+  user_id    bigint       [not null]
+  type       varchar(30)  [not null, note: 'GAME_REVISED, COMPANION_CONFIRMED, BADGE_ACHIEVED']
+  title      varchar(100) [not null]
+  body       varchar(255)
+  link_url   varchar(255)
+  read_at    timestamp
+  created_at timestamp    [not null]
+
+  Indexes { (user_id, created_at) }
+  Note: '[확장] REQ-F-604 정정으로 전적이 변경된 사용자에게 안내'
+}
+
+// =====================================================================
+// 관계 정의
+// =====================================================================
+
+Ref: users.favorite_team_id            > teams.id
+Ref: user_social_accounts.user_id      > users.id
+Ref: user_team_history.user_id         > users.id
+Ref: user_team_history.team_id         > teams.id
+
+Ref: teams.home_stadium_id             > stadiums.id
+Ref: stadium_zones.stadium_id          > stadiums.id
+
+Ref: games.stadium_id                  > stadiums.id
+Ref: games.home_team_id                > teams.id
+Ref: games.away_team_id                > teams.id
+Ref: game_weather.game_id              - games.id
+Ref: game_revisions.game_id            > games.id
+Ref: game_revisions.revised_by         > users.id
+
+Ref: attendance_logs.user_id           > users.id
+Ref: attendance_logs.game_id           > games.id
+Ref: attendance_logs.cheer_team_id     > teams.id
+Ref: attendance_logs.stadium_zone_id   > stadium_zones.id
+Ref: attendance_photos.attendance_log_id     > attendance_logs.id
+Ref: attendance_companions.attendance_log_id > attendance_logs.id
+Ref: attendance_companions.companion_user_id > users.id
+
+Ref: user_stats.user_id                > users.id
+Ref: user_streaks.user_id              - users.id
+Ref: zone_stats.stadium_zone_id        - stadium_zones.id
+
+Ref: user_badges.user_id               > users.id
+Ref: user_badges.badge_id              > badges.id
+
+Ref: companion_posts.game_id           > games.id
+Ref: companion_posts.author_id         > users.id
+Ref: companion_applications.companion_post_id > companion_posts.id
+Ref: companion_applications.user_id    > users.id
+
+Ref: companion_comments.companion_post_id > companion_posts.id
+Ref: companion_comments.user_id        > users.id
+Ref: companion_messages.companion_post_id > companion_posts.id
+Ref: companion_messages.user_id        > users.id
+Ref: companion_message_reads.companion_post_id > companion_posts.id
+Ref: companion_message_reads.user_id   > users.id
+Ref: reports.reporter_id               > users.id
+Ref: reports.reviewed_by               > users.id
+Ref: user_blocks.user_id               > users.id
+Ref: user_blocks.blocked_id            > users.id
+
+Ref: viewing_plans.user_id             > users.id
+Ref: viewing_plan_items.viewing_plan_id > viewing_plans.id
+Ref: viewing_plan_items.game_id        > games.id
+
+Ref: notifications.user_id             > users.id
+
+
+// ---------- 기능별 그룹 ----------
+// dbdiagram.io 에서 기능 영역별로 묶어 표시하기 위한 정의다. 스키마 자체에는 영향이 없다.
+
+TableGroup "회원 · 인증" {
+  users
+  user_social_accounts
+  user_team_history
+  user_blocks
+}
+
+TableGroup "경기 · 구장" {
+  teams
+  stadiums
+  stadium_zones
+  games
+  game_weather
+  game_revisions
+}
+
+TableGroup "직관 기록" {
+  attendance_logs
+  attendance_photos
+  attendance_companions
+}
+
+TableGroup "전적 · 성장" {
+  user_stats
+  user_streaks
+  zone_stats
+  badges
+  user_badges
+}
+
+TableGroup "직관 메이트" {
+  companion_posts
+  companion_applications
+  companion_comments
+  companion_messages
+  companion_message_reads
+}
+
+TableGroup "관람 계획" {
+  viewing_plans
+  viewing_plan_items
+}
+
+TableGroup "운영 · 알림" {
+  reports
+  notifications
+}
