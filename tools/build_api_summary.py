@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""openapi.yaml 에서 엔드포인트 요약표를 만들어 기술서 부록으로 넣는다.
+"""openapi.yaml 에서 엔드포인트 목록을 만들어 기술서 API 설계 장으로 넣는다.
 
 명세를 고치면 이 스크립트를 다시 돌려 표를 갱신한다. 손으로 옮겨 적지 않는 이유는
 두 곳이 어긋나기 때문이다.
@@ -8,7 +8,7 @@ import io, os, re, yaml
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(BASE, "docs", "03_API명세", "openapi.yaml")
-OUT = os.path.join(BASE, "docs", "01_기술서", "05_부록_API_요약.md")
+OUT = os.path.join(BASE, "docs", "01_기술서", "04_API설계.md")
 METHODS = ("get", "post", "put", "patch", "delete")
 
 spec = yaml.safe_load(io.open(SRC, encoding="utf-8"))
@@ -41,7 +41,7 @@ def req_ids(op):
     return ", ".join(seen[:3])
 
 lines = [
-    "# 부록 B. API 엔드포인트 요약", "",
+    "# API 설계", "",
     "| 항목 | 내용 |", "|---|---|",
     "| 프로젝트명 | 오늘의직관 — KBO 직관 기록 서비스 |",
     "| 작성자 | 울산 U133 이채목 |",

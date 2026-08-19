@@ -213,7 +213,7 @@ for _f in sorted(glob.glob(os.path.join(BASE, "docs/01_기술서/0*.md"))):
 check("문서 버전 ↔ 개정 이력", not ver_bad, ver_bad)
 
 print("\n■ 표 형식")
-# 부록 B 머리글이 데이터 행보다 한 칸 모자라 범위 값이 인증 칸에 찍힌 적이 있다.
+# API 설계 표의 머리글이 데이터 행보다 한 칸 모자라 범위 값이 인증 칸에 찍힌 적이 있다.
 # 눈으로는 표가 밀린 것처럼만 보여 놓치기 쉬우므로 열 수를 센다.
 skew = []
 for f in sorted(glob.glob(os.path.join(BASE, "docs/01_기술서/*.md"))):

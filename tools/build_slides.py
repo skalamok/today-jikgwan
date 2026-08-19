@@ -199,7 +199,7 @@ slide("", head("DELIVERABLES", "산출물") + """
       <p class="small">경로 43 · MVP 25 · 확장 30<br>OpenAPI 3.0</p></div>
     <div class="box"><div class="big">54</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
-      <p class="small">개요 · 요구사항 · 화면 설계<br>+ 부록 A · B</p></div>
+      <p class="small">개요 · 요구사항 · 화면 · 데이터 · API</p></div>
     <div class="box dark"><div class="big">6/6</div>
       <div class="mid" style="margin-top:2mm">설계 판단 지점</div>
       <p class="small">파생 지표 · 소표본 · 동시성<br>이력 · 제약 편성 · 외부 데이터</p></div>

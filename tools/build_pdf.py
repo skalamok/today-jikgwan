@@ -38,8 +38,8 @@ SOURCES = [
     ("01_요구사항정의서.md", "요구사항 정의서"),
     ("02_화면설계서.md", "화면 설계서"),
     ("03_데이터모델.md", "데이터 모델"),
-    ("04_부록_경기데이터_확보정책.md", "부록 A. 경기 데이터 확보 정책"),
-    ("05_부록_API_요약.md", "부록 B. API 엔드포인트 요약"),
+    ("04_API설계.md", "API 설계"),
+    ("05_부록_경기데이터_확보정책.md", "부록. 경기 데이터 확보 정책"),
 ]
 
 CSS = """
@@ -374,8 +374,8 @@ def build(pages=None):
             % (idx, idx, title, body)
         )
         toc.append((1, "PART %d. %s" % (idx, title), "part%d" % idx))
-        # 부록 B 는 태그별 소제목이 열둘이라 목차만 길어진다. 파트 제목으로 갈음한다.
-        if "API 엔드포인트 요약" in title:
+        # API 설계는 태그별 소제목이 열둘이라 목차만 길어진다. 파트 제목으로 갈음한다.
+        if title == "API 설계":
             continue
         for lv, text, anchor in headings:
             if lv == 2 and not text.startswith("0-"):
