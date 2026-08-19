@@ -574,3 +574,58 @@ Ref: viewing_plan_items.viewing_plan_id > viewing_plans.id
 Ref: viewing_plan_items.game_id        > games.id
 
 Ref: notifications.user_id             > users.id
+
+
+// ---------- 기능별 그룹 ----------
+// dbdiagram.io 에서 기능 영역별로 묶어 표시하기 위한 정의다. 스키마 자체에는 영향이 없다.
+
+TableGroup "회원 · 인증" {
+  users
+  auth_tokens
+  user_social_accounts
+  user_team_history
+  user_blocks
+}
+
+TableGroup "경기 · 구장" {
+  teams
+  stadiums
+  stadium_zones
+  games
+  game_weather
+  game_result_reports
+  game_revisions
+}
+
+TableGroup "직관 기록" {
+  attendance_logs
+  attendance_photos
+  attendance_companions
+}
+
+TableGroup "전적 · 성장" {
+  user_stats
+  user_streaks
+  zone_stats
+  badges
+  user_badges
+}
+
+TableGroup "동행" {
+  companion_posts
+  companion_applications
+  companion_comments
+  companion_messages
+  companion_message_reads
+}
+
+TableGroup "관람 계획" {
+  viewing_plans
+  viewing_plan_items
+  viewing_plan_stadiums
+}
+
+TableGroup "운영 · 알림" {
+  reports
+  notifications
+}
