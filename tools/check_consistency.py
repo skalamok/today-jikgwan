@@ -198,6 +198,20 @@ stale = [f"{k}={v}" for k, v in real.items() if str(v) not in slides]
 check("발표 자료 수치 ↔ 실측", not stale, stale)
 check("발표 자료에 옛 용어 없음", "동행자" not in slides and "동행 모집" not in slides)
 
+print("\n■ 버전")
+# 머리표의 버전이 개정 이력의 마지막 항목과 어긋나면 어느 쪽이 맞는지 알 수 없다
+ver_bad = []
+for _f in sorted(glob.glob(os.path.join(BASE, "docs/01_기술서/0*.md"))):
+    _s = io.open(_f, encoding="utf-8").read()
+    _blk = re.search(r"### 개정 이력\n\n\| 버전 \| 일자 \| 내용 \|\n\|[-|]+\|\n((?:\|.*\n)+)", _s)
+    _head = re.search(r"^\| 버전 \| (v[\d.]+) \|$", _s, re.M)
+    if not _blk or not _head:
+        continue
+    _last = re.findall(r"^\| (v[\d.]+) \|", _blk.group(1), re.M)[-1]
+    if _last != _head.group(1):
+        ver_bad.append("%s 머리 %s ↔ 이력 %s" % (os.path.basename(_f), _head.group(1), _last))
+check("문서 버전 ↔ 개정 이력", not ver_bad, ver_bad)
+
 print("\n■ 표 형식")
 # 부록 B 머리글이 데이터 행보다 한 칸 모자라 범위 값이 인증 칸에 찍힌 적이 있다.
 # 눈으로는 표가 밀린 것처럼만 보여 놓치기 쉬우므로 열 수를 센다.
