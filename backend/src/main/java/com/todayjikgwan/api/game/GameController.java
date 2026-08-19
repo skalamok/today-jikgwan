@@ -3,6 +3,7 @@ package com.todayjikgwan.api.game;
 import com.todayjikgwan.api.game.dto.WeatherResponse;
 import com.todayjikgwan.config.KmaProperties;
 import com.todayjikgwan.domain.game.Game;
+import com.todayjikgwan.domain.game.GameSource;
 import com.todayjikgwan.domain.game.GameRepository;
 import com.todayjikgwan.domain.weather.GameWeatherRepository;
 import com.todayjikgwan.service.weather.WeatherSyncService;
@@ -110,6 +111,12 @@ public class GameController {
         m.put("awayScore", g.getAwayScore());
         m.put("status", g.getStatus().name());
         m.put("resultConfirmed", g.isResultConfirmed());   // REQ-F-606
+        // REQ-F-106 외부에서 받아 온 값에는 마지막 동기화 시각과 출처를 함께 붙인다.
+        // 운영자가 넣은 것은 우리 데이터라 표기할 출처가 없다 (REQ-NF-014)
+        if (g.getSource() != GameSource.MANUAL && g.getSyncedAt() != null) {
+            m.put("dataSource", g.getSource().name());
+            m.put("syncedAt", g.getSyncedAt().toString());
+        }
         return m;
     }
 }
