@@ -205,6 +205,20 @@ print("\n■ 발표 자료")
 slides = read("tools/build_slides.py")
 stale = [f"{k}={v}" for k, v in real.items() if str(v) not in slides]
 check("발표 자료 수치 ↔ 실측", not stale, stale)
+# 슬라이드가 없는 요구사항 · 화면 ID 를 말하면 발표 중에 바로 걸린다
+slide_ids = set(re.findall(r"REQ-[A-Z]+-\d+", slides)) | set(re.findall(r"SCR-[A-Z]+-\d+", slides))
+alive_ids = set(re.findall(r"^\| (REQ-[A-Z]+-\d+) \|", req, re.M)) | scr_ids
+ghost = sorted(i for i in slide_ids if i not in alive_ids)
+check("발표 자료의 식별자 실재", not ghost, ghost)
+# 발표 자료가 말하는 기술서 쪽수가 실제와 같은지
+pdf_path = os.path.join(BASE, "docs/_제출본/프로젝트기술서_오늘의직관.pdf")
+if os.path.exists(pdf_path):
+    real_pages = max(int(x) for x in re.findall(rb"/Count (\d+)", io.open(pdf_path, "rb").read()))
+    # 원본은 쪽수를 계산해 넣으므로 만들어진 슬라이드에서 확인한다
+    shown = _sp.run(["pdftotext", "-f", "5", "-l", "5",
+                     os.path.join(BASE, "docs/_제출본/발표자료_오늘의직관.pdf"), "-"],
+                    capture_output=True, text=True).stdout
+    check("발표 자료의 기술서 쪽수", str(real_pages) in shown, "실제 %d쪽" % real_pages)
 check("발표 자료에 옛 용어 없음", "동행자" not in slides and "동행 모집" not in slides)
 
 print("\n■ 버전")

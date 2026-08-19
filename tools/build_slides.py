@@ -5,7 +5,7 @@
 구성안: docs/04_발표자료/발표_구성안.md
 사용: python3 tools/build_slides.py
 """
-import io, os, subprocess, sys
+import io, os, re, subprocess, sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(BASE, "docs", "_제출본")
@@ -16,6 +16,35 @@ FONT = os.path.join(BASE, "docs", "_assets", "font")
 
 # 기술서와 같은 프리텐다드를 쓴다. 라틴 글자가 한글과 함께 설계돼 있어
 # 영문 폰트를 따로 섞지 않는다.
+def tech_pages():
+    """기술서 쪽수를 손으로 적어 두면 문서가 늘 때마다 낡는다. 만든 PDF 에서 읽는다."""
+    pdf = os.path.join(BASE, "docs", "_제출본", "프로젝트기술서_오늘의직관.pdf")
+    if not os.path.exists(pdf):
+        return "—"
+    d = io.open(pdf, "rb").read()
+    return str(max(int(m) for m in re.findall(rb"/Count (\d+)", d)))
+
+
+TECH_PAGES = tech_pages()
+
+
+def table_rows():
+    """도메인별 테이블 목록을 schema.dbml 에서 만든다.
+
+    손으로 적어 두었더니 V8 · V9 에서 지운 auth_tokens 와 game_result_reports 가
+    슬라이드에 남고, 여덟 개가 빠져 옆 장의 "테이블 27" 과 맞지 않았다.
+    """
+    src = io.open(os.path.join(BASE, "docs", "02_데이터모델링", "schema.dbml"),
+                  encoding="utf-8").read()
+    rows = []
+    for gm in re.finditer(r'TableGroup\s+"?([^"\n{]+?)"?\s*\{([^}]*)\}', src):
+        name = gm.group(1).strip()
+        ts = re.findall(r"\b(\w+)\b", gm.group(2))
+        cells = ", ".join("<b>%s</b>" % t if t == "attendance_logs" else t for t in ts)
+        rows.append("<tr><td>%s</td><td>%s</td></tr>" % (name, cells))
+    return "\n      ".join(rows)
+
+
 FONT_CSS = "".join(
     "@font-face { font-family: Pretendard; font-weight: %d; font-style: normal;"
     " font-display: block; src: url('file://%s/Pretendard-%s.woff2') format('woff2'); }\n"
@@ -197,7 +226,7 @@ slide("", head("DELIVERABLES", "산출물") + """
     <div class="box"><div class="big">55</div>
       <div class="mid" style="margin-top:2mm">API 오퍼레이션</div>
       <p class="small">경로 43 · MVP 25 · 확장 30<br>OpenAPI 3.0</p></div>
-    <div class="box"><div class="big">54</div>
+    <div class="box"><div class="big">""" + TECH_PAGES + """</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
       <p class="small">개요 · 요구사항 · 화면 · 데이터 · API</p></div>
     <div class="box dark"><div class="big">6/6</div>
@@ -220,7 +249,7 @@ slide("", head("REQUIREMENTS", "요구사항 정의서 — 추적성",
     </table>
     <div class="small" style="margin-top:3mm">
       순번이 아닌 <b>대역</b>으로 나눈 이유 — 나중에 요구사항이 추가돼도 기존 ID 를 건드리지 않는다.
-      실제로 설계 검증 중 REQ-F-606~608 을 추가했으나 다른 번호는 그대로 유지됐다.
+      실제로 설계 검증 중 미확정 결과 표시(REQ-F-606)를 추가했으나 다른 번호는 그대로 유지됐다.
     </div>
   </div>
   <div class="box">
@@ -281,12 +310,7 @@ slide("", head("DATA MODEL", "데이터 모델링 — 핵심 설계 결정") + "
   <div>
     <table style="font-size:8.5pt">
       <tr><th>도메인</th><th>테이블</th></tr>
-      <tr><td>회원</td><td>users, user_social_accounts,<br>auth_tokens, user_team_history</td></tr>
-      <tr><td>경기 · 구장</td><td>teams, stadiums, stadium_zones,<br>games, game_result_reports,<br>game_revisions</td></tr>
-      <tr><td><b>직관 기록</b></td><td><b>attendance_logs</b>, attendance_photos,<br>attendance_companions</td></tr>
-      <tr><td>집계</td><td>user_stats, user_streaks, zone_stats</td></tr>
-      <tr><td>직관 메이트</td><td>companion_posts,<br>companion_applications</td></tr>
-      <tr><td>계획 · 성장 · 알림</td><td>viewing_plans(3), badges(2),<br>notifications</td></tr>
+      """ + table_rows() + """
     </table>
     <div class="small" style="margin-top:3mm">전체 ERD 는 제출한 <code>schema.dbml</code> 참조</div>
   </div>
@@ -368,7 +392,7 @@ slide("", head("DESIGN DECISION 3", "30명이 동시에 눌러도 정원은 넘�
   <div>
     <div class="box" style="margin-bottom:4mm">
       <h3>문제</h3>
-      <p>메이트 모집 정원이 3명인데 여러 명이 같은 순간 신청을 누르면
+      <p>메이트 모집 정원이 정해져 있는데 여러 명이 같은 순간 신청을 누르면
       확인 후 증가시키는 방식은 <b>정원을 넘긴다</b></p>
     </div>
     <div class="box">
@@ -416,7 +440,7 @@ slide("", head("VERIFICATION", "설계대로 구현하여 동작을 확인했다
       <tr><td>소표본 정책</td><td>표본 2건 → 평균 미표시</td></tr>
       <tr><td>메이트 선착순</td><td>30명 중 3명만 확정</td></tr>
       <tr><td>사진 위치정보</td><td>GPS 4태그 → <b>0태그</b></td></tr>
-      <tr><td>소셜 로그인</td><td>3개 제공자 인가 URL 생성</td></tr>
+      <tr><td>소셜 로그인</td><td>3개 제공자 인가 URL 생성 (키 미발급으로 여기까지)</td></tr>
       <tr><td>결과 정정 재계산</td><td>8경기 5승3패 → 7경기 5승2패</td></tr>
       <tr><td>운영자 권한</td><td>일반 회원 접근 시 403</td></tr>
     </table>
