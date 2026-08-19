@@ -73,6 +73,7 @@ paths:
   # ==================== Auth ====================
   /auth/signup:
     post:
+      operationId: signup
       x-scope: MVP
       tags: [Auth]
       summary: 이메일 회원가입
@@ -118,6 +119,7 @@ paths:
 
   /auth/login:
     post:
+      operationId: login
       x-scope: MVP
       tags: [Auth]
       summary: 이메일 로그인
@@ -159,9 +161,12 @@ paths:
               example:
                 code: CAPTCHA_REQUIRED
                 message: 캡차 인증이 필요합니다.
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /auth/oauth/providers:
     get:
+      operationId: listOauthProviders
       x-scope: 확장
       tags: [Auth]
       summary: 사용 가능한 소셜 로그인 제공자 조회
@@ -184,6 +189,7 @@ paths:
 
   /auth/oauth/{provider}/authorize-url:
     get:
+      operationId: getOauthAuthorizeUrl
       x-scope: 확장
       tags: [Auth]
       summary: 소셜 로그인 인가 URL 발급
@@ -205,9 +211,12 @@ paths:
                   state: { type: string, example: x61DhMndc_Jl4k0bG5pDdydgfPVQoTGR }
         '400':
           description: 키가 등록되지 않은 제공자 (OAUTH_PROVIDER_DISABLED)
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /auth/oauth/{provider}/callback:
     post:
+      operationId: exchangeOauthCode
       x-scope: 확장
       tags: [Auth]
       summary: 소셜 로그인 콜백 (인가 코드 교환)
@@ -249,9 +258,14 @@ paths:
                         example: true
         '401':
           description: 코드 교환 또는 프로필 조회 실패 (OAUTH_FAILED)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /auth/password-reset:
     post:
+      operationId: requestPasswordReset
       x-scope: 확장
       tags: [Auth]
       summary: 비밀번호 재설정 메일 발송
@@ -272,10 +286,13 @@ paths:
       responses:
         '200':
           description: 요청 접수됨
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   # ==================== User ====================
   /users/me:
     get:
+      operationId: getMe
       x-scope: 확장
       tags: [User]
       summary: 내 정보 조회
@@ -288,6 +305,7 @@ paths:
               schema: { $ref: '#/components/schemas/UserResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     patch:
+      operationId: updateMe
       x-scope: MVP
       tags: [User]
       summary: 내 정보 수정
@@ -310,9 +328,14 @@ paths:
               schema: { $ref: '#/components/schemas/UserResponse' }
         '409':
           description: 닉네임 중복
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /users/me/badges:
     get:
+      operationId: listMyBadges
       x-scope: 확장
       tags: [User]
       summary: 내 배지 목록
@@ -325,9 +348,12 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/BadgeResponse' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /teams:
     get:
+      operationId: listTeams
       x-scope: MVP
       tags: [User]
       summary: 구단 목록
@@ -350,6 +376,7 @@ paths:
   # ==================== Notification ====================
   /notifications:
     get:
+      operationId: listNotifications
       x-scope: 확장
       tags: [Notification]
       summary: 알림 목록
@@ -375,9 +402,12 @@ paths:
                         linkUrl: { type: string, example: /stats }
                         read: { type: boolean }
                         createdAt: { type: string, format: date-time }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /notifications/read:
     put:
+      operationId: markNotificationsRead
       x-scope: 확장
       tags: [Notification]
       summary: 알림 전체 읽음 처리
@@ -385,10 +415,15 @@ paths:
       responses:
         '204':
           description: 처리 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ==================== Game ====================
   /games:
     get:
+      operationId: listGames
       x-scope: MVP
       tags: [Game]
       summary: 경기 일정 및 결과 조회
@@ -426,6 +461,7 @@ paths:
 
   /games/{gameId}:
     get:
+      operationId: getGame
       x-scope: MVP
       tags: [Game]
       summary: 경기 상세 조회
@@ -447,6 +483,7 @@ paths:
 
   /games/suggest:
     post:
+      operationId: suggestGames
       x-scope: 확장
       tags: [Game]
       summary: 촬영 일시 기반 경기 후보 조회
@@ -472,9 +509,14 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/GameResponse' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /games/{gameId}/weather:
     get:
+      operationId: getGameWeather
       x-scope: 확장
       tags: [Game]
       summary: 경기 구장 날씨 조회
@@ -494,6 +536,7 @@ paths:
 
   /games/weather/sync:
     post:
+      operationId: syncGameWeather
       x-scope: 확장
       tags: [Game]
       summary: 구장 날씨 수동 동기화
@@ -511,9 +554,14 @@ paths:
                 properties:
                   updated: { type: integer, description: '갱신된 경기 수', example: 15 }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /standings:
     get:
+      operationId: listStandings
       x-scope: 확장
       tags: [Game]
       summary: 팀 순위 조회
@@ -533,6 +581,7 @@ paths:
   # ==================== Stadium ====================
   /stadiums:
     get:
+      operationId: listStadiums
       x-scope: MVP
       tags: [Stadium]
       summary: 구장 목록 조회
@@ -549,6 +598,7 @@ paths:
 
   /stadiums/{stadiumId}:
     get:
+      operationId: getStadium
       x-scope: MVP
       tags: [Stadium]
       summary: 구장 상세 조회
@@ -566,6 +616,7 @@ paths:
 
   /stadiums/{stadiumId}/zones/{zoneId}/reviews:
     get:
+      operationId: listZoneReviews
       x-scope: 확장
       tags: [Stadium]
       summary: 구역별 후기 조회
@@ -589,10 +640,13 @@ paths:
                     memo: { type: string }
                     rating: { type: integer, example: 4 }
                     attendedAt: { type: string, format: date }
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # ==================== AttendanceLog ====================
   /attendance-logs:
     get:
+      operationId: listAttendanceLogs
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 내 직관 기록 목록
@@ -611,7 +665,10 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/AttendanceLogSummary' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      operationId: createAttendanceLog
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 직관 기록 작성
@@ -641,9 +698,12 @@ paths:
                 message: 이미 이 경기 기록이 있어요.
                 data: { existingLogId: 1024 }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /attendance-logs/{logId}:
     get:
+      operationId: getAttendanceLog
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 기록 상세 조회
@@ -658,7 +718,10 @@ paths:
               schema: { $ref: '#/components/schemas/AttendanceLogDetail' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     patch:
+      operationId: updateAttendanceLog
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 기록 수정
@@ -678,7 +741,14 @@ paths:
         '200':
           description: 수정 성공
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      operationId: deleteAttendanceLog
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 기록 삭제
@@ -689,9 +759,14 @@ paths:
         '204':
           description: 삭제 성공
         '403': { $ref: '#/components/responses/Forbidden' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /attendance-logs/{logId}/photos:
     post:
+      operationId: uploadAttendancePhoto
       x-scope: MVP
       tags: [AttendanceLog]
       summary: 사진 업로드
@@ -731,9 +806,16 @@ paths:
                         reason: { type: string, example: FILE_TOO_LARGE }
         '413':
           description: 전체 파일이 허용 용량을 초과함
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /attendance-logs/{logId}/photos/{photoId}:
     delete:
+      operationId: deleteAttendancePhoto
       x-scope: 확장
       tags: [AttendanceLog]
       summary: 사진 삭제
@@ -746,10 +828,13 @@ paths:
           description: 삭제 성공
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ==================== Stat ====================
   /stats/me/summary:
     get:
+      operationId: getMyStatSummary
       x-scope: MVP
       tags: [Stat]
       summary: 내 전적 요약
@@ -766,9 +851,12 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/StatSummaryResponse' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /stats/me:
     get:
+      operationId: getMyStats
       x-scope: MVP
       tags: [Stat]
       summary: 차원별 전적 조회
@@ -789,10 +877,13 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/StatItem' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ==================== Companion ====================
   /companion-posts:
     get:
+      operationId: listCompanionPosts
       x-scope: 확장
       tags: [Companion]
       summary: 메이트 모집글 목록
@@ -809,7 +900,10 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/CompanionPostResponse' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      operationId: createCompanionPost
       x-scope: 확장
       tags: [Companion]
       summary: 메이트 모집글 등록
@@ -830,9 +924,12 @@ paths:
           description: 등록 성공
         '400':
           description: 경기 시작 시각이 지난 경우
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /companion-posts/{postId}:
     get:
+      operationId: getCompanionPost
       x-scope: 확장
       tags: [Companion]
       summary: 메이트 모집글 상세
@@ -846,9 +943,12 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/CompanionPostDetail' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /companion-posts/{postId}/applications:
     post:
+      operationId: applyToCompanionPost
       x-scope: 확장
       tags: [Companion]
       summary: 메이트 참여 신청 (선착순 확정)
@@ -889,8 +989,13 @@ paths:
                     message: 같은 시간에 확정된 약속이 있어요.
         '400':
           description: 본인이 등록한 모집에는 지원할 수 없음
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
     delete:
+      operationId: cancelCompanionApplication
       x-scope: 확장
       tags: [Companion]
       summary: 메이트 참여 취소
@@ -908,9 +1013,14 @@ paths:
               example:
                 code: CANCEL_DEADLINE_PASSED
                 message: 경기 임박 시에는 취소할 수 없어요.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /companion-posts/{postId}/comments:
     get:
+      operationId: listCompanionPostsComments
       x-scope: 확장
       tags: [CompanionChat]
       summary: 모집글 문의 댓글 조회
@@ -925,7 +1035,12 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/CommentResponse' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
+      operationId: createCompanionComment
       x-scope: 확장
       tags: [CompanionChat]
       summary: 모집글 문의 댓글 작성
@@ -944,9 +1059,16 @@ paths:
       responses:
         '201':
           description: 작성 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /companion-posts/{postId}/messages:
     get:
+      operationId: listCompanionPostsMessages
       x-scope: 확장
       tags: [CompanionChat]
       summary: 메이트 대화 조회
@@ -975,7 +1097,12 @@ paths:
                     description: REQ-F-513 경기 종료 후 일정 기간 경과 시 true
         '403':
           description: 확정된 직관 메이트가 아님
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
+      operationId: sendCompanionMessage
       x-scope: 확장
       tags: [CompanionChat]
       summary: 메이트 대화 전송
@@ -999,9 +1126,16 @@ paths:
               schema: { $ref: '#/components/schemas/MessageResponse' }
         '403':
           description: 확정된 직관 메이트가 아니거나 읽기 전용 상태
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /companion-posts/{postId}/messages/read:
     put:
+      operationId: markCompanionMessagesRead
       x-scope: 확장
       tags: [CompanionChat]
       summary: 대화 읽음 처리
@@ -1011,9 +1145,16 @@ paths:
       responses:
         '204':
           description: 처리 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /reports:
     post:
+      operationId: createReport
       x-scope: 확장
       tags: [Safety]
       summary: 신고
@@ -1038,9 +1179,14 @@ paths:
           description: 신고 접수
         '409':
           description: 동일 대상에 이미 신고함
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /users/me/blocks:
     get:
+      operationId: listMyBlocks
       x-scope: 확장
       tags: [Safety]
       summary: 차단 목록 조회
@@ -1048,7 +1194,10 @@ paths:
       responses:
         '200':
           description: 조회 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
+      operationId: blockUser
       x-scope: 확장
       tags: [Safety]
       summary: 사용자 차단
@@ -1065,9 +1214,14 @@ paths:
       responses:
         '201':
           description: 차단 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /users/me/blocks/{userId}:
     delete:
+      operationId: unblockUser
       x-scope: 확장
       tags: [Safety]
       summary: 차단 해제
@@ -1077,10 +1231,15 @@ paths:
       responses:
         '204':
           description: 해제 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # ==================== ViewingPlan ====================
   /viewing-plans:
     post:
+      operationId: createViewingPlan
       x-scope: 확장
       tags: [ViewingPlan]
       summary: 관람 계획 생성
@@ -1124,9 +1283,14 @@ paths:
                 type: object
                 properties:
                   planId: { type: integer, format: int64 }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /viewing-plans/{planId}/generate:
     post:
+      operationId: generateViewingPlan
       x-scope: 확장
       tags: [ViewingPlan]
       summary: 후보 일정 자동 편성
@@ -1201,10 +1365,17 @@ paths:
                         message: { type: string, example: 월·화·수·목·금요일을 추가하면 최대 15경기까지 채울 수 있어요 }
                         additionalGames: { type: integer, example: 11 }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # ==================== Admin ====================
   /admin/games:
     post:
+      operationId: createGame
       x-scope: MVP
       tags: [Admin]
       summary: 경기 등록
@@ -1218,9 +1389,14 @@ paths:
         '201':
           description: 등록 성공
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /admin/games/unconfirmed:
     get:
+      operationId: listUnconfirmedGames
       x-scope: MVP
       tags: [Admin]
       summary: 결과 미등록 경기 조회
@@ -1239,9 +1415,12 @@ paths:
                   properties:
                     game: { $ref: '#/components/schemas/GameResponse' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /admin/games/{gameId}/revisions:
     post:
+      operationId: reviseGameResult
       x-scope: MVP
       tags: [Admin]
       summary: 경기 결과 정정
@@ -1283,7 +1462,14 @@ paths:
                     description: 전적이 재계산된 사용자 수
                     example: 37
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     get:
+      operationId: listGameRevisions
       x-scope: MVP
       tags: [Admin]
       summary: 경기 정정 이력 조회
@@ -1298,10 +1484,15 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/GameRevisionResponse' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 
   /admin/stadiums/{stadiumId}:
     patch:
+      operationId: updateAdminStadium
       x-scope: MVP
       tags: [Admin]
       summary: 구장 정보 수정
@@ -1325,9 +1516,16 @@ paths:
         '200':
           description: 수정 성공
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /admin/stadiums/{stadiumId}/zones:
     get:
+      operationId: listAdminStadiumZones
       x-scope: MVP
       tags: [Admin]
       summary: 좌석 구역 목록 (운영자)
@@ -1352,7 +1550,12 @@ paths:
                     active: { type: boolean }
                     logCount: { type: integer, description: 이 구역을 좌석으로 기록한 관람 건수 }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
+      operationId: createStadiumZone
       x-scope: MVP
       tags: [Admin]
       summary: 좌석 구역 추가
@@ -1377,9 +1580,14 @@ paths:
         '409':
           description: 같은 구장에 같은 이름이 이미 있음 (DUPLICATE_ZONE)
         '403': { $ref: '#/components/responses/Forbidden' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /admin/zones/{zoneId}:
     patch:
+      operationId: updateAdminZone
       x-scope: MVP
       tags: [Admin]
       summary: 좌석 구역 수정 · 비활성화
@@ -1404,7 +1612,14 @@ paths:
         '409':
           description: 이름 중복 (DUPLICATE_ZONE)
         '403': { $ref: '#/components/responses/Forbidden' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      operationId: deleteAdminZone
       x-scope: MVP
       tags: [Admin]
       summary: 좌석 구역 삭제
@@ -1420,6 +1635,10 @@ paths:
         '409':
           description: 관람 기록이 있어 삭제 불가 (ZONE_IN_USE)
         '403': { $ref: '#/components/responses/Forbidden' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 components:
   securitySchemes:

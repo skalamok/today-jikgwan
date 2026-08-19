@@ -112,6 +112,29 @@ check("구현 → 명세 누락 없음", not (I - S), sorted(I - S))
 undoc = [f"{m.upper()} {p}" for p, m, op in ops if not op.get("description")]
 check("모든 오퍼레이션에 설명", not undoc, undoc)
 
+# 명세 품질: operationId 와 공통 오류 응답이 빠지면 클라이언트가 무엇을
+# 처리해야 하는지 알 수 없다. tools/patch_openapi.py 가 채운다
+gsec = api.get("security")
+no_id, no_err = [], []
+for pth, item in api["paths"].items():
+    for mth, op in item.items():
+        if mth not in ("get", "post", "put", "patch", "delete"):
+            continue
+        if not op.get("operationId"):
+            no_id.append(f"{mth.upper()} {pth}")
+        codes = set(op.get("responses", {}))
+        want = set()
+        if op.get("security", gsec): want.add("401")
+        if "{" in pth: want.add("404")
+        if mth in ("post", "put", "patch"): want.add("400")
+        if want - codes:
+            no_err.append(f"{mth.upper()} {pth} {sorted(want - codes)}")
+ids = [o.get("operationId") for i in api["paths"].values() for m, o in i.items()
+       if m in ("get", "post", "put", "patch", "delete")]
+check("모든 오퍼레이션에 operationId", not no_id, no_id[:5])
+check("operationId 중복 없음", len(ids) == len(set(ids)))
+check("공통 오류 응답 참조", not no_err, no_err[:5])
+
 print("\n■ 규모 수치")
 real = {"기능 요구사항": len(re.findall(r'^\| REQ-F-\d{3} \|', req, re.M)),
         "비기능": len(re.findall(r'^\| REQ-NF-\d{3} \|', req, re.M)),
