@@ -62,8 +62,56 @@ async function send() {
 
 function time(iso) { return iso.slice(11, 16) }
 
-onMounted(async () => { await loadAll(); timer = setInterval(poll, 5000) })
-onUnmounted(() => clearInterval(timer))
+/*
+ * REQ-F-512 실시간 수신.
+ *
+ * 연결한 뒤 첫 프레임으로 인증한다. 브라우저 WebSocket 은 헤더를 못 붙이는데
+ * 토큰을 쿼리로 넘기면 접속 로그에 그대로 남기 때문이다.
+ *
+ * 붙지 않거나 끊기면 폴링으로 되돌아간다. 실시간이 안 된다고 대화를 못 읽어서는 안 된다.
+ */
+let socket = null
+
+function startPolling() {
+  if (timer) return
+  timer = setInterval(poll, 5000)
+}
+
+function connect() {
+  const token = localStorage.getItem('accessToken')
+  if (!token || !window.WebSocket) { startPolling(); return }
+
+  const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/companion-chat`
+  try { socket = new WebSocket(url) } catch { startPolling(); return }
+
+  socket.onopen = () => socket.send(JSON.stringify({ token, postId: Number(route.params.id) }))
+
+  socket.onmessage = (e) => {
+    const msg = JSON.parse(e.data)
+    if (msg.type === 'ready') { clearInterval(timer); timer = null; return }
+    if (msg.type !== 'message') return
+    // 내가 보낸 것은 전송 응답으로 이미 붙었다
+    if (messages.value.some((m) => m.id === msg.data.id)) return
+    messages.value.push({ ...msg.data, mine: false })
+    lastAt = msg.data.createdAt
+    client.put(`/companion-posts/${route.params.id}/messages/read`).catch(() => {})
+    scrollDown()
+  }
+
+  socket.onclose = () => { socket = null; startPolling() }
+  socket.onerror = () => { startPolling() }
+}
+
+onMounted(async () => {
+  await loadAll()
+  startPolling()       // 먼저 폴링으로 띄우고, 연결이 붙으면 멈춘다
+  if (!readOnly.value) connect()
+})
+
+onUnmounted(() => {
+  clearInterval(timer)
+  if (socket) { socket.onclose = null; socket.close() }
+})
 </script>
 
 <template>
