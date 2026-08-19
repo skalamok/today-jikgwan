@@ -119,7 +119,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | 메서드 | 경로 | 설명 | 범위 | 인증 | 관련 요구사항 | 비고 |
 |---|---|---|---|---|---|---|
 | GET | `/games` | 경기 일정 및 결과 조회 | MVP | 공개 | REQ-F-101, REQ-F-102 |  |
-| GET | `/games/{gameId}` | 경기 상세 조회 | MVP | 공개 | REQ-F-103 | 미구현 |
+| GET | `/games/{gameId}` | 경기 상세 조회 | MVP | 공개 | REQ-F-103 |  |
 | POST | `/games/suggest` | 촬영 일시 기반 경기 후보 조회 | 확장 | 인증 | REQ-F-204 | 미구현 |
 | GET | `/games/{gameId}/weather` | 경기 구장 날씨 조회 | 확장 | 공개 | REQ-F-112 |  |
 | POST | `/games/weather/sync` | 구장 날씨 수동 동기화 | 확장 | 인증 | REQ-F-112 |  |
@@ -144,7 +144,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | GET | `/attendance-logs` | 내 직관 기록 목록 | MVP | 인증 | REQ-F-213 |  |
 | POST | `/attendance-logs` | 직관 기록 작성 | MVP | 인증 | REQ-F-201, REQ-F-309 |  |
 | GET | `/attendance-logs/{logId}` | 기록 상세 조회 | MVP | 인증 | REQ-F-214, REQ-NF-008 |  |
-| PATCH | `/attendance-logs/{logId}` | 기록 수정 | MVP | 인증 | REQ-F-212 | 미구현 |
+| PATCH | `/attendance-logs/{logId}` | 기록 수정 | MVP | 인증 | REQ-F-212 |  |
 | DELETE | `/attendance-logs/{logId}` | 기록 삭제 | MVP | 인증 | REQ-F-212 |  |
 | POST | `/attendance-logs/{logId}/photos` | 사진 업로드 | MVP | 인증 | REQ-F-203, REQ-NF-007, REQ-NF-002 |  |
 | DELETE | `/attendance-logs/{logId}/photos/{photoId}` | 사진 삭제 | 확장 | 인증 | REQ-F-209 |  |
