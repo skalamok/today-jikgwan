@@ -112,6 +112,28 @@ public class AttendanceLog extends BaseTimeEntity {
         this.weatherTemp = temp;
     }
 
+    /**
+     * REQ-F-212 기록 수정.
+     *
+     * 경기와 좌석 구역은 검증을 거쳐야 하므로 서비스에서 확인한 값을 넘겨받는다.
+     * 응원팀이 바뀌면 승패 판정이 뒤집히고 구역이 바뀌면 만족도 집계가 옮겨 가므로,
+     * 부르는 쪽에서 전적 재집계와 구역 통계 이동을 함께 해야 한다.
+     */
+    public void update(Game game, Team cheerTeam, StadiumZone stadiumZone, Short zoneRating,
+                       String memo, Short gameRating, Integer ticketCost, Integer foodCost,
+                       Integer transportCost, Visibility visibility) {
+        this.game = game;
+        this.cheerTeam = cheerTeam;
+        this.stadiumZone = stadiumZone;
+        this.zoneRating = zoneRating;
+        this.memo = memo;
+        this.gameRating = gameRating;
+        this.ticketCost = ticketCost;
+        this.foodCost = foodCost;
+        this.transportCost = transportCost;
+        this.visibility = visibility == null ? Visibility.PRIVATE : visibility;
+    }
+
     public void softDelete() { this.deletedAt = OffsetDateTime.now(); }
 
     public GameResult result() {

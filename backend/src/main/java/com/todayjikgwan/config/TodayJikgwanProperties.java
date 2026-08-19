@@ -12,5 +12,4 @@ public record TodayJikgwanProperties(Storage storage, Stat stat) {
     /** REQ-F-305 소표본 표시 정책 */
     public record Stat(int smallSampleThreshold) { }
 
-    /** REQ-F-607 제보 확정 기준 */
 }

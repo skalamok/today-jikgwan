@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 운영자 경기 관리 (REQ-F-601 ~ 604, REQ-F-607) */
+/** 운영자 경기 관리 (REQ-F-601 ~ 606) */
 @Slf4j
 @Service
 @RequiredArgsConstructor

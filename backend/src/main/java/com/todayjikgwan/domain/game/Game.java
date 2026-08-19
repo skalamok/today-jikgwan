@@ -61,7 +61,7 @@ public class Game extends BaseTimeEntity {
     @Column(name = "synced_at")
     private OffsetDateTime syncedAt;
 
-    /** REQ-F-608 미확정 경기는 화면에서 "확인 중"으로 구분 표시한다 */
+    /** REQ-F-606 미확정 경기는 화면에서 "확인 중"으로 구분 표시한다 */
     @Column(name = "result_confirmed", nullable = false)
     private boolean resultConfirmed = false;
 
@@ -126,15 +126,5 @@ public class Game extends BaseTimeEntity {
         // 스코어가 있는 종료 경기만 확정으로 본다. 취소·서스펜디드는 전적에서 빠져야 한다.
         this.resultConfirmed = status == GameStatus.FINISHED && home != null && away != null;
         this.confirmedAt = this.resultConfirmed ? OffsetDateTime.now() : null;
-    }
-
-    /** REQ-F-607 제보 일치로 결과를 확정한다. */
-    public void confirmResult(int home, int away, GameSource by) {
-        this.homeScore = home;
-        this.awayScore = away;
-        this.status = GameStatus.FINISHED;
-        this.source = by;
-        this.resultConfirmed = true;
-        this.confirmedAt = OffsetDateTime.now();
     }
 }

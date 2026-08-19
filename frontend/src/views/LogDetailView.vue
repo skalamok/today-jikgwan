@@ -25,6 +25,58 @@ async function removePhoto(id) {
   await client.delete(`/attendance-logs/${route.params.id}/photos/${id}`)
   log.value.photos = log.value.photos.filter((p) => p.id !== id)
 }
+
+/* REQ-F-212 기록 수정.
+   경기는 바꾸지 않는다. 경기를 옮기는 것은 사실상 다른 기록이라 삭제 후 다시 쓰는 쪽이 낫다.
+   여기서는 앉은 자리와 감상처럼 나중에 고치고 싶어지는 것만 연다. */
+const editing = ref(false)
+const zones = ref([])
+const teams = ref([])
+const form = ref({})
+const saving = ref(false)
+const toast = ref('')
+
+async function openEdit() {
+  const l = log.value
+  form.value = {
+    gameId: l.gameId,
+    cheerTeamId: l.cheerTeamId ?? null,
+    stadiumZoneId: l.stadiumZoneId,
+    zoneRating: l.zoneRating,
+    gameRating: l.gameRating ?? null,
+    memo: l.memo ?? '',
+    ticketCost: l.ticketCost ?? null,
+    foodCost: l.foodCost ?? null,
+    transportCost: l.transportCost ?? null,
+    visibility: l.visibility,
+  }
+  if (!zones.value.length) {
+    const list = await client.get('/stadiums')
+    const stadium = list.data.find((s) => s.name === l.stadiumName)
+    if (stadium) zones.value = (await client.get(`/stadiums/${stadium.id}`)).data.zones
+  }
+  if (!teams.value.length) {
+    // 그 경기에 나온 두 팀만 고를 수 있다 (REQ-F-202)
+    const g = (await client.get(`/games/${l.gameId}`)).data
+    teams.value = [
+      { id: g.homeTeamId, name: g.homeTeam },
+      { id: g.awayTeamId, name: g.awayTeam },
+    ].filter((t) => t.id)
+  }
+  editing.value = true
+}
+
+async function save() {
+  saving.value = true; toast.value = ''
+  try {
+    const body = { ...form.value }
+    if (body.memo === '') body.memo = null
+    log.value = (await client.patch(`/attendance-logs/${route.params.id}`, body)).data
+    editing.value = false
+  } catch (e) {
+    toast.value = e.response?.data?.message || '수정하지 못했어요'
+  } finally { saving.value = false }
+}
 </script>
 
 <template>
@@ -78,7 +130,77 @@ async function removePhoto(id) {
       <div class="kv total"><span>합계</span><b>{{ log.totalCost.toLocaleString() }}원</b></div>
     </div>
 
-    <button class="btn ghost" @click="removeLog">기록 삭제</button>
+    <div class="acts">
+      <button class="btn" @click="openEdit" v-if="!editing">기록 수정</button>
+      <button class="btn ghost" @click="removeLog">기록 삭제</button>
+    </div>
+
+    <div class="card" v-if="editing">
+      <h2>기록 수정</h2>
+      <p class="hint">경기와 사진은 여기서 바꾸지 않는다. 경기를 옮기려면 삭제 후 다시 쓴다.</p>
+
+      <div class="field">
+        <label>응원팀</label>
+        <select v-model="form.cheerTeamId">
+          <option :value="null">중립 관람 (승패 집계 제외)</option>
+          <option v-for="t in teams" :key="t.id" :value="t.id">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>좌석 구역</label>
+        <select v-model="form.stadiumZoneId">
+          <option v-for="z in zones" :key="z.zoneId" :value="z.zoneId">{{ z.name }}</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>구역 만족도 <span class="req">필수</span></label>
+        <div class="stars">
+          <button v-for="n in 5" :key="n" type="button"
+                  :class="{ on: form.zoneRating >= n }" @click="form.zoneRating = n">★</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>경기 평점</label>
+        <div class="stars">
+          <button v-for="n in 5" :key="n" type="button"
+                  :class="{ on: form.gameRating >= n }" @click="form.gameRating = n">★</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>그날의 한마디</label>
+        <textarea v-model="form.memo" maxlength="1000" rows="3"
+                  placeholder="그날의 기억을 남겨보세요"></textarea>
+      </div>
+
+      <div class="field">
+        <label>비용</label>
+        <div class="costs">
+          <input v-model.number="form.ticketCost" type="number" min="0" placeholder="티켓" />
+          <input v-model.number="form.foodCost" type="number" min="0" placeholder="먹거리" />
+          <input v-model.number="form.transportCost" type="number" min="0" placeholder="교통" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>공개 범위</label>
+        <select v-model="form.visibility">
+          <option value="PRIVATE">비공개</option>
+          <option value="PUBLIC">공개</option>
+        </select>
+      </div>
+
+      <p class="err" v-if="toast">{{ toast }}</p>
+      <div class="acts">
+        <button class="btn" :disabled="saving || !form.zoneRating" @click="save">
+          {{ saving ? '저장 중…' : '저장' }}
+        </button>
+        <button class="btn ghost" @click="editing = false">취소</button>
+      </div>
+    </div>
   </template>
 
   <div v-if="viewer" class="viewer" @click="viewer = null">
@@ -87,6 +209,23 @@ async function removePhoto(id) {
 </template>
 
 <style scoped>
+.acts { display: flex; gap: 8px; }
+.acts .btn { flex: 1; }
+.hint { font-size: 12px; color: #777; margin: -4px 0 12px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.field .req { color: #c0392b; font-weight: 400; font-size: 11px; margin-left: 4px; }
+.field select, .field textarea, .field input {
+  width: 100%; padding: 9px 10px; border: 1px solid #d8dde3; border-radius: 8px;
+  font-size: 14px; font-family: inherit; box-sizing: border-box;
+}
+.stars { display: flex; gap: 4px; }
+.stars button {
+  border: 0; background: none; font-size: 24px; color: #d8dde3; cursor: pointer; padding: 0;
+}
+.stars button.on { color: #f5a623; }
+.costs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.err { color: #c0392b; font-size: 13px; margin: 0 0 10px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
 .shot { position: relative; aspect-ratio: 1; }
 .shot img {

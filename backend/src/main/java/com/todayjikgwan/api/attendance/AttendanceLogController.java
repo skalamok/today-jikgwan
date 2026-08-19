@@ -38,6 +38,13 @@ public class AttendanceLogController {
         return attendanceLogService.detail(CurrentUser.id(), logId);
     }
 
+    /** REQ-F-212 기록 수정. 수정된 기록 전체를 돌려준다. */
+    @PatchMapping("/{logId}")
+    public AttendanceLogDetail update(@PathVariable Long logId,
+                                      @Valid @RequestBody AttendanceLogRequest request) {
+        return attendanceLogService.update(CurrentUser.id(), logId, request);
+    }
+
     @DeleteMapping("/{logId}")
     public ResponseEntity<Void> delete(@PathVariable Long logId) {
         attendanceLogService.delete(CurrentUser.id(), logId);

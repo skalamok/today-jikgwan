@@ -132,6 +132,87 @@ public class AttendanceLogService {
                 photoRepository.findByAttendanceLogIdOrderBySortOrder(logId));
     }
 
+    /**
+     * REQ-F-212 기록 수정.
+     *
+     * 작성과 같은 검증을 다시 거친다. 수정으로 다른 값이 되면 파생 데이터가 함께 움직여야 한다.
+     * 구역이 바뀌면 이전 구역의 만족도 집계에서 빼고 새 구역에 더하고, 응원팀이나 경기가
+     * 바뀌면 승패 판정이 달라지므로 전적을 다시 계산한다.
+     */
+    @Transactional
+    public AttendanceLogDetail update(Long userId, Long logId, AttendanceLogRequest request) {
+        AttendanceLog log = attendanceLogRepository.findById(logId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (!log.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        if (log.getDeletedAt() != null) {
+            throw new ApiException(ErrorCode.NOT_FOUND);
+        }
+
+        Game game = gameRepository.findById(request.gameId())
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+
+        // 경기를 옮길 때만 중복을 다시 본다. 자기 자신은 걸리면 안 된다 (REQ-F-201)
+        if (!game.getId().equals(log.getGame().getId())) {
+            attendanceLogRepository.findByUserIdAndGameId(userId, game.getId())
+                    .filter(other -> !other.getId().equals(logId))
+                    .ifPresent(other -> {
+                        throw new ApiException(ErrorCode.DUPLICATE_ATTENDANCE_LOG,
+                                Map.of("existingLogId", other.getId()));
+                    });
+        }
+        if (!game.isStarted()) {
+            throw new ApiException(ErrorCode.GAME_NOT_STARTED);
+        }
+
+        StadiumZone zone = zoneRepository.findById(request.stadiumZoneId())
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (!zone.getStadium().getId().equals(game.getStadium().getId())) {
+            throw new ApiException(ErrorCode.ZONE_NOT_IN_STADIUM);
+        }
+        // 이미 고른 구역이 나중에 비활성이 된 경우까지 막으면 수정을 못 한다.
+        // 구역을 바꾸는 경우에만 활성 여부를 본다 (REQ-F-605)
+        boolean zoneChanged = !zone.getId().equals(log.getStadiumZone().getId());
+        if (zoneChanged && !zone.isActive()) {
+            throw new ApiException(ErrorCode.ZONE_INACTIVE);
+        }
+
+        Team cheerTeam = null;
+        if (request.cheerTeamId() != null) {
+            if (!game.hasTeam(request.cheerTeamId())) {
+                throw new ApiException(ErrorCode.CHEER_TEAM_NOT_IN_GAME);
+            }
+            cheerTeam = teamRepository.getReferenceById(request.cheerTeamId());
+        }
+
+        // REQ-F-110 구역 만족도 집계 이동. 같은 구역이라도 점수가 바뀌면 다시 반영한다
+        Short beforeRating = log.getZoneRating();
+        Long beforeZoneId = log.getStadiumZone().getId();
+        if (zoneChanged || !beforeRating.equals(request.zoneRating())) {
+            zoneStatRepository.findById(beforeZoneId)
+                    .ifPresent(z -> z.removeRating(beforeRating));
+            ZoneStat after = zoneStatRepository.findById(zone.getId())
+                    .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+            after.addRating(request.zoneRating());
+        }
+
+        log.update(game, cheerTeam, zone, request.zoneRating(), request.memo(),
+                request.gameRating(), request.ticketCost(), request.foodCost(),
+                request.transportCost(),
+                request.visibility() == null ? null : Visibility.valueOf(request.visibility()));
+
+        // REQ-F-216 경기를 옮기면 그 경기의 날씨로 다시 채운다
+        weatherRepository.findById(game.getId())
+                .ifPresent(w -> log.applyWeather(w.getSkyCode(), w.getTemperature()));
+
+        // REQ-F-309 응원팀 · 경기 · 비용이 바뀌면 집계가 달라진다
+        statService.recalculate(userId);
+        badgeService.evaluate(userId);
+
+        return detail(userId, logId);
+    }
+
     /** REQ-F-212. 삭제 후 전적을 재집계한다 */
     @Transactional
     public void delete(Long userId, Long logId) {

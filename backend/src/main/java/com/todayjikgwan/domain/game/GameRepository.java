@@ -26,7 +26,13 @@ public interface GameRepository extends JpaRepository<Game, Long> {
             + "order by g.startAt")
     List<Game> findUpcomingInSeason(@Param("season") int season, @Param("from") LocalDate from);
 
-    /** REQ-F-607 운영자 검토 대상. 이미 시작했는데 아직 결과가 확정되지 않은 경기 */
+    /** REQ-F-103 단건 조회. 목록과 같은 값을 채우려면 연관을 함께 가져와야 한다 */
+    @Query("select g from Game g "
+            + "join fetch g.homeTeam join fetch g.awayTeam join fetch g.stadium "
+            + "where g.id = :id")
+    java.util.Optional<Game> findDetailById(@Param("id") Long id);
+
+    /** REQ-F-601 운영자 검토 대상. 이미 시작했는데 아직 결과가 확정되지 않은 경기 */
     @Query("select g from Game g "
             + "join fetch g.homeTeam join fetch g.awayTeam join fetch g.stadium "
             + "where g.resultConfirmed = false and g.startAt < :now "

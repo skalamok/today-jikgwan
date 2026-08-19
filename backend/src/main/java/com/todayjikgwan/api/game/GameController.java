@@ -41,6 +41,15 @@ public class GameController {
                 "dataSource", "자체 등록 데이터");
     }
 
+    /** REQ-F-103 경기 상세. 목록과 같은 형태를 단건으로 준다 */
+    @GetMapping("/{gameId}")
+    public Map<String, Object> detail(@PathVariable Long gameId) {
+        return gameRepository.findDetailById(gameId)
+                .map(GameController::toMap)
+                .orElseThrow(() -> new com.todayjikgwan.common.exception.ApiException(
+                        com.todayjikgwan.common.exception.ErrorCode.NOT_FOUND));
+    }
+
     /** REQ-F-112 경기 구장 날씨. 동기화된 캐시를 반환하며 외부 API 를 직접 호출하지 않는다 */
     @GetMapping("/{gameId}/weather")
     public WeatherResponse weather(@PathVariable Long gameId) {
@@ -69,7 +78,7 @@ public class GameController {
         m.put("homeScore", g.getHomeScore());
         m.put("awayScore", g.getAwayScore());
         m.put("status", g.getStatus().name());
-        m.put("resultConfirmed", g.isResultConfirmed());   // REQ-F-608
+        m.put("resultConfirmed", g.isResultConfirmed());   // REQ-F-606
         return m;
     }
 }

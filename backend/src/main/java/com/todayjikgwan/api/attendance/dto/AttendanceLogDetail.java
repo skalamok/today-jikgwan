@@ -11,6 +11,8 @@ import java.util.List;
 public record AttendanceLogDetail(
         Long id, Long gameId, LocalDate gameDate, String stadiumName, String zoneName,
         String matchup, String result, String cheerTeam,
+        // 수정 화면이 현재 값을 골라 둔 상태로 열려면 id 가 필요하다 (REQ-F-212)
+        Long cheerTeamId, Long stadiumZoneId,
         Short zoneRating, Short gameRating, String memo, String visibility,
         Integer ticketCost, Integer foodCost, Integer transportCost, Integer totalCost,
         String weatherSky, Double weatherTemp,
@@ -28,6 +30,7 @@ public record AttendanceLogDetail(
                 l.getId(), g.getId(), g.getGameDate(), g.getStadium().getName(),
                 l.getStadiumZone().getName(), matchup, l.result().name(),
                 l.getCheerTeam() == null ? null : l.getCheerTeam().getName(),
+                l.cheerTeamId(), l.getStadiumZone().getId(),
                 l.getZoneRating(), l.getGameRating(), l.getMemo(), l.getVisibility().name(),
                 l.getTicketCost(), l.getFoodCost(), l.getTransportCost(), l.totalCost(),
                 l.getWeatherSky(), l.getWeatherTemp() == null ? null : l.getWeatherTemp().doubleValue(),
