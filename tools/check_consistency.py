@@ -47,7 +47,10 @@ def expand(t):
         ids |= {f"{n:03d}" for n in range(int(a), int(b)+1)}
     return {"REQ-F-" + i for i in ids}
 
-ch9 = scr[scr.index("## 9."):scr.index("## 10.")]
+# 추적성 장 번호는 문서 구조가 바뀌면 달라지므로 제목 줄로 찾는다
+m9 = re.search(r'^## \d+\. 추적성 확인$', scr, re.M)
+j9 = scr.index("\n## ", m9.end())
+ch9 = scr[m9.start():j9]
 trace = {m.group(1): expand(m.group(2)) for m in re.finditer(r'^\| (SCR-[A-Z]+-\d{3}) \| ([^|]+)\|', ch9, re.M)}
 mismatch = []
 for m in re.finditer(r'\n## \d+\. (SCR-[A-Z]+-\d{3})(.*?)(?=\n## |\Z)', scr, re.S):
@@ -56,7 +59,7 @@ for m in re.finditer(r'\n## \d+\. (SCR-[A-Z]+-\d{3})(.*?)(?=\n## |\Z)', scr, re.
     basic = expand(re.search(r'\| 관련 요구사항 \| ([^|]+)\|', body).group(1))
     desc  = expand(body[body.index("### 디스크립션"):body.index("### 예외 처리")])
     if desc != basic or desc != trace.get(sid): mismatch.append(sid)
-check("추적성 3중 일치 (기본정보·디스크립션·9장)", not mismatch, mismatch)
+check("추적성 3중 일치 (기본정보·디스크립션·추적성표)", not mismatch, mismatch)
 
 print("\n■ 와이어프레임")
 imgs = set(re.findall(r'!\[[^\]]*\]\(\.\./_assets/wireframes/([^)]+)\)', scr))
