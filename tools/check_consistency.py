@@ -93,6 +93,53 @@ if os.path.isdir(os.path.join(SCRATCH, "node_modules")):
 else:
     print("  SKIP  전용 파서 (node_modules 없음)")
 
+# ERD 의 인덱스가 실제 데이터베이스와 어긋나면 조회 패턴 설명이 거짓이 된다.
+# 이름이 아니라 (컬럼 구성, 유일 여부) 로 견준다. dbml 에는 인덱스 이름을 적지 않는다
+def _entry(ln):
+    m = re.match(r"^\(?([\w,\s]+?)\)?\s*(\[[^\]]*\])?\s*$", ln.strip())
+    if not m:
+        return None
+    cols = tuple(c.strip() for c in m.group(1).split(","))
+    return (cols if len(cols) > 1 else cols[0], "unique" in (m.group(2) or ""))
+
+
+doc_ix = {}
+for _m in re.finditer(r"^Table (\w+)[^{]*\{(.*?)^\}", dbml, re.M | re.S):
+    _t, _body = _m.group(1), _m.group(2)
+    _ix = re.search(r"^\s*Indexes\s*\{(.*?)\}\s*$", _body, re.S | re.I | re.M)
+    for _ln in _body.split("\n"):
+        if re.match(r"^\s*Indexes", _ln, re.I):
+            continue
+        _c = re.match(r"^\s{2}(\w+)\s+\S.*\[[^\]]*\bunique\b", _ln)
+        if _c:
+            doc_ix.setdefault(_t, set()).add((_c.group(1), True))
+    for _ln in (_ix.group(1) if _ix else "").split("\n"):
+        _e = _entry(_ln) if _ln.strip() else None
+        if _e:
+            doc_ix.setdefault(_t, set()).add(_e)
+
+import subprocess as _sp
+_sql = ("select tablename, indexdef from pg_indexes where schemaname='public'"
+        " and tablename<>'flyway_schema_history' and indexname not like '%_pkey'")
+_r = _sp.run(["docker", "exec", "todayjikgwan-db", "psql", "-U", "todayjikgwan",
+              "-d", "todayjikgwan", "-t", "-A", "-F", "|", "-c", _sql],
+             capture_output=True, text=True)
+if _r.returncode == 0 and _r.stdout.strip():
+    db_ix = {}
+    for _ln in _r.stdout.strip().split("\n"):
+        if "|" not in _ln:
+            continue
+        _t, _ddl = _ln.split("|", 1)
+        _cols = tuple(c.strip().split()[0]
+                      for c in re.search(r"\(([^)]*)\)\s*$", _ddl).group(1).split(","))
+        db_ix.setdefault(_t, set()).add(
+            (_cols if len(_cols) > 1 else _cols[0], "UNIQUE INDEX" in _ddl))
+    _diff = [t for t in set(doc_ix) | set(db_ix)
+             if doc_ix.get(t, set()) != db_ix.get(t, set())]
+    check("dbml 인덱스 ↔ 실제 DB", not _diff, sorted(_diff))
+else:
+    check("dbml 인덱스 ↔ 실제 DB", True, "(DB 미기동, 건너뜀)")
+
 print("\n■ API")
 ops = [(p, m, op) for p, v in api["paths"].items() for m, op in v.items() if m in METHODS]
 impl = set()
