@@ -66,7 +66,9 @@ body { margin: 0; background: #fff;
         border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 16px; }
 .head b { font-size: 17px; } .head span { font-size: 11px; color: #666; }
 .cols { display: flex; gap: 54px; align-items: flex-start; position: relative; z-index: 2; }
-.grp { flex: 1; min-width: 0; }
+.grp { min-width: 0; }
+.grp .sub { display: flex; gap: 16px; align-items: flex-start; }
+.grp .sub > div { min-width: 190px; }
 .grp > h3 { font-size: 11px; color: #444; margin: 0 0 8px; padding-bottom: 4px;
             border-bottom: 1px dashed #bbb; letter-spacing: .5px; }
 .tbl { border: 1.5px solid #333; background: #fff; margin-bottom: 12px; }
@@ -128,7 +130,7 @@ for (const r of REFS) {
   if (ga === gb) {                       // 같은 열이면 왼쪽 바깥으로 돌린다
     x1 = ra.left - R.left;
     x2 = rb.left - R.left;
-    bx = laneX('L' + ga, grps[ga].left - R.left - 12, -7);
+    bx = Math.max(6, laneX('L' + ga, grps[ga].left - R.left - 12, -7));
   } else if (ga < gb) {                  // 오른쪽 열로 간다
     x1 = ra.right - R.left;
     x2 = rb.left - R.left;
@@ -136,7 +138,7 @@ for (const r of REFS) {
   } else {                               // 왼쪽 열로 돌아간다
     x1 = ra.left - R.left;
     x2 = rb.right - R.left;
-    bx = laneX('G' + gb + '_' + ga, grps[ga].left - R.left - 10, -7);
+    bx = Math.max(6, laneX('G' + gb + '_' + ga, grps[ga].left - R.left - 10, -7));
   }
   const p = document.createElementNS(NS, 'path');
   p.setAttribute('d', corner(x1, y1, bx, y2, x2, 6));
@@ -153,29 +155,83 @@ for (const r of REFS) {
 """
 
 
-def card(name, t, fks):
+def card(name, t, fks, group=""):
+    """fks 는 {컬럼: 대상 테이블}. 외래키 칸에는 자료형 대신 대상을 적는다.
+    선이 없어도 어디로 이어지는지 읽히게 하려는 것이다."""
     rows = []
     for c in t["cols"]:
-        cls = " pk" if c["pk"] else (" fk" if c["name"] in fks else "")
-        key = "PK" if c["pk"] else ("FK" if c["name"] in fks else "")
+        is_fk = c["name"] in fks
+        cls = " pk" if c["pk"] else (" fk" if is_fk else "")
+        if c["pk"]:
+            right = "PK " + c["type"]
+        elif is_fk:
+            right = "→ " + fks[c["name"]]
+        else:
+            right = c["type"]
         rows.append(
             '<div class="c%s" data-c="%s.%s"><span class="n">%s</span>'
-            '<span class="ty">%s%s</span></div>'
-            % (cls, name, c["name"], c["name"], (key + " ") if key else "", c["type"]))
+            '<span class="ty">%s</span></div>'
+            % (cls, name, c["name"], c["name"], right))
     return ('<div class="tbl %s" data-t="%s"><div class="t"><span>%s</span>'
-            '<span class="sc">%s</span></div>%s</div>'
-            % ("mvp" if t["scope"] == "MVP" else "ext", name, name, t["scope"], "".join(rows)))
+            '<span class="sc">%s%s</span></div>%s</div>'
+            % ("mvp" if t["scope"] == "MVP" else "ext", name, name,
+               (group + " · ") if group else "", t["scope"], "".join(rows)))
+
+
+def layers(tables, refs):
+    """참조 깊이로 열을 나눈다.
+
+    기능 그룹으로 열을 나누면 users 처럼 여기저기서 참조하는 테이블 때문에
+    선이 그림 전체를 가로지른다. 참조하는 쪽을 오른쪽에 두면 모든 선이
+    오른쪽에서 왼쪽으로만 흐르고, 역방향 선이 사라져 겹침이 크게 준다.
+    """
+    out = {}
+    for r in refs:
+        if r["from"] != r["to"]:
+            out.setdefault(r["from"], set()).add(r["to"])
+    depth = {}
+
+    def walk(t, seen=()):
+        if t in depth:
+            return depth[t]
+        if t in seen or t not in out:
+            depth[t] = 0
+            return 0
+        depth[t] = 1 + max(walk(x, seen + (t,)) for x in out[t] if x in tables)
+        return depth[t]
+
+    for t in tables:
+        walk(t)
+    cols = {}
+    for t in tables:
+        cols.setdefault(depth[t], []).append(t)
+    return [cols[k] for k in sorted(cols)]
 
 
 def sheet(title, sub, groups, tables, refs, width):
     fk_of = {}
     for r in refs:
-        fk_of.setdefault(r["from"], set()).add(r["fromCol"])
+        fk_of.setdefault(r["from"], {})[r["fromCol"]] = r["to"]
+    gname = {t: g["name"] for g in groups for t in g["tables"]}
+    order = {g["name"]: i for i, g in enumerate(groups)}
     cols = []
-    for g in groups:
-        body = "".join(card(n, tables[n], fk_of.get(n, set())) for n in g["tables"] if n in tables)
-        if body:
-            cols.append('<div class="grp"><h3>%s</h3>%s</div>' % (g["name"], body))
+    for i, ts in enumerate(layers(tables, refs)):
+        ts = sorted(ts, key=lambda t: (order.get(gname.get(t, ""), 99), t))
+        # 한 단계에 테이블이 몰리면 세로로 길어져 다른 단계가 텅 빈다. 여러 줄로 나눈다
+        height = lambda n: 30 + 17 * len(tables[n]["cols"])
+        total = sum(height(n) for n in ts)
+        lanes = max(1, min(3, int(total / 1400) + (1 if total % 1400 else 0)))
+        buckets, acc = [[] for _ in range(lanes)], [0] * lanes
+        for n in ts:
+            k = acc.index(min(acc))
+            buckets[k].append(n)
+            acc[k] += height(n)
+        lanes_html = "".join(
+            "<div>%s</div>" % "".join(card(n, tables[n], fk_of.get(n, {}), gname.get(n, ""))
+                                      for n in b)
+            for b in buckets if b)
+        cols.append('<div class="grp"><h3>%d단계</h3><div class="sub">%s</div></div>'
+                    % (i + 1, lanes_html))
     return """<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <style>%s
 @font-face { font-family: Pretendard; font-weight: 400;
@@ -187,10 +243,13 @@ body { width: %dpx; }</style></head><body>
 <svg class="wires"></svg><div class="cols">%s</div>
 <div class="legend"><span><span class="sw"></span>MVP</span>
 <span><span class="sw e"></span>확장</span>
-<span>선은 외래키 관계다. 원본은 docs/02_데이터모델링/schema.dbml 이며 이 그림은 거기서 생성한다.</span></div>
+<span>화살표는 외래키가 가리키는 테이블이다. 왼쪽에 있을수록 다른 테이블을 참조하지 않는
+기준 데이터이며, 모든 선은 오른쪽에서 왼쪽으로만 흐른다.
+원본은 docs/02_데이터모델링/schema.dbml 이고 이 그림은 거기서 생성한다.</span></div>
 </div>
 <script>const REFS = %s;\n%s</script></body></html>""" % (
-        CSS, BASE, BASE, width, title, sub, "".join(cols), json.dumps(refs, ensure_ascii=False), JS)
+        CSS, BASE, BASE, width, title, sub, "".join(cols),
+        json.dumps(refs, ensure_ascii=False), JS)
 
 
 def shoot(name, html, width):
@@ -200,7 +259,7 @@ def shoot(name, html, width):
     png = os.path.join(OUT, name + ".png")
     subprocess.run([CHROME, "--headless", "--disable-gpu", "--hide-scrollbars",
                     "--force-device-scale-factor=2",
-                    "--window-size=%d,%d" % (width, 2400),
+                    "--window-size=%d,%d" % (width, 3400),
                     "--virtual-time-budget=3000",
                     "--screenshot=" + png, "file://" + hp], capture_output=True)
     from PIL import Image, ImageChops
@@ -215,12 +274,11 @@ def shoot(name, html, width):
 def main():
     tables, refs, groups = parse()
     core = {n: t for n, t in tables.items() if t["scope"] == "MVP"}
-    cg = [{"name": g["name"], "tables": [n for n in g["tables"] if n in core]} for g in groups]
     cr = [r for r in refs if r["from"] in core and r["to"] in core]
     shoot("ERD-CORE", sheet("데이터 모델 — MVP 범위", "%d개 테이블 · %d개 관계" % (len(core), len(cr)),
-                            cg, core, cr, 1500), 1500)
+                            groups, core, cr, 1500), 1500)
     shoot("ERD-ALL", sheet("데이터 모델 — 전체", "%d개 테이블 · %d개 관계" % (len(tables), len(refs)),
-                           groups, tables, refs, 2000), 2000)
+                           groups, tables, refs, 2400), 2400)
 
 
 if __name__ == "__main__":
