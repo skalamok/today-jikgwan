@@ -11,6 +11,8 @@ public enum ErrorCode {
 
     // 인증
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
+    OAUTH_PROVIDER_DISABLED(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 방식입니다."),
+    OAUTH_FAILED(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다. 다시 시도해 주세요."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
 
@@ -41,6 +43,10 @@ public enum ErrorCode {
     PHOTO_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "사진은 최대 10장까지 올릴 수 있어요."),
 
     // 공통
+    INVALID_GAME_TEAMS(HttpStatus.BAD_REQUEST, "홈팀과 원정팀이 같을 수 없습니다."),
+    DUPLICATE_GAME(HttpStatus.CONFLICT, "같은 날 같은 구장에 이미 등록된 경기입니다."),
+    REVISION_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "정정 사유를 입력해 주세요."),
+    REVISION_SCORE_REQUIRED(HttpStatus.BAD_REQUEST, "종료 처리하려면 양 팀 점수가 필요합니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다.");
 

@@ -68,6 +68,24 @@ public class Game extends BaseTimeEntity {
     @Column(name = "confirmed_at")
     private OffsetDateTime confirmedAt;
 
+    /**
+     * REQ-F-601 운영자 등록. 외부 소스를 확보하지 못했을 때의 기본 수단이라
+     * 결과 없이 일정만 먼저 넣을 수 있어야 한다.
+     */
+    public static Game schedule(int seasonYear, OffsetDateTime startAt, Stadium stadium,
+                                Team homeTeam, Team awayTeam) {
+        Game g = new Game();
+        g.seasonYear = seasonYear;
+        g.startAt = startAt;
+        g.gameDate = startAt.toLocalDate();
+        g.stadium = stadium;
+        g.homeTeam = homeTeam;
+        g.awayTeam = awayTeam;
+        g.status = GameStatus.SCHEDULED;
+        g.source = GameSource.MANUAL;
+        return g;
+    }
+
     public boolean isResultConfirmed() {
         return resultConfirmed && homeScore != null && awayScore != null;
     }
@@ -94,6 +112,20 @@ public class Game extends BaseTimeEntity {
         boolean homeWon = homeScore > awayScore;
         boolean cheeredHome = homeTeam.getId().equals(cheerTeamId);
         return homeWon == cheeredHome ? GameResult.WIN : GameResult.LOSE;
+    }
+
+    /**
+     * REQ-F-602 운영자 정정. 제보 확정과 달리 상태만 바꾸는 경우(우천 취소 등)도 있어
+     * 스코어를 비우는 것까지 허용한다.
+     */
+    public void revise(GameStatus status, Integer home, Integer away) {
+        this.status = status;
+        this.homeScore = home;
+        this.awayScore = away;
+        this.source = GameSource.MANUAL;
+        // 스코어가 있는 종료 경기만 확정으로 본다. 취소·서스펜디드는 전적에서 빠져야 한다.
+        this.resultConfirmed = status == GameStatus.FINISHED && home != null && away != null;
+        this.confirmedAt = this.resultConfirmed ? OffsetDateTime.now() : null;
     }
 
     /** REQ-F-607 제보 일치로 결과를 확정한다. */

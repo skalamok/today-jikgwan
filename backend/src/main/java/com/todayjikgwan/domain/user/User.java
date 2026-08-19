@@ -58,6 +58,8 @@ public class User extends BaseTimeEntity {
         this.favoriteTeam = favoriteTeam;
     }
 
+    public void promoteToAdmin() { this.role = UserRole.ADMIN; }
+
     public void changeFavoriteTeam(Team team) { this.favoriteTeam = team; }
 
     public void changeNickname(String nickname) { this.nickname = nickname; }

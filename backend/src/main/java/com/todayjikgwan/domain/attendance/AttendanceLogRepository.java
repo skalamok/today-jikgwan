@@ -13,6 +13,11 @@ public interface AttendanceLogRepository extends JpaRepository<AttendanceLog, Lo
 
     Optional<AttendanceLog> findByUserIdAndGameId(Long userId, Long gameId);
 
+    /** REQ-F-309, REQ-F-604 정정의 영향을 받는 사용자. 삭제된 기록은 뺀다 */
+    @Query("select distinct l.user.id from AttendanceLog l "
+            + "where l.game.id = :gameId and l.deletedAt is null")
+    List<Long> findUserIdsByGame(@Param("gameId") Long gameId);
+
     @Query("select l from AttendanceLog l "
             + "join fetch l.game g join fetch g.homeTeam join fetch g.awayTeam join fetch g.stadium "
             + "where l.user.id = :userId and l.deletedAt is null "

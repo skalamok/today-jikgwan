@@ -1,7 +1,7 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import { computed, ref, watch } from 'vue'
-import { isLoggedIn, auth } from './store/auth'
+import { isAdmin, auth, loadMe } from './store/auth'
 import client from './api/client'
 
 const route = useRoute()
@@ -13,20 +13,25 @@ async function loadUnread() {
   try { unread.value = (await client.get('/notifications')).data.unreadCount } catch { unread.value = 0 }
 }
 loadUnread()
-watch(() => route.fullPath, loadUnread)
+loadMe()
+watch(() => route.fullPath, () => { loadUnread(); if (!auth.me) loadMe() })
 const screenId = computed(() => route.meta?.id || '')
 const titles = {
   home: '오늘의직관', login: '로그인', signup: '회원가입', games: '경기',
   'log-new': '직관 기록', logs: '내 기록', stats: '내 전적',
   stadiums: '구장', stadium: '구장 상세', companions: '동행', companion: '동행 모집', 'companion-chat': '동행 대화',
   plan: '관람 계획', standings: '팀 순위', guide: '첫 직관 가이드', my: '마이페이지',
-  'log-detail': '기록 상세', notifications: '알림',
+  'log-detail': '기록 상세', notifications: '알림', admin: '운영자', 'oauth-callback': '로그인',
 }
 const title = computed(() => titles[route.name] || '오늘의직관')
+
+// 로그인 계열 화면은 사이드바 없이 가운데 한 단으로 세운다
+const AUTH_SCREENS = ['login', 'signup', 'oauth-callback']
+const isAuthScreen = computed(() => AUTH_SCREENS.includes(route.name))
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ auth: isAuthScreen }">
     <header class="topbar">
       <h1>{{ title }}</h1>
       <div class="row" style="gap:10px">
@@ -47,13 +52,14 @@ const title = computed(() => titles[route.name] || '오늘의직관')
       </RouterView>
     </main>
 
-    <nav class="tabbar" v-if="$route.name !== 'login' && $route.name !== 'signup'">
+    <nav class="tabbar" v-if="!isAuthScreen">
       <RouterLink to="/" :class="{ active: $route.name === 'home' }"><span class="ico">🏠</span>홈</RouterLink>
       <RouterLink to="/games" :class="{ active: $route.name === 'games' }"><span class="ico">📅</span>경기</RouterLink>
       <RouterLink to="/logs" :class="{ active: ['logs','log-new'].includes($route.name) }"><span class="ico">📝</span>기록</RouterLink>
       <RouterLink to="/stats" :class="{ active: $route.name === 'stats' }"><span class="ico">📊</span>전적</RouterLink>
       <RouterLink to="/plan" :class="{ active: $route.name === 'plan' }"><span class="ico">🗓️</span>계획</RouterLink>
       <RouterLink to="/stadiums" :class="{ active: ['stadiums','stadium'].includes($route.name) }"><span class="ico">🏟️</span>구장</RouterLink>
+      <RouterLink v-if="isAdmin" to="/admin" :class="{ active: $route.name === 'admin' }"><span class="ico">🛠️</span>운영</RouterLink>
     </nav>
   </div>
 </template>

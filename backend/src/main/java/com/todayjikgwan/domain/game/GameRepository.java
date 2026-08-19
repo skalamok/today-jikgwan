@@ -1,6 +1,7 @@
 package com.todayjikgwan.domain.game;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,18 @@ public interface GameRepository extends JpaRepository<Game, Long> {
             + "and g.status = com.todayjikgwan.domain.game.GameStatus.SCHEDULED "
             + "order by g.startAt")
     List<Game> findUpcomingInSeason(@Param("season") int season, @Param("from") LocalDate from);
+
+    /** REQ-F-607 운영자 검토 대상. 이미 시작했는데 아직 결과가 확정되지 않은 경기 */
+    @Query("select g from Game g "
+            + "join fetch g.homeTeam join fetch g.awayTeam join fetch g.stadium "
+            + "where g.resultConfirmed = false and g.startAt < :now "
+            + "and g.status <> com.todayjikgwan.domain.game.GameStatus.CANCELED "
+            + "order by g.startAt desc")
+    List<Game> findUnconfirmedBefore(@Param("now") OffsetDateTime now);
+
+    /** REQ-F-601 같은 날 같은 구장에 이미 등록된 경기가 있는지 본다 */
+    boolean existsByGameDateAndStadiumIdAndHomeTeamIdAndAwayTeamId(
+            LocalDate gameDate, Long stadiumId, Long homeTeamId, Long awayTeamId);
 
     /** REQ-F-104 순위 산출용. 결과가 확정된 경기만 */
     @Query("select g from Game g join fetch g.homeTeam join fetch g.awayTeam "

@@ -5,6 +5,7 @@ const routes = [
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { id: 'SCR-MAIN-001' } },
   { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { id: 'SCR-AUTH-001', public: true } },
   { path: '/signup', name: 'signup', component: () => import('../views/SignupView.vue'), meta: { id: 'SCR-AUTH-002', public: true } },
+  { path: '/oauth/:provider', name: 'oauth-callback', component: () => import('../views/OAuthCallbackView.vue'), meta: { id: 'SCR-AUTH-003', public: true } },
   { path: '/games', name: 'games', component: () => import('../views/GamesView.vue'), meta: { id: 'SCR-GAME-001', public: true } },
   { path: '/logs/new', name: 'log-new', component: () => import('../views/LogCreateView.vue'), meta: { id: 'SCR-LOG-001' } },
   { path: '/logs', name: 'logs', component: () => import('../views/LogListView.vue'), meta: { id: 'SCR-LOG-002' } },
@@ -18,6 +19,7 @@ const routes = [
   { path: '/guide', name: 'guide', component: () => import('../views/GuideView.vue'), meta: { id: 'SCR-GUIDE-001', public: true } },
   { path: '/my', name: 'my', component: () => import('../views/MyPageView.vue'), meta: { id: 'SCR-MY-001' } },
   { path: '/plan', name: 'plan', component: () => import('../views/PlanView.vue'), meta: { id: 'SCR-PLAN-001' } },
+  { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue'), meta: { id: 'SCR-ADM-001' } },
   { path: '/companions', name: 'companions', component: () => import('../views/CompanionListView.vue'), meta: { id: 'SCR-MATE-001' } },
   { path: '/companions/:id', name: 'companion', component: () => import('../views/CompanionDetailView.vue'), meta: { id: 'SCR-MATE-002' } },
 ]
