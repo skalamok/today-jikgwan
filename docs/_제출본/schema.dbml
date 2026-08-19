@@ -42,12 +42,19 @@ Table users {
 Table user_social_accounts {
   id               bigint       [pk, increment]
   user_id          bigint       [not null]
-  provider         varchar(20)  [not null, note: 'KAKAO']
+  provider         varchar(20)  [not null, note: 'GOOGLE | NAVER | KAKAO']
   provider_user_id varchar(100) [not null]
+  email            varchar(255) [note: '제공자가 알려준 이메일. 카카오는 비즈앱 심사 대상이라 없을 수 있다']
   linked_at        timestamp    [not null]
+  created_at       timestamp    [not null]
+  updated_at       timestamp    [not null]
 
-  Indexes { (provider, provider_user_id) [unique] }
-  Note: 'REQ-F-003 소셜 로그인'
+  Indexes {
+    (provider, provider_user_id) [unique, note: '계정 식별 키. 이메일이 아니라 이 조합으로 찾는다']
+    (user_id, provider) [unique, note: '한 계정에 같은 제공자를 두 번 연결하지 않는다']
+    user_id
+  }
+  Note: 'REQ-F-003 소셜 로그인 (구글 · 네이버 · 카카오)'
 }
 
 Table auth_tokens {
@@ -76,23 +83,32 @@ Table user_team_history {
 // =====================================================================
 
 Table teams {
-  id               bigint      [pk, increment]
-  name             varchar(50) [not null, unique]
-  short_name       varchar(10) [not null]
+  id               bigint       [pk, increment]
+  name             varchar(50)  [not null, unique]
+  name_en          varchar(100)
+  short_name       varchar(10)  [not null]
   home_stadium_id  bigint
+  external_ref     varchar(50)  [unique, note: 'TheSportsDB idTeam. 외부 동기화 대조용']
   logo_url         varchar(500)
-  is_active        boolean     [not null, default: true]
+  homepage_url     varchar(500) [note: 'REQ-F-110 구단 공식 채널']
+  ticket_url       varchar(500) [note: 'REQ-F-110']
+  instagram_url    varchar(500) [note: 'REQ-F-110']
+  youtube_url      varchar(500) [note: 'REQ-F-110']
+  is_active        boolean      [not null, default: true]
 }
 
 Table stadiums {
   id        bigint       [pk, increment]
   name      varchar(50)  [not null, unique]
+  name_en   varchar(100)
   address   varchar(255)
   capacity  int
   latitude  decimal(10,7)
   longitude decimal(10,7)
+  grid_nx   int          [note: 'REQ-F-112 기상청 단기예보 격자 X. 위경도를 람베르트 정각원추 도법으로 변환한 값']
+  grid_ny   int          [note: 'REQ-F-112 기상청 단기예보 격자 Y']
 
-  Note: 'REQ-F-108, REQ-F-109'
+  Note: 'REQ-F-108, REQ-F-109, REQ-F-112'
 }
 
 Table stadium_zones {
@@ -403,6 +419,7 @@ Table viewing_plans {
   budget_total      int
   max_cost_per_game int
   available_days    varchar(30) [note: 'REQ-F-402 예: MON,WED,SAT']
+  max_precip_prob   int         [note: 'REQ-F-403 이 강수확률(%)을 넘는 경기는 편성에서 제외한다']
   created_at        timestamp   [not null]
 
   Indexes { (user_id, season_year) [unique] }
