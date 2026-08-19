@@ -1,0 +1,118 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff;
+       font-family: Pretendard, 'Apple SD Gothic Neo', sans-serif; color: #1a1a1a; }
+.sheet { position: relative; padding: 22px; }
+.head { display: flex; justify-content: space-between; align-items: baseline;
+        border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 16px; }
+.head b { font-size: 17px; } .head span { font-size: 11px; color: #666; }
+.cols { display: flex; gap: 54px; align-items: flex-start; position: relative; z-index: 2; }
+.grp { min-width: 0; }
+.grp .sub { display: flex; gap: 16px; align-items: flex-start; }
+.grp .sub > div { min-width: 190px; }
+.grp > h3 { font-size: 11px; color: #444; margin: 0 0 8px; padding-bottom: 4px;
+            border-bottom: 1px dashed #bbb; letter-spacing: .5px; }
+.tbl { border: 1.5px solid #333; background: #fff; margin-bottom: 12px; }
+.tbl > .t { background: #eef1f5; border-bottom: 1.5px solid #333; padding: 5px 7px;
+            font-size: 11.5px; font-weight: 700; display: flex; justify-content: space-between; }
+.tbl.ext > .t { background: #fff; }
+.tbl.stub { border-style: dashed; opacity: .75; }
+.tbl.stub > .t { background: #f7f7f7; border-bottom: 0; }
+.tbl .sc { font-size: 9px; font-weight: 400; color: #666; }
+.tbl .c { display: flex; justify-content: space-between; gap: 8px;
+          padding: 2.5px 7px; font-size: 10px; border-bottom: 1px solid #eee; }
+.tbl .c:last-child { border-bottom: 0; }
+.tbl .c .k { color: #999; font-size: 9px; }
+.tbl .c.pk { font-weight: 700; }
+.tbl .c.fk .n { color: #1d4b8f; }
+.tbl .c .ty { color: #888; font-size: 9px; white-space: nowrap; }
+svg.wires { position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; }
+svg.wires path { fill: none; stroke: #6b7686; stroke-width: 1.1; }
+svg.wires circle { fill: #6b7686; }
+svg.wires polygon { fill: #6b7686; }
+.legend { margin-top: 14px; border-top: 2px solid #333; padding-top: 8px;
+          font-size: 10px; color: #444; display: flex; gap: 18px; }
+.sw { display: inline-block; width: 14px; height: 9px; border: 1.5px solid #333;
+      background: #eef1f5; margin-right: 4px; vertical-align: -1px; }
+.sw.e { background: #fff; }
+
+@font-face { font-family: Pretendard; font-weight: 400;
+  src: url('file:///Users/skalamok/Desktop/projects/today-jikgwan/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
+@font-face { font-family: Pretendard; font-weight: 700;
+  src: url('file:///Users/skalamok/Desktop/projects/today-jikgwan/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
+body { width: 888px; }</style></head><body>
+<div class="sheet"><div class="head"><b>경기 · 구장</b><span>테이블 6개 · 관계 8개 &nbsp;·&nbsp; 단계 = 참조 깊이. 1단계는 다른 테이블을 참조하지 않는다</span></div>
+<svg class="wires"></svg><div class="cols"><div class="grp"><h3>1단계 · 참조 없음</h3><div class="sub"><div><div class="tbl mvp" data-t="stadiums"><div class="t"><span>stadiums</span><span class="sc">MVP</span></div><div class="c pk" data-c="stadiums.id"><span class="n">id</span><span class="ty">PK bigint</span></div><div class="c" data-c="stadiums.name"><span class="n">name</span><span class="ty">varchar(50)</span></div><div class="c" data-c="stadiums.name_en"><span class="n">name_en</span><span class="ty">varchar(100)</span></div><div class="c" data-c="stadiums.address"><span class="n">address</span><span class="ty">varchar(255)</span></div><div class="c" data-c="stadiums.capacity"><span class="n">capacity</span><span class="ty">int</span></div><div class="c" data-c="stadiums.latitude"><span class="n">latitude</span><span class="ty">decimal(10,7)</span></div><div class="c" data-c="stadiums.longitude"><span class="n">longitude</span><span class="ty">decimal(10,7)</span></div><div class="c" data-c="stadiums.grid_nx"><span class="n">grid_nx</span><span class="ty">int</span></div><div class="c" data-c="stadiums.grid_ny"><span class="n">grid_ny</span><span class="ty">int</span></div></div></div></div></div><div class="grp"><h3>2단계</h3><div class="sub"><div><div class="tbl mvp" data-t="stadium_zones"><div class="t"><span>stadium_zones</span><span class="sc">MVP</span></div><div class="c pk" data-c="stadium_zones.id"><span class="n">id</span><span class="ty">PK bigint</span></div><div class="c fk" data-c="stadium_zones.stadium_id"><span class="n">stadium_id</span><span class="ty">→ stadiums</span></div><div class="c" data-c="stadium_zones.name"><span class="n">name</span><span class="ty">varchar(50)</span></div><div class="c" data-c="stadium_zones.sort_order"><span class="n">sort_order</span><span class="ty">int</span></div><div class="c" data-c="stadium_zones.is_active"><span class="n">is_active</span><span class="ty">boolean</span></div></div><div class="tbl mvp" data-t="teams"><div class="t"><span>teams</span><span class="sc">MVP</span></div><div class="c pk" data-c="teams.id"><span class="n">id</span><span class="ty">PK bigint</span></div><div class="c" data-c="teams.name"><span class="n">name</span><span class="ty">varchar(50)</span></div><div class="c" data-c="teams.name_en"><span class="n">name_en</span><span class="ty">varchar(100)</span></div><div class="c" data-c="teams.short_name"><span class="n">short_name</span><span class="ty">varchar(10)</span></div><div class="c fk" data-c="teams.home_stadium_id"><span class="n">home_stadium_id</span><span class="ty">→ stadiums</span></div><div class="c" data-c="teams.external_ref"><span class="n">external_ref</span><span class="ty">varchar(50)</span></div><div class="c" data-c="teams.logo_url"><span class="n">logo_url</span><span class="ty">varchar(500)</span></div><div class="c" data-c="teams.homepage_url"><span class="n">homepage_url</span><span class="ty">varchar(500)</span></div><div class="c" data-c="teams.ticket_url"><span class="n">ticket_url</span><span class="ty">varchar(500)</span></div><div class="c" data-c="teams.instagram_url"><span class="n">instagram_url</span><span class="ty">varchar(500)</span></div><div class="c" data-c="teams.youtube_url"><span class="n">youtube_url</span><span class="ty">varchar(500)</span></div><div class="c" data-c="teams.is_active"><span class="n">is_active</span><span class="ty">boolean</span></div></div></div></div></div><div class="grp"><h3>3단계</h3><div class="sub"><div><div class="tbl mvp" data-t="games"><div class="t"><span>games</span><span class="sc">MVP</span></div><div class="c pk" data-c="games.id"><span class="n">id</span><span class="ty">PK bigint</span></div><div class="c" data-c="games.season_year"><span class="n">season_year</span><span class="ty">int</span></div><div class="c" data-c="games.game_date"><span class="n">game_date</span><span class="ty">date</span></div><div class="c" data-c="games.start_at"><span class="n">start_at</span><span class="ty">timestamp</span></div><div class="c fk" data-c="games.stadium_id"><span class="n">stadium_id</span><span class="ty">→ stadiums</span></div><div class="c fk" data-c="games.home_team_id"><span class="n">home_team_id</span><span class="ty">→ teams</span></div><div class="c fk" data-c="games.away_team_id"><span class="n">away_team_id</span><span class="ty">→ teams</span></div><div class="c" data-c="games.home_score"><span class="n">home_score</span><span class="ty">int</span></div><div class="c" data-c="games.away_score"><span class="n">away_score</span><span class="ty">int</span></div><div class="c" data-c="games.status"><span class="n">status</span><span class="ty">game_status</span></div><div class="c" data-c="games.source"><span class="n">source</span><span class="ty">game_source</span></div><div class="c" data-c="games.external_ref"><span class="n">external_ref</span><span class="ty">varchar(100)</span></div><div class="c" data-c="games.synced_at"><span class="n">synced_at</span><span class="ty">timestamp</span></div><div class="c" data-c="games.result_confirmed"><span class="n">result_confirmed</span><span class="ty">boolean</span></div><div class="c" data-c="games.confirmed_at"><span class="n">confirmed_at</span><span class="ty">timestamp</span></div><div class="c" data-c="games.created_at"><span class="n">created_at</span><span class="ty">timestamp</span></div><div class="c" data-c="games.updated_at"><span class="n">updated_at</span><span class="ty">timestamp</span></div></div></div></div></div><div class="grp"><h3>4단계</h3><div class="sub"><div><div class="tbl mvp" data-t="game_revisions"><div class="t"><span>game_revisions</span><span class="sc">MVP</span></div><div class="c pk" data-c="game_revisions.id"><span class="n">id</span><span class="ty">PK bigint</span></div><div class="c fk" data-c="game_revisions.game_id"><span class="n">game_id</span><span class="ty">→ games</span></div><div class="c" data-c="game_revisions.before_status"><span class="n">before_status</span><span class="ty">game_status</span></div><div class="c" data-c="game_revisions.before_home_score"><span class="n">before_home_score</span><span class="ty">int</span></div><div class="c" data-c="game_revisions.before_away_score"><span class="n">before_away_score</span><span class="ty">int</span></div><div class="c" data-c="game_revisions.after_status"><span class="n">after_status</span><span class="ty">game_status</span></div><div class="c" data-c="game_revisions.after_home_score"><span class="n">after_home_score</span><span class="ty">int</span></div><div class="c" data-c="game_revisions.after_away_score"><span class="n">after_away_score</span><span class="ty">int</span></div><div class="c" data-c="game_revisions.reason"><span class="n">reason</span><span class="ty">varchar(255)</span></div><div class="c fk" data-c="game_revisions.revised_by"><span class="n">revised_by</span><span class="ty">→ users</span></div><div class="c" data-c="game_revisions.revised_at"><span class="n">revised_at</span><span class="ty">timestamp</span></div></div><div class="tbl ext" data-t="game_weather"><div class="t"><span>game_weather</span><span class="sc">확장</span></div><div class="c pk" data-c="game_weather.game_id"><span class="n">game_id</span><span class="ty">PK bigint</span></div><div class="c" data-c="game_weather.temperature"><span class="n">temperature</span><span class="ty">decimal(4,1)</span></div><div class="c" data-c="game_weather.sky_code"><span class="n">sky_code</span><span class="ty">varchar(10)</span></div><div class="c" data-c="game_weather.precip_type"><span class="n">precip_type</span><span class="ty">varchar(10)</span></div><div class="c" data-c="game_weather.precip_prob"><span class="n">precip_prob</span><span class="ty">int</span></div><div class="c" data-c="game_weather.alert_title"><span class="n">alert_title</span><span class="ty">varchar(100)</span></div><div class="c" data-c="game_weather.fetched_at"><span class="n">fetched_at</span><span class="ty">timestamp</span></div></div></div></div></div></div>
+<div class="legend"><span>다른 그룹 참조 : users</span></div>
+</div>
+<script>const REFS = [{"from": "teams", "fromCol": "home_stadium_id", "to": "stadiums", "toCol": "id", "rel": ">"}, {"from": "stadium_zones", "fromCol": "stadium_id", "to": "stadiums", "toCol": "id", "rel": ">"}, {"from": "games", "fromCol": "stadium_id", "to": "stadiums", "toCol": "id", "rel": ">"}, {"from": "games", "fromCol": "home_team_id", "to": "teams", "toCol": "id", "rel": ">"}, {"from": "games", "fromCol": "away_team_id", "to": "teams", "toCol": "id", "rel": ">"}, {"from": "game_weather", "fromCol": "game_id", "to": "games", "toCol": "id", "rel": "-"}, {"from": "game_revisions", "fromCol": "game_id", "to": "games", "toCol": "id", "rel": ">"}];
+
+const svg = document.querySelector('svg.wires');
+const R = svg.getBoundingClientRect();
+const NS = 'http://www.w3.org/2000/svg';
+const at = n => document.querySelector(`[data-t="${n}"]`);
+const col = (t, c) => document.querySelector(`[data-c="${t}.${c}"]`);
+const grps = [...document.querySelectorAll('.grp')].map(g => g.getBoundingClientRect());
+// 카드가 열 상자를 소수점만큼 넘칠 수 있다. 가운데 좌표로 가장 가까운 열을 고른다.
+// -1 이 나오면 grps[-1] 이 undefined 라 첫 관계에서 스크립트가 죽고 선이 하나도 안 그려진다
+const groupOf = (el) => {
+  const cx = el.left + el.width / 2;
+  let best = 0, gap = Infinity;
+  grps.forEach((g, i) => {
+    const d = cx < g.left ? g.left - cx : (cx > g.right ? cx - g.right : 0);
+    if (d < gap) { gap = d; best = i; }
+  });
+  return best;
+};
+
+// 곡선으로 이으면 카드 위를 넘어 다녀 어디서 어디로 가는 선인지 읽히지 않는다.
+// 열 사이 빈 공간에 세로줄을 세우고 직각으로 꺾는다. 세로줄은 선마다 조금씩 어긋나게
+// 세워 겹치지 않게 한다.
+const lane = {};
+function laneX(key, base, step) {
+  if (!(key in lane)) lane[key] = 0;
+  return base + (lane[key]++) * step;
+}
+function corner(x1, y1, bx, y2, x2, r) {
+  const s1 = Math.sign(bx - x1) || 1, s2 = Math.sign(x2 - bx) || 1, sy = Math.sign(y2 - y1) || 1;
+  const rr = Math.min(r, Math.abs(bx - x1) / 2, Math.abs(x2 - bx) / 2, Math.abs(y2 - y1) / 2);
+  return `M${x1},${y1} H${bx - s1 * rr} Q${bx},${y1} ${bx},${y1 + sy * rr}`
+       + ` V${y2 - sy * rr} Q${bx},${y2} ${bx + s2 * rr},${y2} H${x2}`;
+}
+for (const r of REFS) {
+  const a = col(r.from, r.fromCol) || at(r.from);
+  const b = at(r.to);
+  if (!a || !b) continue;
+  const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+  const ga = groupOf(ra), gb = groupOf(rb);
+  const y1 = ra.top + ra.height / 2 - R.top;
+  const y2 = rb.top + 11 - R.top;
+  let x1, x2, bx;
+  if (ga === gb) {                       // 같은 열이면 왼쪽 바깥으로 돌린다
+    x1 = ra.left - R.left;
+    x2 = rb.left - R.left;
+    bx = Math.max(6, laneX('L' + ga, grps[ga].left - R.left - 12, -7));
+  } else if (ga < gb) {                  // 오른쪽 열로 간다
+    x1 = ra.right - R.left;
+    x2 = rb.left - R.left;
+    bx = laneX('G' + ga + '_' + gb, grps[ga].right - R.left + 10, 7);
+  } else {                               // 왼쪽 열로 돌아간다
+    x1 = ra.left - R.left;
+    x2 = rb.right - R.left;
+    bx = Math.max(6, laneX('G' + gb + '_' + ga, grps[ga].left - R.left - 10, -7));
+  }
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', corner(x1, y1, bx, y2, x2, 6));
+  svg.appendChild(p);
+  const dot = document.createElementNS(NS, 'circle');
+  dot.setAttribute('cx', x1); dot.setAttribute('cy', y1); dot.setAttribute('r', 2.4);
+  svg.appendChild(dot);
+  const dir = x2 > bx ? -1 : 1;          // 화살촉은 도착 카드를 향한다
+  const tip = document.createElementNS(NS, 'polygon');
+  tip.setAttribute('points',
+    `${x2},${y2} ${x2 + dir * 6},${y2 - 3.2} ${x2 + dir * 6},${y2 + 3.2}`);
+  svg.appendChild(tip);
+}
+</script></body></html>

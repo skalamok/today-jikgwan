@@ -75,6 +75,8 @@ body { margin: 0; background: #fff;
 .tbl > .t { background: #eef1f5; border-bottom: 1.5px solid #333; padding: 5px 7px;
             font-size: 11.5px; font-weight: 700; display: flex; justify-content: space-between; }
 .tbl.ext > .t { background: #fff; }
+.tbl.stub { border-style: dashed; opacity: .75; }
+.tbl.stub > .t { background: #f7f7f7; border-bottom: 0; }
 .tbl .sc { font-size: 9px; font-weight: 400; color: #666; }
 .tbl .c { display: flex; justify-content: space-between; gap: 8px;
           padding: 2.5px 7px; font-size: 10px; border-bottom: 1px solid #eee; }
@@ -102,7 +104,17 @@ const NS = 'http://www.w3.org/2000/svg';
 const at = n => document.querySelector(`[data-t="${n}"]`);
 const col = (t, c) => document.querySelector(`[data-c="${t}.${c}"]`);
 const grps = [...document.querySelectorAll('.grp')].map(g => g.getBoundingClientRect());
-const groupOf = el => grps.findIndex(g => el.left >= g.left - 1 && el.right <= g.right + 1);
+// 카드가 열 상자를 소수점만큼 넘칠 수 있다. 가운데 좌표로 가장 가까운 열을 고른다.
+// -1 이 나오면 grps[-1] 이 undefined 라 첫 관계에서 스크립트가 죽고 선이 하나도 안 그려진다
+const groupOf = (el) => {
+  const cx = el.left + el.width / 2;
+  let best = 0, gap = Infinity;
+  grps.forEach((g, i) => {
+    const d = cx < g.left ? g.left - cx : (cx > g.right ? cx - g.right : 0);
+    if (d < gap) { gap = d; best = i; }
+  });
+  return best;
+};
 
 // 곡선으로 이으면 카드 위를 넘어 다녀 어디서 어디로 가는 선인지 읽히지 않는다.
 // 열 사이 빈 공간에 세로줄을 세우고 직각으로 꺾는다. 세로줄은 선마다 조금씩 어긋나게
@@ -230,8 +242,9 @@ def sheet(title, sub, groups, tables, refs, width):
             "<div>%s</div>" % "".join(card(n, tables[n], fk_of.get(n, {}), gname.get(n, ""))
                                       for n in b)
             for b in buckets if b)
-        cols.append('<div class="grp"><h3>%d단계</h3><div class="sub">%s</div></div>'
-                    % (i + 1, lanes_html))
+        label = "1단계 · 참조 없음" if i == 0 else "%d단계" % (i + 1)
+        cols.append('<div class="grp"><h3>%s</h3><div class="sub">%s</div></div>'
+                    % (label, lanes_html))
     return """<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <style>%s
 @font-face { font-family: Pretendard; font-weight: 400;
@@ -252,7 +265,8 @@ body { width: %dpx; }</style></head><body>
         json.dumps(refs, ensure_ascii=False), JS)
 
 
-def shoot(name, html, width):
+def shoot(name, html, width=0):
+    width = width or int(re.search(r"body \{ width: (\d+)px", html).group(1))
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, name + ".html")
     io.open(hp, "w", encoding="utf-8").write(html)
@@ -271,14 +285,106 @@ def shoot(name, html, width):
     print("  %-10s %dx%d  %.1fKB" % (name, im.width, im.height, os.path.getsize(png) / 1024))
 
 
+def stub(name, t):
+    return ('<div class="tbl stub" data-t="%s"><div class="t"><span>%s</span>'
+            '<span class="sc">다른 그룹</span></div></div>' % (name, name))
+
+
+def group_sheet(gname, members, tables, refs):
+    """한 그룹만 크게 그린다.
+
+    27개를 한 장에 담으면 A4 세로에서 글자가 1.2mm 가 되어 읽을 수 없다.
+    글자가 6pt 는 되려면 그림 폭이 900px 을 넘지 않아야 하고, 그러려면
+    한 장에 담는 테이블을 줄이는 수밖에 없다.
+
+    다른 그룹에 있는 참조 대상은 카드로 그리지 않는다. 열이 하나 더 늘어
+    폭이 넘치는데, 외래키 칸에 이미 대상 이름이 적혀 있어 잃는 것이 없다.
+    """
+    inside = [n for n in members if n in tables]
+    kept = [r for r in refs if r["from"] in inside]
+    outside = sorted({r["to"] for r in kept if r["to"] not in inside})
+    sub = {n: tables[n] for n in inside}
+    fk_of = {}
+    for r in kept:
+        fk_of.setdefault(r["from"], {})[r["fromCol"]] = r["to"]
+
+    inner = [r for r in kept if r["to"] in inside]
+    stages = layers(sub, inner)
+    cols = []
+    for i, ts in enumerate(stages):
+        body = "".join(card(n, tables[n], fk_of.get(n, {}), "") for n in sorted(ts))
+        label = "1단계 · 참조 없음" if i == 0 else "%d단계" % (i + 1)
+        cols.append('<div class="grp"><h3>%s</h3><div class="sub"><div>%s</div></div></div>'
+                    % (label, body))
+    width = min(900, max(560, len(stages) * 208 + 56))
+    note = ("다른 그룹 참조 : " + ", ".join(outside)) if outside else "그룹 안에서 닫혀 있다"
+    return """<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<style>%s
+@font-face { font-family: Pretendard; font-weight: 400;
+  src: url('file://%s/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
+@font-face { font-family: Pretendard; font-weight: 700;
+  src: url('file://%s/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
+body { width: %dpx; }</style></head><body>
+<div class="sheet"><div class="head"><b>%s</b><span>테이블 %d개 · 관계 %d개 &nbsp;·&nbsp; 단계 = 참조 깊이. 1단계는 다른 테이블을 참조하지 않는다</span></div>
+<svg class="wires"></svg><div class="cols">%s</div>
+<div class="legend"><span>%s</span></div>
+</div>
+<script>const REFS = %s;\n%s</script></body></html>""" % (
+        CSS, BASE, BASE, width, gname, len(inside), len(kept), "".join(cols),
+        note, json.dumps(inner, ensure_ascii=False), JS)
+
+
+def map_sheet(title, sub, groups, tables, refs):
+    """이름만 그린 관계 지도.
+
+    컬럼까지 넣으면 한 장에 담을 수 없다. 어느 테이블이 어디에 얹혀 있는지
+    보는 용도이므로 이름과 선만 남긴다. 세부는 그룹별 그림에 있다.
+    """
+    order = {g["name"]: i for i, g in enumerate(groups)}
+    gname = {t: g["name"] for g in groups for t in g["tables"]}
+    cols = []
+    stages = layers(tables, refs)
+    for i, ts in enumerate(stages):
+        ts = sorted(ts, key=lambda t: (order.get(gname.get(t, ""), 99), t))
+        body = "".join(
+            '<div class="tbl %s" data-t="%s"><div class="t"><span>%s</span>'
+            '<span class="sc">%s</span></div></div>'
+            % ("mvp" if tables[n]["scope"] == "MVP" else "ext", n, n, gname.get(n, ""))
+            for n in ts)
+        label = "1단계 · 참조 없음" if i == 0 else "%d단계" % (i + 1)
+        cols.append('<div class="grp"><h3>%s</h3><div class="sub"><div>%s</div></div></div>'
+                    % (label, body))
+    return """<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<style>%s
+@font-face { font-family: Pretendard; font-weight: 400;
+  src: url('file://%s/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
+@font-face { font-family: Pretendard; font-weight: 700;
+  src: url('file://%s/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
+body { width: %dpx; }
+.tbl > .t { padding: 6px 8px; }
+.grp .sub > div { min-width: 226px; }</style></head><body>
+<div class="sheet"><div class="head"><b>%s</b><span>%s</span></div>
+<svg class="wires"></svg><div class="cols">%s</div>
+<div class="legend"><span><span class="sw"></span>MVP</span>
+<span><span class="sw e"></span>확장</span>
+<span>이름과 관계만 그린 지도다. 컬럼은 그룹별 그림과 테이블 목록에 있다.</span></div>
+</div>
+<script>const REFS = %s;\n%s</script></body></html>""" % (
+        CSS, BASE, BASE, len(stages) * 240 + 56, title, sub, "".join(cols),
+        json.dumps(refs, ensure_ascii=False), JS)
+
+
 def main():
     tables, refs, groups = parse()
     core = {n: t for n, t in tables.items() if t["scope"] == "MVP"}
     cr = [r for r in refs if r["from"] in core and r["to"] in core]
-    shoot("ERD-CORE", sheet("데이터 모델 — MVP 범위", "%d개 테이블 · %d개 관계" % (len(core), len(cr)),
-                            groups, core, cr, 1500), 1500)
-    shoot("ERD-ALL", sheet("데이터 모델 — 전체", "%d개 테이블 · %d개 관계" % (len(tables), len(refs)),
-                           groups, tables, refs, 2400), 2400)
+    shoot("ERD-CORE", map_sheet("MVP 범위", "테이블 %d개 · 관계 %d개" % (len(core), len(cr)),
+                                groups, core, cr), 0)
+    shoot("ERD-ALL", map_sheet("전체 관계 지도", "테이블 %d개 · 관계 %d개" % (len(tables), len(refs)),
+                               groups, tables, refs), 0)
+    for i, g in enumerate(groups, 1):
+        html = group_sheet(g["name"], g["tables"], tables, refs)
+        shoot("ERD-G%d" % i, html, int(re.search(r"body \{ width: (\d+)px", html).group(1)))
 
 
 if __name__ == "__main__":
