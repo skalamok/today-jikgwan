@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import client from '../api/client'
+import { downloadTicketCard } from '../lib/ticketCard'
 
 const route = useRoute(); const router = useRouter()
 const log = ref(null)
@@ -14,6 +15,14 @@ onMounted(async () => {
   try { log.value = (await client.get(`/attendance-logs/${route.params.id}`)).data }
   catch (e) { error.value = e.response?.data?.message || '기록을 불러오지 못했어요' }
 })
+
+/* REQ-F-704 직관 카드. 비공개 기록도 본인은 만들 수 있다 */
+const carding = ref(false)
+async function saveTicketCard() {
+  carding.value = true
+  try { await downloadTicketCard(log.value) }
+  finally { carding.value = false }
+}
 
 async function removeLog() {
   if (!confirm('이 기록을 삭제할까요? 전적에서도 제외됩니다.')) return
@@ -141,6 +150,10 @@ async function save() {
       <div class="kv total"><span>합계</span><b>{{ log.totalCost.toLocaleString() }}원</b></div>
     </div>
 
+    <button class="btn card-btn" :disabled="carding" @click="saveTicketCard">
+      {{ carding ? '만드는 중…' : '🎫 직관 카드 저장' }}
+    </button>
+
     <div class="acts">
       <button class="btn" @click="openEdit" v-if="!editing">기록 수정</button>
       <button class="btn ghost" @click="removeLog">기록 삭제</button>
@@ -231,6 +244,7 @@ async function save() {
 </template>
 
 <style scoped>
+.card-btn { width: 100%; margin-bottom: 8px; }
 .acts { display: flex; gap: 8px; }
 .acts .btn { flex: 1; }
 .hint { font-size: 12px; color: #777; margin: -4px 0 12px; }
