@@ -158,6 +158,20 @@ table.req9 th:nth-child(8), table.req9 td:nth-child(8) { width: 12%; }
 table.req9 th:nth-child(9), table.req9 td:nth-child(9) { width: 18.5%; }
 
 /* 8열: 비기능 요구사항 (관련 화면 ID 열 없음) */
+/* 기능 요구사항 - 범위 열이 붙어 10칸. 좁은 칸은 줄바꿈을 막아 "로그 인" 처럼 끊기지 않게 한다 */
+table.req10 { font-size: 7.6pt; }
+table.req10 th, table.req10 td { padding: 0.9mm 1.1mm; }
+table.req10 th:nth-child(1), table.req10 td:nth-child(1) { width: 8%; white-space: nowrap; }
+table.req10 th:nth-child(2), table.req10 td:nth-child(2) { width: 4.5%; white-space: nowrap; }
+table.req10 th:nth-child(3), table.req10 td:nth-child(3) { width: 5.5%; white-space: nowrap; }
+table.req10 th:nth-child(4), table.req10 td:nth-child(4) { width: 9.5%; }
+table.req10 th:nth-child(5), table.req10 td:nth-child(5) { width: 28%; }
+table.req10 th:nth-child(6), table.req10 td:nth-child(6) { width: 4.5%; white-space: nowrap; text-align: center; }
+table.req10 th:nth-child(7), table.req10 td:nth-child(7) { width: 5.5%; white-space: nowrap; text-align: center; }
+table.req10 th:nth-child(8), table.req10 td:nth-child(8) { width: 4.5%; white-space: nowrap; text-align: center; }
+table.req10 th:nth-child(9), table.req10 td:nth-child(9) { width: 12%; }
+table.req10 th:nth-child(10), table.req10 td:nth-child(10) { width: 18%; }
+
 table.req8 th:nth-child(1), table.req8 td:nth-child(1) { width: 9%; white-space: nowrap; }
 table.req8 th:nth-child(2), table.req8 td:nth-child(2) { width: 6%; }
 table.req8 th:nth-child(3), table.req8 td:nth-child(3) { width: 6%; }
@@ -187,9 +201,13 @@ table.desc th:nth-child(5), table.desc td:nth-child(5) { width: 20%; }
 /* ---------- 이미지(와이어프레임) ---------- */
 figure img { display: block; margin: 4mm auto; border: 1px solid #ccc; }
 img.logo, img.mark { border: 0; }
-img.mobile { width: 62mm; }
-img.pc { width: 165mm; }
+/* 모바일 판과 데스크톱 판을 한 쪽에 같이 싣는다. 높이를 제한하지 않으면
+   세로로 긴 모바일 캡처가 한 쪽을 다 먹고 데스크톱 판이 다음 쪽으로 밀린다. */
+img.mobile { max-width: 58mm; max-height: 108mm; }
+img.pc { max-width: 160mm; max-height: 108mm; }
 figure { page-break-inside: avoid; margin: 0; }
+/* 그림 바로 앞의 설명 문단은 그림과 떨어지지 않게 둔다 */
+p + figure { page-break-before: avoid; }
 """
 
 
