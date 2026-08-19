@@ -25,3 +25,6 @@ uploads/
 # Python
 __pycache__/
 *.pyc
+
+# 제출용 zip 은 폴더와 중복이라 추적하지 않는다
+docs/*.zip
