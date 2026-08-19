@@ -33,6 +33,12 @@ public class AdminStadiumController {
         adminStadiumService.updateZone(zoneId, request.name(), request.sortOrder(), request.active());
     }
 
+    @DeleteMapping("/zones/{zoneId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteZone(@PathVariable Long zoneId) {
+        adminStadiumService.deleteZone(zoneId);
+    }
+
     @PatchMapping("/stadiums/{stadiumId}")
     public void updateStadium(@PathVariable Long stadiumId, @RequestBody StadiumRequest request) {
         adminStadiumService.updateStadium(stadiumId, request.address(), request.capacity(),

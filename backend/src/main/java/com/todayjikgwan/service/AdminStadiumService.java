@@ -14,9 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 운영자 구장 · 좌석 구역 관리 (REQ-F-605).
  *
- * <p><b>구역은 지우지 않고 비활성화만 한다.</b> 구역은 관람 기록이 참조하고 만족도 집계의
- * 단위이기도 해서, 지우면 과거 기록의 좌석 정보와 그 구역에 쌓인 평가가 함께 사라진다.
- * 더 쓰지 않을 구역은 비활성으로 돌려 새 기록에서만 선택되지 않게 한다.
+ * <p><b>구역 삭제는 관람 기록이 하나도 없을 때만 허용한다.</b> 구역은 관람 기록이 참조하고
+ * 만족도 집계의 단위이기도 해서, 기록이 딸린 구역을 지우면 과거 기록의 좌석 정보와 그
+ * 구역에 쌓인 평가가 함께 사라진다. 그런 구역은 비활성으로 돌려 새 기록에서만 빠지게 한다.
+ * 반대로 오타로 만든 구역처럼 아무도 쓴 적 없는 구역까지 남길 이유는 없다.
  */
 @Service
 @RequiredArgsConstructor
@@ -73,6 +74,20 @@ public class AdminStadiumService {
         if (active != null) {
             zone.setActive(active);
         }
+    }
+
+    /**
+     * REQ-F-605. 잘못 만든 구역을 되돌리는 수단이다.
+     * 관람 기록이 하나라도 있으면 지우지 않고 비활성화를 안내한다.
+     */
+    @Transactional
+    public void deleteZone(Long zoneId) {
+        StadiumZone zone = zoneRepository.findById(zoneId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (attendanceLogRepository.countByStadiumZoneId(zoneId) > 0) {
+            throw new ApiException(ErrorCode.ZONE_IN_USE);
+        }
+        zoneRepository.delete(zone);
     }
 
     /** 구장 자체는 기상청 격자와 관람 기록이 함께 걸려 있어 정보 수정만 제공한다. */

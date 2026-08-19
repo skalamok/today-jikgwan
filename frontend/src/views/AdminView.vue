@@ -134,6 +134,17 @@ async function toggleZone(zone) {
   } finally { zoneBusy.value = false }
 }
 
+async function deleteZone(zone) {
+  if (!confirm(`'${zone.name}' 구역을 지울까요? 되돌릴 수 없어요.`)) return
+  zoneBusy.value = true; error.value = ''
+  try {
+    await client.delete(`/admin/zones/${zone.id}`)
+    await loadZones()
+  } catch (e) {
+    error.value = e.response?.data?.message || '지우지 못했어요.'
+  } finally { zoneBusy.value = false }
+}
+
 async function renameZone(zone) {
   const name = prompt('구역 이름', zone.name)
   if (!name || name === zone.name) return
@@ -326,6 +337,9 @@ function fmt(iso) {
         <button class="btn ghost small" :disabled="zoneBusy" @click="toggleZone(z)">
           {{ z.active ? '비활성화' : '되살리기' }}
         </button>
+        <!-- 기록이 딸린 구역은 지울 수 없다. 버튼 자체를 내보내지 않는다 -->
+        <button v-if="!z.logCount" class="btn ghost small danger"
+                :disabled="zoneBusy" @click="deleteZone(z)">삭제</button>
       </div>
 
       <div class="add-zone">
@@ -335,9 +349,9 @@ function fmt(iso) {
                 :disabled="!newZone.trim() || zoneBusy" @click="addZone">추가</button>
       </div>
       <div class="muted" style="font-size:12px; margin-top:10px">
-        구역은 삭제하지 않습니다. 과거 관람 기록이 이 구역을 참조하고 있고,
-        구역별 만족도 집계의 단위이기 때문이에요. 더 쓰지 않을 구역은 비활성으로 돌리면
-        새 기록에서만 선택되지 않습니다.
+        관람 기록이 있는 구역은 지울 수 없습니다. 과거 기록이 이 구역을 참조하고 있고
+        구역별 만족도 집계의 단위이기 때문이에요. 그런 구역은 비활성으로 돌리면
+        새 기록에서만 빠집니다. 아무도 쓴 적 없는 구역만 삭제 버튼이 나옵니다.
       </div>
     </template>
   </div>
@@ -374,6 +388,7 @@ function fmt(iso) {
 }
 .add-zone { display: flex; gap: 8px; margin-top: 14px; }
 .add-zone input { flex: 1; }
+.btn.danger { color: var(--danger, #c0392b); }
 .tally { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; max-width: 45%; }
 .pill {
   padding: 3px 9px; border-radius: 999px; background: var(--card-soft);
