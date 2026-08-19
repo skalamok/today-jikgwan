@@ -1,0 +1,23 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>SCR-GAME-003 팀 순위</title><link rel="stylesheet" href="wireframe.css"></head>
+<body><div class="frame">
+<div class="f-head"><span>팀 순위</span><span class="sid">SCR-GAME-003</span></div>
+<div class="f-body">
+<div class="blk plain"><span class="n">①</span>
+  <div class="note">등록된 경기 결과로 직접 산출한다. 외부 순위표를 가져오지 않는다 (REQ-F-104)</div>
+</div>
+<div class="blk"><span class="n">②</span>
+  <div class="row"><span class="s">순위</span><span class="s">경기 승 무 패 승률 승차</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">1 NC</span><span class="t">127 70 0 57 .551 -</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">2 SSG</span><span class="t">127 68 3 56 .548 0.5</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">3 KIA</span><span class="t">126 65 2 59 .524 3.5</span></div>
+  <div class="note">승차 = ((1위 승 - 팀 승) + (팀 패 - 1위 패)) / 2</div>
+</div>
+<div class="blk plain"><span class="n">③</span>
+  <div class="s">기준 2026-08-19 · 미확정 경기 제외</div>
+  <div class="note">결과가 확정되지 않은 경기는 집계에 넣지 않는다 (REQ-F-606)</div>
+</div>
+</div></div></body></html>

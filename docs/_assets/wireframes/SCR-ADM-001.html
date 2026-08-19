@@ -1,0 +1,25 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>SCR-ADM-001 운영자 · 경기 데이터 관리</title><link rel="stylesheet" href="wireframe.css"></head>
+<body><div class="frame">
+<div class="f-head"><span>경기 데이터 관리 (운영자)</span><span class="sid">SCR-ADM-001</span></div>
+<div class="f-body">
+<div class="blk plain"><span class="n">①</span>
+  <div class="row"><span class="pill fill">결과 미등록</span><span class="pill">경기 등록</span><span class="pill">구장 · 구역</span></div>
+  <div class="note">운영자 권한이 없으면 화면 자체에 접근할 수 없다 (REQ-NF-015)</div>
+</div>
+<div class="blk"><span class="n">②</span>
+  <div class="lab">결과 미등록 경기 3건</div>
+  <div class="row"><span class="t">08.18 잠실 두산 vs LG</span><span class="pill">입력</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">08.18 고척 키움 vs 삼성</span><span class="pill">입력</span></div>
+  <div class="note">결과가 없으면 사용자 화면에 "확인 중" 으로 나간다 (REQ-F-606)</div>
+</div>
+<div class="blk"><span class="n">③</span>
+  <div class="lab">결과 정정</div>
+  <div class="row"><span class="inp" style="flex:1">5</span><span class="s">:</span><span class="inp" style="flex:1">3</span></div>
+  <div class="inp" style="margin-top:6px">정정 사유 (우천 노게임 · 서스펜디드 등)</div>
+  <div class="note">사유는 필수. 변경 전후 값과 함께 이력으로 남는다 (REQ-F-603)</div>
+</div>
+<div class="blk btn"><span class="n">④</span>정정 저장</div>
+<div class="note">저장 시 영향받는 사용자 수를 먼저 보여주고 확인을 받는다. 저장 후 전적을 다시 계산하고 알림을 보낸다 (REQ-F-309, 604)</div>
+</div></div></body></html>

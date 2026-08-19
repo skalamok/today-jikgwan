@@ -1,0 +1,26 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>SCR-AUTH-004 소셜 로그인 콜백</title><link rel="stylesheet" href="wireframe.css"></head>
+<body><div class="frame">
+<div class="f-head"><span>소셜 로그인 처리 중</span><span class="sid">SCR-AUTH-004</span></div>
+<div class="f-body">
+<div class="blk plain center" style="padding:30px 10px"><span class="n">①</span>
+  <div class="xl">⟳</div>
+  <div class="s">로그인하고 있어요</div>
+  <div class="note">인가 코드를 서버로 넘겨 토큰을 교환하는 동안만 보인다. 사용자 조작 없음</div>
+</div>
+<div class="divider"></div>
+<div class="blk"><span class="n">②</span>
+  <div class="lab">처리 결과에 따른 이동</div>
+  <div class="row"><span class="t">기존 회원</span><span class="s">홈 → SCR-MAIN-001</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">신규 · 응원팀 미설정</span><span class="s">마이페이지 → SCR-MY-001</span></div>
+  <div class="divider"></div>
+  <div class="row"><span class="t">같은 이메일의 이메일 계정 있음</span><span class="s">기존 계정에 연결</span></div>
+</div>
+<div class="blk"><span class="n">③</span>
+  <div class="lab">실패</div>
+  <div class="inp">로그인을 마치지 못했어요. 다시 시도해 주세요.</div>
+  <div class="note">state 불일치 · 인가 코드 만료 · 제공자 오류를 구분하지 않고 같은 문구로 보여준다</div>
+</div>
+<div class="blk btn off">로그인 화면으로</div>
+</div></div></body></html>
