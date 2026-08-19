@@ -223,9 +223,9 @@ slide("", head("DELIVERABLES", "산출물") + """
       <p class="small">7개 기능 영역<br>사전 집계 테이블 3</p></div>
   </div>
   <div class="cols" style="margin-top:6mm">
-    <div class="box"><div class="big">56</div>
+    <div class="box"><div class="big">57</div>
       <div class="mid" style="margin-top:2mm">API 오퍼레이션</div>
-      <p class="small">경로 44 · MVP 26 · 확장 30<br>OpenAPI 3.0</p></div>
+      <p class="small">경로 45 · MVP 27 · 확장 30<br>OpenAPI 3.0</p></div>
     <div class="box"><div class="big">""" + TECH_PAGES + """</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
       <p class="small">개요 · 요구사항 · 화면 · 데이터 · API</p></div>
@@ -459,7 +459,7 @@ slide("", head("NEXT", "정리") + """
   <div class="cols">
     <div class="box"><h3>수행한 것</h3>
       <ul><li>요구사항 79 + 비기능 24</li><li>화면 24 (상세 7)</li>
-      <li>테이블 27 · API 56</li><li>설계 검증용 구현 (화면 20)</li></ul></div>
+      <li>테이블 27 · API 57</li><li>설계 검증용 구현 (화면 20)</li></ul></div>
     <div class="box"><h3>범위에서 제외한 것</h3>
       <ul><li>실시간 스코어보드<br><span class="small">데이터 제공처 유료 구독 전제</span></li>
       <li>선수 개인 기록<br><span class="small">데이터 확보 경로 없음</span></li></ul></div>
