@@ -80,10 +80,13 @@ body {
 }
 .toc li {
   padding: 1.7mm 0; border-bottom: 1px dotted #ccc; font-size: 10pt;
+  display: flex; justify-content: space-between; gap: 4mm;
   break-inside: avoid;
 }
 .toc li.lv1 { font-weight: 700; margin-top: 2mm; break-after: avoid; }
 .toc li.lv2 { padding-left: 6mm; font-size: 9pt; color: #444; }
+.toc a { color: inherit; text-decoration: none; }
+.toc .pg { color: #888; font-size: 9pt; flex: none; }
 
 /* ---------- 본문 ---------- */
 .part { page-break-before: always; }
@@ -269,7 +272,7 @@ def md_to_html(md, doc_dir):
         if m:
             lv = len(m.group(1))
             text = m.group(2).strip()
-            anchor = "h%d" % len(headings)
+            anchor = "p%d-h%d" % (PART_NO[0], len(headings))
             headings.append((lv, re.sub(r"[*~`]", "", text), anchor))
             # 분량이 큰 장은 새 페이지에서 시작해 앞 장의 표와 섞이지 않게 한다
             cls = ' class="new-page"' if text.startswith(("3. 기능 요구사항", "4. 비기능 요구사항")) else ""
@@ -352,28 +355,36 @@ def md_to_html(md, doc_dir):
     return "\n".join(out), headings
 
 
-def build():
+PART_NO = [0]
+
+
+def build(pages=None):
+    pages = pages or {}
     parts, toc = [], []
     for idx, (fname, title) in enumerate(SOURCES, 1):
         path = os.path.join(TECH, fname)
+        PART_NO[0] = idx
         body, headings = md_to_html(io.open(path, encoding="utf-8").read(), TECH)
         # 원본 문서의 최상위 제목은 파트 헤더로 대체한다
         body = re.sub(r"<h1[^>]*>.*?</h1>", "", body, count=1)
         parts.append(
             '<section class="part"><div class="part-head">'
             '<img class="mark" src="' + MARK_URI + '" alt="">'
-            '<div class="no">PART %d</div><h1>%s</h1></div>%s</section>' % (idx, title, body)
+            '<div class="no">PART %d</div><h1 id="part%d">%s</h1></div>%s</section>'
+            % (idx, idx, title, body)
         )
-        toc.append((1, "PART %d. %s" % (idx, title)))
+        toc.append((1, "PART %d. %s" % (idx, title), "part%d" % idx))
         # 부록 B 는 태그별 소제목이 열둘이라 목차만 길어진다. 파트 제목으로 갈음한다.
         if "API 엔드포인트 요약" in title:
             continue
-        for lv, text, _ in headings:
+        for lv, text, anchor in headings:
             if lv == 2 and not text.startswith("0-"):
-                toc.append((2, text))
+                toc.append((2, text, anchor))
 
     toc_html = "".join(
-        '<li class="lv%d">%s</li>' % (lv, html_mod.escape(t)) for lv, t in toc
+        '<li class="lv%d"><a href="#%s">%s</a><span class="pg">%s</span></li>'
+        % (lv, a, html_mod.escape(t), pages.get(a, ""))
+        for lv, t, a in toc
     )
 
     cover = """
@@ -384,7 +395,7 @@ def build():
   <h1>프로젝트 기술서</h1>
   <div class="desc">KBO 직관 기록 서비스</div>
   <div class="meta">
-    작성자 · 울산 U133 이채목<br>작성일 · 2026-08-18<br>버전 · v1.3
+    작성자 · 울산 U133 이채목<br>작성일 · 2026-08-18<br>버전 · v1.5
   </div>
 </div>
 <div class="toc"><h2>목차</h2><ul>%s</ul></div>
@@ -418,10 +429,44 @@ def build():
 
     os.remove(html_path)   # 중간 산출물은 남기지 않는다
     print("PDF :", pdf_path, "(%.1fKB)" % (os.path.getsize(pdf_path) / 1024))
-    return pdf_path
+    return pdf_path, [(a, t) for _, t, a in toc]
+
+
+def locate(pdf_path, toc):
+    """목차 항목이 실제로 몇 쪽에 있는지 찾는다.
+
+    쪽 수는 인쇄해 봐야 알 수 있으므로 두 번 만든다. 제목이 겹칠 수 있어
+    문서 순서대로 앞에서부터 훑는다. 목차 자신은 모든 제목을 담고 있으니 건너뛴다.
+    """
+    n = int(subprocess.run(["pdfinfo", pdf_path], capture_output=True, text=True)
+            .stdout.split("Pages:")[1].split()[0])
+    pages = [subprocess.run(["pdftotext", "-f", str(i), "-l", str(i), pdf_path, "-"],
+                            capture_output=True, text=True).stdout.replace(" ", "")
+             for i in range(1, n + 1)]
+    start = max((i for i, t in enumerate(pages) if t.lstrip().startswith("목차")), default=0) + 1
+    found, at = {}, start
+    for anchor, text in toc:
+        # 파트 머리글은 "PART 1" 과 제목이 다른 줄에 찍힌다. 제목만으로 찾는다
+        key = re.sub(r"^PART \d+\. ", "", text).replace(" ", "")
+        while at < n and key not in pages[at]:
+            at += 1
+        if at < n:
+            found[anchor] = at + 1
+        else:
+            at = start        # 못 찾으면 되돌려 다음 항목을 다시 훑는다
+    return found
 
 
 if __name__ == "__main__":
     if not os.path.exists(CHROME):
         sys.exit("Chrome 을 찾을 수 없습니다: " + CHROME)
-    build()
+    pdf, toc = build()
+    pages = locate(pdf, toc)
+    missing = [t for a, t in toc if a not in pages]
+    if missing:
+        print("  (쪽 번호를 못 찾은 항목:", ", ".join(missing[:3]), ")")
+    build(pages)                       # 쪽 번호를 채워 다시 인쇄한다
+    after = locate(pdf, toc)
+    moved = [t for a, t in toc if pages.get(a) != after.get(a)]
+    if moved:
+        print("  (쪽 번호가 어긋난 항목:", ", ".join(moved[:3]), ")")
