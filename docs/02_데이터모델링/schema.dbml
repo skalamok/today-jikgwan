@@ -1,22 +1,74 @@
 // =====================================================================
-// 오늘의직관 (Today's Ballpark) - Data Model
-// 작성자: 이채목 / 작성일: 2026-08-18 / 버전 v0.1
+// 오늘의직관 (today-jikgwan) - Data Model
+// 작성자: 이채목 / 작성일: 2026-08-19 / 버전 v1.0
 // dbdiagram.io 에 붙여넣어 ERD 생성
 // =====================================================================
 
 // ---------- ENUM ----------
-Enum user_role      { MEMBER  ADMIN }
-Enum user_status    { ACTIVE  DORMANT  WITHDRAWN }
-Enum auth_token_type { EMAIL_VERIFY  PASSWORD_RESET }
-Enum game_status    { SCHEDULED  IN_PROGRESS  FINISHED  CANCELED  SUSPENDED }
-Enum game_source    { EXTERNAL  MANUAL  USER_REPORT }
-Enum visibility     { PUBLIC  PRIVATE }
-Enum stat_dimension { TOTAL  SEASON  STADIUM  OPPONENT  DAY_OF_WEEK  COMPANION }
-Enum post_status    { OPEN  FULL  CLOSED  ENDED }
-Enum application_status { CONFIRMED  CANCELED }
-Enum report_target      { POST  COMMENT  MESSAGE  USER }
-Enum report_status      { PENDING  REVIEWED  DISMISSED }
-Enum plan_item_status   { PROPOSED  CONFIRMED  DONE  MISSED }
+Enum user_role {
+  MEMBER
+  ADMIN
+}
+Enum user_status {
+  ACTIVE
+  DORMANT
+  WITHDRAWN
+}
+Enum auth_token_type {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+Enum game_status {
+  SCHEDULED
+  IN_PROGRESS
+  FINISHED
+  CANCELED
+  SUSPENDED
+}
+Enum game_source {
+  EXTERNAL
+  MANUAL
+  USER_REPORT
+}
+Enum visibility {
+  PUBLIC
+  PRIVATE
+}
+Enum stat_dimension {
+  TOTAL
+  SEASON
+  STADIUM
+  OPPONENT
+  DAY_OF_WEEK
+  COMPANION
+}
+Enum post_status {
+  OPEN
+  FULL
+  CLOSED
+  ENDED
+}
+Enum application_status {
+  CONFIRMED
+  CANCELED
+}
+Enum report_target {
+  POST
+  COMMENT
+  MESSAGE
+  USER
+}
+Enum report_status {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+Enum plan_item_status {
+  PROPOSED
+  CONFIRMED
+  DONE
+  MISSED
+}
 
 // =====================================================================
 // 1. 회원
@@ -134,7 +186,7 @@ Table games {
   away_score   int
   status       game_status [not null, default: 'SCHEDULED']
   source       game_source [not null, default: 'EXTERNAL', note: 'REQ-F-107 결과 확정 경로']
-  external_ref varchar(100)[note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
+  external_ref varchar(100) [note: 'TheSportsDB idEvent. 배치 재실행 시 중복 적재 방지']
   synced_at    timestamp   [note: 'REQ-F-106 마지막 동기화 시각']
   result_confirmed boolean [not null, default: false, note: 'REQ-F-608 미확정 경기는 화면에서 구분 표시']
   confirmed_at timestamp   [note: '결과 확정 시각']
@@ -187,7 +239,7 @@ Table game_revisions {
   after_status  game_status [not null]
   after_home_score  int
   after_away_score  int
-  reason       varchar(255)[not null, note: '우천 노게임, 서스펜디드 등']
+  reason       varchar(255) [not null, note: '우천 노게임, 서스펜디드 등']
   revised_by   bigint      [not null]
   revised_at   timestamp   [not null]
 
