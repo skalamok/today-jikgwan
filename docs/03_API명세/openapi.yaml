@@ -1998,6 +1998,10 @@ components:
             photos:
               type: array
               items: { $ref: '#/components/schemas/PhotoResponse' }
+            companions:
+              type: array
+              description: REQ-F-209 함께 간 사람. 회원은 지금 닉네임을 따라간다
+              items: { type: string }
 
     PhotoResponse:
       type: object
