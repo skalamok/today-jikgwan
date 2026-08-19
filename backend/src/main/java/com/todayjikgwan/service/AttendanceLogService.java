@@ -70,6 +70,10 @@ public class AttendanceLogService {
         if (!zone.getStadium().getId().equals(game.getStadium().getId())) {
             throw new ApiException(ErrorCode.ZONE_NOT_IN_STADIUM);
         }
+        // 비활성 구역은 목록에서 빠지지만 id 를 직접 보내는 경로가 남아 있다 (REQ-F-605)
+        if (!zone.isActive()) {
+            throw new ApiException(ErrorCode.ZONE_INACTIVE);
+        }
 
         Team cheerTeam = null;
         if (request.cheerTeamId() != null) {

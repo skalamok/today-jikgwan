@@ -45,7 +45,7 @@ public class StadiumService {
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
 
         int threshold = properties.stat().smallSampleThreshold();
-        List<ZoneStatResponse> zones = zoneRepository.findByStadiumIdOrderBySortOrder(stadiumId).stream()
+        List<ZoneStatResponse> zones = zoneRepository.findByStadiumIdAndActiveTrueOrderBySortOrder(stadiumId).stream()
                 .map(z -> {
                     ZoneStat st = zoneStatRepository.findById(z.getId()).orElse(null);
                     int count = st == null ? 0 : st.getRatingCount();

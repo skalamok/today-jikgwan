@@ -101,6 +101,51 @@ async function register() {
   } finally { regSaving.value = false }
 }
 
+// ── 구장 · 구역 관리 (REQ-F-605) ────────────────────────────
+const zoneStadiumId = ref('')
+const zones = ref([])
+const newZone = ref('')
+const zoneBusy = ref(false)
+
+async function loadZones() {
+  if (!zoneStadiumId.value) { zones.value = []; return }
+  zones.value = (await client.get(`/admin/stadiums/${zoneStadiumId.value}/zones`)).data
+}
+
+async function addZone() {
+  if (!newZone.value.trim()) return
+  zoneBusy.value = true; error.value = ''
+  try {
+    await client.post(`/admin/stadiums/${zoneStadiumId.value}/zones`, { name: newZone.value.trim() })
+    newZone.value = ''
+    await loadZones()
+  } catch (e) {
+    error.value = e.response?.data?.message || '추가하지 못했어요.'
+  } finally { zoneBusy.value = false }
+}
+
+async function toggleZone(zone) {
+  zoneBusy.value = true; error.value = ''
+  try {
+    await client.patch(`/admin/zones/${zone.id}`, { active: !zone.active })
+    await loadZones()
+  } catch (e) {
+    error.value = e.response?.data?.message || '변경하지 못했어요.'
+  } finally { zoneBusy.value = false }
+}
+
+async function renameZone(zone) {
+  const name = prompt('구역 이름', zone.name)
+  if (!name || name === zone.name) return
+  zoneBusy.value = true; error.value = ''
+  try {
+    await client.patch(`/admin/zones/${zone.id}`, { name })
+    await loadZones()
+  } catch (e) {
+    error.value = e.response?.data?.message || '변경하지 못했어요.'
+  } finally { zoneBusy.value = false }
+}
+
 onMounted(async () => {
   const [t, s] = await Promise.all([client.get('/teams'), client.get('/stadiums')])
   teams.value = t.data; stadiums.value = s.data
@@ -126,6 +171,7 @@ function fmt(iso) {
         제보 검토<span v-if="rows.length" class="cnt">{{ rows.length }}</span>
       </button>
       <button :class="{ on: tab === 'register' }" @click="tab = 'register'">경기 등록</button>
+      <button :class="{ on: tab === 'zones' }" @click="tab = 'zones'">구장 · 구역</button>
     </div>
     <div v-if="notice" class="notice">{{ notice }}</div>
     <div v-if="error" class="err">{{ error }}</div>
@@ -217,7 +263,7 @@ function fmt(iso) {
   </template>
 
   <!-- REQ-F-601 외부 소스를 확보하지 못했을 때의 기본 등록 수단 -->
-  <div v-else class="card wide">
+  <div v-else-if="tab === 'register'" class="card wide">
     <div class="field">
       <label>경기 일시 <span class="req">*</span></label>
       <input v-model="reg.startAt" type="datetime-local" />
@@ -251,6 +297,50 @@ function fmt(iso) {
       {{ regSaving ? '등록 중…' : '경기 등록' }}
     </button>
   </div>
+
+  <!-- REQ-F-605 구역은 관람 기록이 참조하므로 지우지 않고 비활성으로만 돌린다 -->
+  <div v-else class="card wide">
+    <div class="field">
+      <label>구장</label>
+      <select v-model="zoneStadiumId" @change="loadZones">
+        <option value="">선택</option>
+        <option v-for="s in stadiums" :key="s.id" :value="s.id">{{ s.name }}</option>
+      </select>
+    </div>
+
+    <template v-if="zoneStadiumId">
+      <div v-if="!zones.length" class="muted" style="margin-bottom:12px">
+        등록된 구역이 없어요
+      </div>
+      <div v-for="z in zones" :key="z.id" class="zone" :class="{ off: !z.active }">
+        <div style="flex:1; min-width:0">
+          <div class="mid">
+            {{ z.name }}
+            <span v-if="!z.active" class="off-tag">비활성</span>
+          </div>
+          <div class="muted" style="font-size:12px; margin-top:2px">
+            관람 기록 {{ z.logCount }}건
+          </div>
+        </div>
+        <button class="btn ghost small" :disabled="zoneBusy" @click="renameZone(z)">이름</button>
+        <button class="btn ghost small" :disabled="zoneBusy" @click="toggleZone(z)">
+          {{ z.active ? '비활성화' : '되살리기' }}
+        </button>
+      </div>
+
+      <div class="add-zone">
+        <input v-model="newZone" maxlength="50" placeholder="새 구역 이름"
+               @keyup.enter="addZone" />
+        <button class="btn" style="width:auto; padding:0 18px"
+                :disabled="!newZone.trim() || zoneBusy" @click="addZone">추가</button>
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:10px">
+        구역은 삭제하지 않습니다. 과거 관람 기록이 이 구역을 참조하고 있고,
+        구역별 만족도 집계의 단위이기 때문이에요. 더 쓰지 않을 구역은 비활성으로 돌리면
+        새 기록에서만 선택되지 않습니다.
+      </div>
+    </template>
+  </div>
   </template>
 </template>
 
@@ -273,6 +363,17 @@ function fmt(iso) {
 .matchup { display: flex; align-items: center; gap: 8px; }
 .score-row { display: flex; align-items: center; gap: 8px; }
 .score-row input { width: 72px; }
+.zone {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 0; border-bottom: 1px solid var(--line);
+}
+.zone.off { opacity: .55; }
+.off-tag {
+  margin-left: 6px; padding: 1px 7px; border-radius: 999px;
+  background: var(--card-soft); font-size: 11px; font-weight: 600; color: var(--muted);
+}
+.add-zone { display: flex; gap: 8px; margin-top: 14px; }
+.add-zone input { flex: 1; }
 .tally { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; max-width: 45%; }
 .pill {
   padding: 3px 9px; border-radius: 999px; background: var(--card-soft);

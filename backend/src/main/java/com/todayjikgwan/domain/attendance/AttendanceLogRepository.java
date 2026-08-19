@@ -11,6 +11,9 @@ public interface AttendanceLogRepository extends JpaRepository<AttendanceLog, Lo
 
     boolean existsByUserIdAndGameIdAndDeletedAtIsNull(Long userId, Long gameId);
 
+    /** REQ-F-605 구역을 비활성으로 돌릴 때 얼마나 쓰였는지 보여주기 위해 센다 */
+    long countByStadiumZoneId(Long zoneId);
+
     Optional<AttendanceLog> findByUserIdAndGameId(Long userId, Long gameId);
 
     /** REQ-F-309, REQ-F-604 정정의 영향을 받는 사용자. 삭제된 기록은 뺀다 */

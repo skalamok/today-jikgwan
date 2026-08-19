@@ -33,6 +33,14 @@ public class Stadium {
     @Column(name = "grid_ny")
     private Integer gridNy;
 
+    /** REQ-F-605. null 로 온 항목은 건드리지 않는다 */
+    public void updateInfo(String address, Integer capacity, Integer gridNx, Integer gridNy) {
+        if (address != null) this.address = address.isBlank() ? null : address.trim();
+        if (capacity != null) this.capacity = capacity;
+        if (gridNx != null) this.gridNx = gridNx;
+        if (gridNy != null) this.gridNy = gridNy;
+    }
+
     public boolean hasGrid() {
         return gridNx != null && gridNy != null;
     }

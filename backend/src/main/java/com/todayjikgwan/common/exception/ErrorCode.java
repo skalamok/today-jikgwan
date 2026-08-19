@@ -47,6 +47,9 @@ public enum ErrorCode {
     DUPLICATE_GAME(HttpStatus.CONFLICT, "같은 날 같은 구장에 이미 등록된 경기입니다."),
     REVISION_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "정정 사유를 입력해 주세요."),
     REVISION_SCORE_REQUIRED(HttpStatus.BAD_REQUEST, "종료 처리하려면 양 팀 점수가 필요합니다."),
+    DUPLICATE_ZONE(HttpStatus.CONFLICT, "같은 이름의 구역이 이미 있습니다."),
+    ZONE_INACTIVE(HttpStatus.BAD_REQUEST, "지금은 선택할 수 없는 구역이에요."),
+    ZONE_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "구역 이름을 입력해 주세요."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다.");
 
