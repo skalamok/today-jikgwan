@@ -20,6 +20,9 @@ TECH = os.path.join(BASE, "docs", "01_기술서")
 OUT = os.path.join(BASE, "docs", "_제출본")
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
+# 로고를 data URI 로 심어 PDF 안에 함께 담는다 (외부 파일 참조 없이 열리게)
+MARK_URI = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSLsmKTripjsnZjsp4HqtIAiPgogIDwhLS0KICAgIO2LsOy8kyjsp4HqtIDsnYQg6rCU64uk64qUIOymne2RnCkg7JWI7JeQIOyVvOq1rCDsi6TrsKXsnYQg7YyM64K464ukLgogICAg7Iuk67Cl7J2EIOyEoOycvOuhnCDslrnsnLzrqbQg64uo7IOJ7Jy866GcIOyTuCDrlYwg7IKs65287KeA66+A66GcLCDrsLDqsr3snbQg67mE7LOQIOuztOydtOuPhOuhnSDqtazrqY3snLzroZwg66eM65Og64ukLgogIC0tPgogIDxwYXRoIGZpbGw9IiMxNjM1NWMiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iCiAgICBNOCAxNGg0OGE0IDQgMCAwIDEgNCA0djcuNWE2LjUgNi41IDAgMCAwIDAgMTNWNDZhNCA0IDAgMCAxLTQgNEg4YTQgNCAwIDAgMS00LTR2LTcuNWE2LjUgNi41IDAgMCAwIDAtMTNWMThhNCA0IDAgMCAxIDQtNFoKICAgIE0yMy40IDIxLjZhMiAyIDAgMCAwLTIuOCAyLjhjMy45IDMuOSAzLjkgMTEuMiAwIDE1LjJhMiAyIDAgMSAwIDIuOCAyLjhjNS40LTUuNCA1LjQtMTUuNCAwLTIwLjhaCiAgICBNNDMuNCAyMS42Yy01LjQgNS40LTUuNCAxNS40IDAgMjAuOGEyIDIgMCAwIDAgMi44LTIuOGMtMy45LTQtMy45LTExLjMgMC0xNS4yYTIgMiAwIDAgMC0yLjgtMi44WgogICIvPgo8L3N2Zz4K"
+
 SOURCES = [
     ("00_프로젝트_목표정의.md", "프로젝트 개요"),
     ("01_요구사항정의서.md", "요구사항 정의서"),
@@ -44,7 +47,12 @@ body {
   align-items: center; justify-content: center; text-align: center;
   page-break-after: always; background: #fff;
 }
-.cover .kicker { font-size: 12pt; letter-spacing: 6px; color: #666; margin-bottom: 18mm; }
+.cover .kicker { font-size: 12pt; letter-spacing: 6px; color: #666; margin-bottom: 12mm; }
+.cover .logo { width: 78mm; margin: 0 auto 14mm; display: block; background: none; }
+/* 매 쪽 머리글에 심볼을 작게 넣는다 */
+@page { @top-right { content: none; } }
+.part-head { position: relative; }
+.part-head .mark { position: absolute; right: 0; top: 2mm; width: 9mm; opacity: .9; }
 .cover h1 { font-size: 34pt; margin: 0 0 6mm; letter-spacing: -1px; }
 .cover .sub { font-size: 15pt; color: #333; margin-bottom: 4mm; }
 .cover .desc { font-size: 11pt; color: #666; margin-bottom: 28mm; }
@@ -152,7 +160,8 @@ table.desc th:nth-child(4), table.desc td:nth-child(4) { width: 44%; }
 table.desc th:nth-child(5), table.desc td:nth-child(5) { width: 20%; }
 
 /* ---------- 이미지(와이어프레임) ---------- */
-img { display: block; margin: 4mm auto; border: 1px solid #ccc; }
+figure img { display: block; margin: 4mm auto; border: 1px solid #ccc; }
+img.logo, img.mark { border: 0; }
 img.mobile { width: 62mm; }
 img.pc { width: 165mm; }
 figure { page-break-inside: avoid; margin: 0; }
@@ -160,6 +169,8 @@ figure { page-break-inside: avoid; margin: 0; }
 
 
 def md_inline(t):
+    # 원본의 줄바꿈은 읽기 편하려고 넣은 것이므로 한 문단으로 이어 붙인다.
+    # 이렇게 하지 않으면 **강조**가 줄을 넘어갈 때 변환되지 않고 별표가 그대로 남는다.
     t = html_mod.escape(t)
     t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
@@ -250,13 +261,29 @@ def md_to_html(md, doc_dir):
         if s.startswith("- ") or s.startswith("* "):
             buf = []
             while i < n and (lines[i].strip().startswith("- ") or lines[i].strip().startswith("* ")):
-                buf.append("<li>%s</li>" % md_inline(lines[i].strip()[2:]))
+                item = [lines[i].strip()[2:]]
                 i += 1
+                # 들여쓰기 없이 이어지는 줄은 같은 항목의 연속으로 본다
+                while i < n:
+                    nxt = lines[i].strip()
+                    if not nxt or nxt.startswith(("#", "|", ">", "- ", "* ", "```", "![")):
+                        break
+                    item.append(nxt)
+                    i += 1
+                buf.append("<li>%s</li>" % md_inline(" ".join(item)))
             out.append("<ul>%s</ul>" % "".join(buf))
             continue
 
-        out.append("<p>%s</p>" % md_inline(s))
-        i += 1
+        # 빈 줄이 나올 때까지 이어 붙인다. 원본의 줄바꿈은 편집 편의를 위한 것이고,
+        # 줄 단위로 변환하면 **강조**가 줄을 넘어갈 때 별표가 그대로 남는다.
+        buf = []
+        while i < n:
+            cur = lines[i].strip()
+            if not cur or cur.startswith(("#", "|", ">", "- ", "* ", "```", "![")):
+                break
+            buf.append(cur)
+            i += 1
+        out.append("<p>%s</p>" % md_inline(" ".join(buf)))
     return "\n".join(out), headings
 
 
@@ -269,6 +296,7 @@ def build():
         body = re.sub(r"<h1[^>]*>.*?</h1>", "", body, count=1)
         parts.append(
             '<section class="part"><div class="part-head">'
+            '<img class="mark" src="' + MARK_URI + '" alt="">'
             '<div class="no">PART %d</div><h1>%s</h1></div>%s</section>' % (idx, title, body)
         )
         toc.append((1, "PART %d. %s" % (idx, title)))
@@ -283,10 +311,10 @@ def build():
     cover = """
 <div class="cover">
   <div class="kicker">SKALA MINI PROJECT</div>
+  <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgNjQiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0i7Jik64qY7J2Y7KeB6rSAIj4KICA8cGF0aCBmaWxsPSIjMTYzNTVjIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9IgogICAgTTQgMTRoNTJhNCA0IDAgMCAxIDQgNHY3LjVhNi41IDYuNSAwIDAgMCAwIDEzVjQ2YTQgNCAwIDAgMS00IDRINGE0IDQgMCAwIDEtNC00di03LjVhNi41IDYuNSAwIDAgMCAwLTEzVjE4YTQgNCAwIDAgMSA0LTRaCiAgICBNMjEuNCAyMS42YTIgMiAwIDAgMC0yLjggMi44YzMuOSAzLjkgMy45IDExLjIgMCAxNS4yYTIgMiAwIDEgMCAyLjggMi44YzUuNC01LjQgNS40LTE1LjQgMC0yMC44WgogICAgTTQxLjQgMjEuNmMtNS40IDUuNC01LjQgMTUuNCAwIDIwLjhhMiAyIDAgMCAwIDIuOC0yLjhjLTMuOS00LTMuOS0xMS4zIDAtMTUuMmEyIDIgMCAwIDAtMi44LTIuOFoKICAiLz4KICA8dGV4dCB4PSI3MiIgeT0iNDEiIGZvbnQtZmFtaWx5PSInQXBwbGUgU0QgR290aGljIE5lbycsJ01hbGd1biBHb3RoaWMnLHNhbnMtc2VyaWYiCiAgICAgICAgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiIGZpbGw9IiMxNjM1NWMiPuyYpOuKmOydmOyngeq0gDwvdGV4dD4KPC9zdmc+Cg==" alt="오늘의직관">
   <div class="rule"></div>
   <h1>프로젝트 기술서</h1>
-  <div class="sub">오늘의직관</div>
-  <div class="desc">KBO 직관 기록 및 관람 정보 서비스</div>
+  <div class="desc">KBO 직관 기록 서비스</div>
   <div class="meta">
     작성자 · 이채목<br>작성일 · 2026-08-18<br>버전 · v1.0
   </div>

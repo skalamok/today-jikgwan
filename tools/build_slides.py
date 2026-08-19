@@ -41,6 +41,7 @@ body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-ser
 .cover .desc { font-size: 10.5pt; color: #8a9099; margin-bottom: 16mm; }
 .cover .meta { font-size: 10pt; color: #c8ccd2; line-height: 1.9; }
 .cover .rule { width: 40mm; border-top: 2px solid #fff; margin: 0 auto 7mm; }
+.cover .logo { width: 92mm; margin: 0 auto 9mm; display: block; }
 
 /* 레이아웃 */
 .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7mm; }
@@ -94,6 +95,7 @@ def head(tag, title, lead=""):
 # 1 표지
 S.append("""<section class="s cover">
 <div class="tag">SKALA MINI PROJECT</div>
+<img class="logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgNjQiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0i7Jik64qY7J2Y7KeB6rSAIj4KICA8cGF0aCBmaWxsPSIjZmZmZmZmIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9IgogICAgTTQgMTRoNTJhNCA0IDAgMCAxIDQgNHY3LjVhNi41IDYuNSAwIDAgMCAwIDEzVjQ2YTQgNCAwIDAgMS00IDRINGE0IDQgMCAwIDEtNC00di03LjVhNi41IDYuNSAwIDAgMCAwLTEzVjE4YTQgNCAwIDAgMSA0LTRaCiAgICBNMjEuNCAyMS42YTIgMiAwIDAgMC0yLjggMi44YzMuOSAzLjkgMy45IDExLjIgMCAxNS4yYTIgMiAwIDEgMCAyLjggMi44YzUuNC01LjQgNS40LTE1LjQgMC0yMC44WgogICAgTTQxLjQgMjEuNmMtNS40IDUuNC01LjQgMTUuNCAwIDIwLjhhMiAyIDAgMCAwIDIuOC0yLjhjLTMuOS00LTMuOS0xMS4zIDAtMTUuMmEyIDIgMCAwIDAtMi44LTIuOFoKICAiLz4KICA8dGV4dCB4PSI3MiIgeT0iNDEiIGZvbnQtZmFtaWx5PSInQXBwbGUgU0QgR290aGljIE5lbycsJ01hbGd1biBHb3RoaWMnLHNhbnMtc2VyaWYiCiAgICAgICAgZm9udC1zaXplPSIyNiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiIGZpbGw9IiNmZmZmZmYiPuyYpOuKmOydmOyngeq0gDwvdGV4dD4KPC9zdmc+Cg==" alt="오늘의직관">
 <div class="rule"></div>
 <h1>오늘의직관</h1>
 <div class="sub">KBO 직관 기록 서비스</div>
