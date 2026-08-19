@@ -121,6 +121,13 @@ line = re.search(r'\| \*\*규모\*\* \| (.+?)(?:<br>|\|)', goal).group(1)
 bad = [f"{k}={v}" for k, v in real.items() if str(v) not in line]
 check(f"규모 표기 ↔ 실측 ({line.strip()})", not bad, bad)
 
+print("\n■ 발표 자료")
+# 발표 자료는 기술서와 따로 관리돼 수치가 조용히 낡는다. 실측과 대조한다
+slides = read("tools/build_slides.py")
+stale = [f"{k}={v}" for k, v in real.items() if str(v) not in slides]
+check("발표 자료 수치 ↔ 실측", not stale, stale)
+check("발표 자료에 옛 용어 없음", "동행자" not in slides and "동행 모집" not in slides)
+
 print("\n■ 표 형식")
 # 부록 B 머리글이 데이터 행보다 한 칸 모자라 범위 값이 인증 칸에 찍힌 적이 있다.
 # 눈으로는 표가 밀린 것처럼만 보여 놓치기 쉬우므로 열 수를 센다.

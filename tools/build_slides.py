@@ -110,7 +110,7 @@ S.append("""<section class="s cover">
 <h1>오늘의직관</h1>
 <div class="sub">KBO 직관 기록 서비스</div>
 <div class="desc">직관한 경기를 기록하면 그대로 나만의 전적이 된다</div>
-<div class="meta">이채목<br>2026.08.20</div>
+<div class="meta">울산 U133 이채목<br>2026.08.20</div>
 </section>""")
 
 # 2 문제 정의
@@ -136,7 +136,7 @@ slide("", head("SOLUTION", "기록을 모으고, 데이터를 되돌려준다") 
   <div>
     <div class="box" style="margin-bottom:5mm">
       <h3>① 기록을 한 곳에 모은다</h3>
-      <p>경기 · 좌석 구역 · 사진 · 메모 · 비용 · 동행자를 한 기록으로 저장</p>
+      <p>경기 · 좌석 구역 · 사진 · 메모 · 비용 · 직관 메이트를 한 기록으로 저장</p>
     </div>
     <div class="box" style="margin-bottom:5mm">
       <h3>② 기록에서 전적을 만든다</h3>
@@ -183,23 +183,23 @@ slide("", head("USER JOURNEY", "처음 가는 팬이 자주 가는 팬이 되는
 slide("", head("DELIVERABLES", "산출물") + """
 <div class="body">
   <div class="cols">
-    <div class="box"><div class="big">81<span style="font-size:12pt">+24</span></div>
+    <div class="box"><div class="big">79<span style="font-size:12pt">+24</span></div>
       <div class="mid" style="margin-top:2mm">요구사항</div>
-      <p class="small">기능 81 · 비기능 24<br>모두 화면 ID와 교차 참조</p></div>
+      <p class="small">기능 79 · 비기능 24<br>MVP 33 · 확장 46</p></div>
     <div class="box"><div class="big">24<span style="font-size:12pt">/7</span></div>
       <div class="mid" style="margin-top:2mm">화면</div>
       <p class="small">전체 24개 정의<br>핵심 7개 상세 설계</p></div>
-    <div class="box"><div class="big">30</div>
+    <div class="box"><div class="big">27</div>
       <div class="mid" style="margin-top:2mm">테이블</div>
       <p class="small">7개 기능 영역<br>사전 집계 테이블 3</p></div>
   </div>
   <div class="cols" style="margin-top:6mm">
     <div class="box"><div class="big">55</div>
       <div class="mid" style="margin-top:2mm">API 오퍼레이션</div>
-      <p class="small">경로 43<br>OpenAPI 3.0</p></div>
-    <div class="box"><div class="big">45</div>
+      <p class="small">경로 43 · MVP 25 · 확장 30<br>OpenAPI 3.0</p></div>
+    <div class="box"><div class="big">54</div>
       <div class="mid" style="margin-top:2mm">기술서 쪽수</div>
-      <p class="small">개요 · 요구사항 · 화면 설계<br>+ 부록 A</p></div>
+      <p class="small">개요 · 요구사항 · 화면 설계<br>+ 부록 A · B</p></div>
     <div class="box dark"><div class="big">6/6</div>
       <div class="mid" style="margin-top:2mm">설계 판단 지점</div>
       <p class="small">파생 지표 · 소표본 · 동시성<br>이력 · 제약 편성 · 외부 데이터</p></div>
@@ -434,8 +434,8 @@ slide("", head("NEXT", "정리") + """
 <div class="body">
   <div class="cols">
     <div class="box"><h3>수행한 것</h3>
-      <ul><li>요구사항 81 + 비기능 24</li><li>화면 24 (상세 7)</li>
-      <li>테이블 30 · API 55</li><li>설계 검증용 구현 (화면 20)</li></ul></div>
+      <ul><li>요구사항 79 + 비기능 24</li><li>화면 24 (상세 7)</li>
+      <li>테이블 27 · API 55</li><li>설계 검증용 구현 (화면 20)</li></ul></div>
     <div class="box"><h3>범위에서 제외한 것</h3>
       <ul><li>실시간 스코어보드<br><span class="small">데이터 제공처 유료 구독 전제</span></li>
       <li>선수 개인 기록<br><span class="small">데이터 확보 경로 없음</span></li></ul></div>
