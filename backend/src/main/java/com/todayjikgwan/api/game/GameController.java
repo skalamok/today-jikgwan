@@ -50,6 +50,37 @@ public class GameController {
                         com.todayjikgwan.common.exception.ErrorCode.NOT_FOUND));
     }
 
+    /**
+     * REQ-F-204 촬영 일시로 그날 경기를 골라 준다.
+     *
+     * <p>사진의 촬영 시각은 현지 시간이므로 그 날짜의 경기를 모두 준다. 한 날에 다섯
+     * 경기가 열리므로 하나로 좁히지 않고 후보로 돌려주고 고르는 것은 사람이 한다.
+     * 자정 넘어 끝난 연장전을 생각해 앞날 경기도 함께 본다.
+     *
+     * <p>촬영 시각이 없거나 그날 경기가 없으면 빈 배열이다. 화면은 수동 선택으로 넘어간다.
+     */
+    @PostMapping("/suggest")
+    public List<Map<String, Object>> suggest(@RequestBody Map<String, String> body) {
+        String takenAt = body.get("takenAt");
+        if (takenAt == null || takenAt.isBlank()) {
+            return List.of();
+        }
+        LocalDate date;
+        try {
+            date = LocalDate.parse(takenAt.substring(0, 10));
+        } catch (Exception e) {
+            // 읽을 수 없는 값이면 후보를 못 낼 뿐이다. 오류로 막으면 사진을 못 올린다
+            return List.of();
+        }
+        List<Map<String, Object>> out = new java.util.ArrayList<>(
+                gameRepository.findByDateWithDetails(date).stream().map(GameController::toMap).toList());
+        // 밤 경기가 자정을 넘겨 끝나면 사진의 날짜가 하루 뒤가 된다
+        gameRepository.findByDateWithDetails(date.minusDays(1)).stream()
+                .map(GameController::toMap)
+                .forEach(out::add);
+        return out;
+    }
+
     /** REQ-F-112 경기 구장 날씨. 동기화된 캐시를 반환하며 외부 API 를 직접 호출하지 않는다 */
     @GetMapping("/{gameId}/weather")
     public WeatherResponse weather(@PathVariable Long gameId) {

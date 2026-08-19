@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import client from '../api/client'
+import { readTakenAt } from '../lib/exif'
 
 const router = useRouter()
 const date = ref('2026-08-15')
@@ -36,7 +37,11 @@ async function loadGames() {
   const { data } = await client.get('/games', { params: { date: date.value } })
   // 아직 시작하지 않은 경기는 선택 목록에서 제외한다
   games.value = data.content.filter((g) => g.status !== 'SCHEDULED')
-  gameId.value = null; stadiumZoneId.value = null; zones.value = []
+  // 날짜를 바꾸면 이 함수가 두 번 불릴 수 있다(직접 호출 + date watch).
+  // 고른 경기가 새 목록에도 있으면 그대로 둔다. 그러지 않으면 뒤늦게 온 쪽이 선택을 지운다
+  const keep = gameId.value
+  gameId.value = games.value.some((g) => g.id === keep) ? keep : null
+  if (gameId.value === null) { stadiumZoneId.value = null; zones.value = [] }
 }
 onMounted(loadGames)
 watch(date, loadGames)
@@ -51,7 +56,34 @@ watch(gameId, async () => {
   zones.value = data.zones
 })
 
-function pickFiles(e) { files.value = Array.from(e.target.files) }
+/*
+ * REQ-F-204 첫 사진의 촬영 일시로 그날 경기를 골라 준다.
+ *
+ * 서버는 업로드 즉시 위치를 포함한 메타데이터를 지우므로(REQ-NF-007) 촬영 시각도
+ * 서버에서는 못 읽는다. 지우기 전에 브라우저에서 읽어 후보를 좁히는 데만 쓴다.
+ * 읽지 못하면 아무 일도 없었던 것처럼 수동 선택으로 둔다.
+ */
+const suggested = ref(null)
+
+async function pickFiles(e) {
+  files.value = Array.from(e.target.files)
+  suggested.value = null
+  if (!files.value.length) return
+
+  const takenAt = await readTakenAt(files.value[0])
+  if (!takenAt) return
+
+  const { data } = await client.post('/games/suggest', { takenAt })
+  if (!data.length) return
+
+  date.value = takenAt.slice(0, 10)
+  await loadGames()
+  // 후보 수가 아니라 목록에 실제로 오른 수를 알린다.
+  // 아직 결과가 나오지 않은 경기는 고를 수 없어 목록에서 빠진다
+  suggested.value = { takenAt, count: games.value.length }
+  // 하나뿐이면 골라 둔다. 여럿이면 사람이 고른다
+  if (games.value.length === 1) gameId.value = games.value[0].id
+}
 
 async function submit() {
   saving.value = true; toast.value = ''
@@ -101,6 +133,12 @@ async function submit() {
     <div class="field">
       <label>① 사진</label>
       <input type="file" accept="image/jpeg,image/png" multiple @change="pickFiles" />
+      <p v-if="suggested" class="found">
+        📷 사진을 {{ suggested.takenAt.slice(0, 10) }} 에 찍으셨네요
+        <template v-if="suggested.count === 1"> — 그날 경기를 골라 뒀어요</template>
+        <template v-else-if="suggested.count"> — 그날 경기 {{ suggested.count }}건을 아래에 올려 뒀어요</template>
+        <template v-else> — 그날은 아직 결과가 나온 경기가 없어요</template>
+      </p>
       <div class="muted" style="margin-top:8px">
         {{ files.length }}/10 · 업로드 시 위치 정보는 자동으로 제거됩니다
       </div>
@@ -198,6 +236,8 @@ async function submit() {
 </template>
 
 <style scoped>
+.found { font-size: 13px; color: #16355c; background: #eef1f5;
+         border-radius: 8px; padding: 8px 10px; margin: 8px 0 0; }
 .pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .pick button {
   padding: 13px 8px; border: 1.5px solid var(--line); border-radius: 11px;

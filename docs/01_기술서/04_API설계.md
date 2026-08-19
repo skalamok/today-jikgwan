@@ -121,7 +121,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 |---|---|---|---|---|---|---|
 | GET | `/games` | 경기 일정 및 결과 조회 | MVP | 공개 | REQ-F-101, REQ-F-102 |  |
 | GET | `/games/{gameId}` | 경기 상세 조회 | MVP | 공개 | REQ-F-103 |  |
-| POST | `/games/suggest` | 촬영 일시 기반 경기 후보 조회 | 확장 | 인증 | REQ-F-204 | 미구현 |
+| POST | `/games/suggest` | 촬영 일시 기반 경기 후보 조회 | 확장 | 인증 | REQ-F-204 |  |
 | GET | `/games/{gameId}/weather` | 경기 구장 날씨 조회 | 확장 | 공개 | REQ-F-112 |  |
 | POST | `/games/weather/sync` | 구장 날씨 수동 동기화 | 확장 | 인증 | REQ-F-112 |  |
 | GET | `/standings` | 팀 순위 조회 | 확장 | 공개 | REQ-F-104 |  |
