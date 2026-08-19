@@ -6,6 +6,7 @@
 | 작성자 | 이채목 |
 | 최종 수정일 | 2026-08-19 |
 | 원본 | `docs/03_API명세/openapi.yaml` (OpenAPI 3.0.3) |
+| 버전 | 원본을 따른다. 개정 이력은 `openapi.yaml` 의 info.description 에 있다 |
 
 `openapi.yaml` 에서 자동 생성한 목록이다. 상세 요청 · 응답 스키마는 원본을 참조한다.
 Swagger Editor 에 원본을 붙여넣으면 같은 내용을 화면으로 확인할 수 있다.
