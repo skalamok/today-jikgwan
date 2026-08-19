@@ -60,7 +60,7 @@ for tag, rows in grouped.items():
     lines += ["## %s" % tag]
     if tags.get(tag):
         lines += ["", tags[tag], ""]
-    lines += ["| 메서드 | 경로 | 설명 | 인증 | 관련 요구사항 | 비고 |", "|---|---|---|---|---|---|"]
+    lines += ["| 메서드 | 경로 | 설명 | 범위 | 인증 | 관련 요구사항 | 비고 |", "|---|---|---|---|---|---|---|"]
     for method, path, op in rows:
         lines.append("| %s | `%s` | %s | %s | %s | %s | %s |" % (
             method, path, op.get("summary", ""), op.get("x-scope", ""),

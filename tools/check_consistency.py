@@ -121,6 +121,21 @@ line = re.search(r'\| \*\*규모\*\* \| (.+?)(?:<br>|\|)', goal).group(1)
 bad = [f"{k}={v}" for k, v in real.items() if str(v) not in line]
 check(f"규모 표기 ↔ 실측 ({line.strip()})", not bad, bad)
 
+print("\n■ 표 형식")
+# 부록 B 머리글이 데이터 행보다 한 칸 모자라 범위 값이 인증 칸에 찍힌 적이 있다.
+# 눈으로는 표가 밀린 것처럼만 보여 놓치기 쉬우므로 열 수를 센다.
+skew = []
+for f in sorted(glob.glob(os.path.join(BASE, "docs/01_기술서/*.md"))):
+    rows = []
+    for i, ln in enumerate(io.open(f, encoding="utf-8").read().split("\n") + [""], 1):
+        if ln.startswith("|"):
+            rows.append((i, ln.count("|")))
+            continue
+        if len(rows) >= 2 and len({n for _, n in rows}) > 1:
+            skew.append("%s:%d" % (os.path.basename(f), rows[0][0]))
+        rows = []
+check("표 열 수 일치", not skew, skew)
+
 print("\n■ 잔재")
 notes = [l.strip()[:70] for f in glob.glob(os.path.join(BASE,"docs/01_기술서/*.md"))
          for l in io.open(f,encoding="utf-8") if re.search(r'보완 필요|TODO|미니프로젝트|강의 지침|포트폴리오', l)]
