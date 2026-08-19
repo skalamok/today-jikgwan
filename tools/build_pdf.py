@@ -151,7 +151,7 @@ table.req9 th:nth-child(1), table.req9 td:nth-child(1) { width: 8.5%; white-spac
 table.req9 th:nth-child(2), table.req9 td:nth-child(2) { width: 5.5%; }
 table.req9 th:nth-child(3), table.req9 td:nth-child(3) { width: 5.5%; }
 table.req9 th:nth-child(4), table.req9 td:nth-child(4) { width: 10%; }
-table.req9 th:nth-child(5), table.req9 td:nth-child(5) { width: 28%; }
+table.req9 th:nth-child(5), table.req9 td:nth-child(5) { width: 25%; }
 table.req9 th:nth-child(6), table.req9 td:nth-child(6) { width: 7%; white-space: nowrap; text-align: center; }
 table.req9 th:nth-child(7), table.req9 td:nth-child(7) { width: 5%; white-space: nowrap; text-align: center; }
 table.req9 th:nth-child(8), table.req9 td:nth-child(8) { width: 12%; }
@@ -162,22 +162,22 @@ table.req9 th:nth-child(9), table.req9 td:nth-child(9) { width: 18.5%; }
    좁은 칸은 데이터만 줄바꿈을 막는다. 머리글까지 막으면 "요구사항 ID" 가 칸을 넘친다 */
 table.req10 { font-size: 7.6pt; }
 table.req10 th, table.req10 td { padding: 0.9mm 1.1mm; }
-table.req10 td:nth-child(1) {  width: 8%; white-space: nowrap; }
+table.req10 td:nth-child(1) {  width: 9.5%; white-space: nowrap; }
 table.req10 td:nth-child(2) {  width: 4.5%; white-space: nowrap; }
-table.req10 td:nth-child(3) {  width: 5.5%; white-space: nowrap; }
+table.req10 td:nth-child(3) {  width: 7%; white-space: nowrap; }
 table.req10 th:nth-child(4), table.req10 td:nth-child(4) { width: 9.5%; }
-table.req10 th:nth-child(5), table.req10 td:nth-child(5) { width: 28%; }
+table.req10 th:nth-child(5), table.req10 td:nth-child(5) { width: 24%; }
 table.req10 td:nth-child(6) {  width: 4.5%; white-space: nowrap; text-align: center; }
 table.req10 td:nth-child(7) {  width: 5.5%; white-space: nowrap; text-align: center; }
-table.req10 td:nth-child(8) {  width: 4.5%; white-space: nowrap; text-align: center; }
+table.req10 td:nth-child(8) {  width: 5.5%; white-space: nowrap; text-align: center; }
 table.req10 th:nth-child(9), table.req10 td:nth-child(9) { width: 12%; }
 table.req10 th:nth-child(10), table.req10 td:nth-child(10) { width: 18%; }
-table.req10 th:nth-child(1) { width: 8%; }
+table.req10 th:nth-child(1) { width: 9.5%; }
 table.req10 th:nth-child(2) { width: 4.5%; }
-table.req10 th:nth-child(3) { width: 5.5%; }
+table.req10 th:nth-child(3) { width: 7%; }
 table.req10 th:nth-child(6) { width: 4.5%; }
 table.req10 th:nth-child(7) { width: 5.5%; }
-table.req10 th:nth-child(8) { width: 4.5%; }
+table.req10 th:nth-child(8) { width: 5.5%; }
 table.req8 th:nth-child(1), table.req8 td:nth-child(1) { width: 9%; white-space: nowrap; }
 table.req8 th:nth-child(2), table.req8 td:nth-child(2) { width: 6%; }
 table.req8 th:nth-child(3), table.req8 td:nth-child(3) { width: 6%; }
@@ -211,6 +211,7 @@ img.logo, img.mark { border: 0; }
    세로로 긴 모바일 캡처가 한 쪽을 다 먹고 데스크톱 판이 다음 쪽으로 밀린다. */
 img.mobile { max-width: 58mm; max-height: 108mm; }
 img.pc { max-width: 160mm; max-height: 108mm; }
+img.flow { max-width: 170mm; }
 figure { page-break-inside: avoid; margin: 0; }
 /* 그림 바로 앞의 설명 문단은 그림과 떨어지지 않게 둔다 */
 p + figure { page-break-before: avoid; }
@@ -276,7 +277,7 @@ def md_to_html(md, doc_dir):
         m = re.match(r"^!\[[^\]]*\]\(([^)]+)\)$", s)
         if m:
             src = os.path.normpath(os.path.join(doc_dir, m.group(1)))
-            cls = "pc" if src.endswith("-PC.png") else "mobile"
+            cls = "pc" if src.endswith("-PC.png") else "flow" if "/FLOW-" in src else "mobile"
             out.append('<figure><img class="%s" src="file://%s"></figure>' % (cls, src))
             i += 1
             continue
