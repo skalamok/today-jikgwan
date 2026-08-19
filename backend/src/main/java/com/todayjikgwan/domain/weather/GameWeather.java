@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
  * 경기별 날씨 캐시 (REQ-F-112, REQ-F-113).
  *
  * <p>화면 요청이 기상청 API 로 직접 전달되지 않도록 서버가 배치로 동기화한 값을 보관한다
- * (REQ-N-016, REQ-N-024).
+ * (REQ-NF-016, REQ-NF-024).
  */
 @Getter
 @Entity

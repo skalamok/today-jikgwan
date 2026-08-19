@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** REQ-F-605. 경로 전체가 ROLE_ADMIN 이다 (SecurityConfig, REQ-N-009) */
+/** REQ-F-605. 경로 전체가 ROLE_ADMIN 이다 (SecurityConfig, REQ-NF-009) */
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor

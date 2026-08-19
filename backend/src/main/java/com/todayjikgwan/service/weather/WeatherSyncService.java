@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 날씨 배치 동기화 (REQ-N-016, REQ-N-024).
+ * 날씨 배치 동기화 (REQ-NF-016, REQ-NF-024).
  *
  * <p>화면 요청이 기상청 API 로 직접 전달되지 않도록 서버가 주기적으로 당겨와 캐시한다.
  * 단기예보는 3일치만 제공하므로 그 범위의 예정 경기만 대상으로 한다.

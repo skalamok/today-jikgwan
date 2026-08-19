@@ -99,7 +99,7 @@ onMounted(async () => {
           <span v-else class="chip warn">확인 중</span>
         </div>
       </div>
-      <!-- REQ-N-014 데이터 출처 표기 -->
+      <!-- REQ-NF-014 데이터 출처 표기 -->
       <div class="source">출처 · {{ dataSource }}</div>
     </div>
 

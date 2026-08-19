@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * REQ-N-003 사전 집계. 매 조회마다 원시 기록을 계산하지 않는다.
+ * REQ-NF-003 사전 집계. 매 조회마다 원시 기록을 계산하지 않는다.
  * season_year = 0 은 통산을 의미한다.
  */
 @Getter

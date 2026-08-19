@@ -3,7 +3,7 @@ package com.todayjikgwan.api.game.dto;
 import com.todayjikgwan.domain.weather.GameWeather;
 import java.time.OffsetDateTime;
 
-/** REQ-F-112, REQ-F-113. REQ-N-024 에 따라 출처를 함께 반환한다. */
+/** REQ-F-112, REQ-F-113. REQ-NF-024 에 따라 출처를 함께 반환한다. */
 public record WeatherResponse(
         Double temperature,
         String sky,

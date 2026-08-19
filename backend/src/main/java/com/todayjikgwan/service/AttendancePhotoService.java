@@ -31,7 +31,7 @@ public class AttendancePhotoService {
         AttendanceLog log = attendanceLogRepository.findById(logId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
 
-        // REQ-N-008 본인 기록만 수정할 수 있다
+        // REQ-NF-008 본인 기록만 수정할 수 있다
         if (!log.getUser().getId().equals(userId)) {
             throw new ApiException(ErrorCode.FORBIDDEN);
         }

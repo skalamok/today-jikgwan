@@ -19,7 +19,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /** REQ-N-006 비밀번호는 복호화가 불가능한 해시로 저장한다. */
+    /** REQ-NF-006 비밀번호는 복호화가 불가능한 해시로 저장한다. */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/standings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/teams").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")   // REQ-N-009
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")   // REQ-NF-009
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

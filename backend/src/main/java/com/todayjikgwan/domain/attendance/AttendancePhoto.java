@@ -26,7 +26,7 @@ public class AttendancePhoto {
     @Column(name = "thumbnail_url", nullable = false, length = 500)
     private String thumbnailUrl;
 
-    /** REQ-F-204 경기 자동 매칭용. 위치 메타데이터는 저장 전에 제거한다 (REQ-N-007). */
+    /** REQ-F-204 경기 자동 매칭용. 위치 메타데이터는 저장 전에 제거한다 (REQ-NF-007). */
     @Column(name = "taken_at")
     private OffsetDateTime takenAt;
 

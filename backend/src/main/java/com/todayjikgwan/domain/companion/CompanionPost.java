@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
  * confirmedCount 가 capacity 를 넘을 수 있으므로 세 겹으로 막는다.
  * <ol>
  *   <li>애플리케이션: 정원 검사</li>
- *   <li>낙관적 락(version): 동시 갱신 감지 후 재시도 (REQ-N-011)</li>
+ *   <li>낙관적 락(version): 동시 갱신 감지 후 재시도 (REQ-NF-011)</li>
  *   <li>DB CHECK 제약(ck_post_capacity): 최종 방어선</li>
  * </ol>
  */

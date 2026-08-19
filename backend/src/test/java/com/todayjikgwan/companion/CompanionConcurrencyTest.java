@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * REQ-F-504 / REQ-N-011 동시성 검증.
+ * REQ-F-504 / REQ-NF-011 동시성 검증.
  *
  * 여러 사용자가 같은 순간에 참여를 눌러도 확정 인원이 정원을 넘지 않아야 한다.
  */

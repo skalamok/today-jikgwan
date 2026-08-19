@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * 공공데이터포털 기상청 단기예보 · 기상특보 연동 (REQ-N-024).
+ * 공공데이터포털 기상청 단기예보 · 기상특보 연동 (REQ-NF-024).
  *
  * <p>단기예보 발표 시각은 02·05·08·11·14·17·20·23시이며, 각 발표는 이후 3일치를 담는다.
  * 조회 시점 기준 가장 최근 발표본을 사용한다.

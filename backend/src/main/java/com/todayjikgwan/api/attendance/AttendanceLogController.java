@@ -52,7 +52,7 @@ public class AttendanceLogController {
 
     /**
      * REQ-F-203 사진 업로드.
-     * 저장 시 위치 메타데이터를 제거하고(REQ-N-007) 썸네일을 생성한다(REQ-N-002).
+     * 저장 시 위치 메타데이터를 제거하고(REQ-NF-007) 썸네일을 생성한다(REQ-NF-002).
      */
     @PostMapping(value = "/{logId}/photos", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PhotoUploadResponse> uploadPhotos(

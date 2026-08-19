@@ -37,7 +37,7 @@ public class GameController {
         return Map.of(
                 "date", target.toString(),
                 "content", content,
-                // REQ-N-014 현재는 자체 데이터이므로 외부 출처 표기 대상이 없다
+                // REQ-NF-014 현재는 자체 데이터이므로 외부 출처 표기 대상이 없다
                 "dataSource", "자체 등록 데이터");
     }
 
@@ -49,7 +49,7 @@ public class GameController {
                 .orElseGet(WeatherResponse::empty);
     }
 
-    /** 운영 편의용 수동 동기화. 배치(REQ-N-016)와 동일한 로직을 즉시 실행한다 */
+    /** 운영 편의용 수동 동기화. 배치(REQ-NF-016)와 동일한 로직을 즉시 실행한다 */
     @PostMapping("/weather/sync")
     public Map<String, Object> syncWeather() {
         int updated = weatherSyncService.sync();
