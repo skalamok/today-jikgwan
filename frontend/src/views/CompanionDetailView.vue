@@ -87,7 +87,7 @@ async function act(kind) {
     </div>
 
     <div class="card" v-if="post.confirmedMembers?.length">
-      <h2>확정된 동행</h2>
+      <h2>확정된 메이트</h2>
       <div v-for="m in post.confirmedMembers" :key="m.seq" class="list-item" style="padding:8px 0">
         <div style="flex:1">{{ m.nickname }}</div>
         <span class="muted">{{ m.isAuthor ? '작성자' : m.seq + '번째' }}</span>
@@ -95,8 +95,8 @@ async function act(kind) {
     </div>
 
     <div class="card" v-if="post.myStatus === 'CONFIRMED' || post.myStatus === 'AUTHOR'">
-      <h2>동행 대화</h2>
-      <div class="muted" style="margin:-6px 0 10px">확정된 동행자끼리만 볼 수 있어요</div>
+      <h2>메이트 대화</h2>
+      <div class="muted" style="margin:-6px 0 10px">확정된 메이트끼리만 볼 수 있어요</div>
       <RouterLink :to="`/companions/${$route.params.id}/chat`">
         <button class="btn ghost small">대화방 열기</button>
       </RouterLink>

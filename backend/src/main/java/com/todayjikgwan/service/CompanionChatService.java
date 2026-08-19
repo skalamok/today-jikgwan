@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 동행 소통 (REQ-F-510 ~ 513).
+ * 메이트 소통 (REQ-F-510 ~ 513).
  *
  * <p>확정 전 문의는 공개 댓글로, 확정 후 약속 조율은 비공개 대화방으로 나눈다.
  * 하나로 합치면 확정자끼리의 약속이 아무나 볼 수 있게 되고,

@@ -24,7 +24,7 @@ public class NotificationService {
     @Transactional
     public void notifyCompanionConfirmed(Long userId, String gameLabel, Long postId) {
         repository.save(new Notification(userId, "COMPANION_CONFIRMED",
-                "동행이 확정됐어요", gameLabel, "/companions/" + postId));
+                "메이트가 확정됐어요", gameLabel, "/companions/" + postId));
     }
 
     /** REQ-F-604 경기 결과 정정으로 전적이 바뀐 사용자에게 안내 */

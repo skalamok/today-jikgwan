@@ -365,7 +365,7 @@ Table user_badges {
 }
 
 // =====================================================================
-// 6. 동행 모집  ★ 동시성 제어 지점
+// 6. 직관 메이트  ★ 동시성 제어 지점
 // =====================================================================
 
 Table companion_posts {
@@ -611,7 +611,7 @@ TableGroup "전적 · 성장" {
   user_badges
 }
 
-TableGroup "동행" {
+TableGroup "직관 메이트" {
   companion_posts
   companion_applications
   companion_comments

@@ -70,7 +70,7 @@ onUnmounted(() => clearInterval(timer))
   <div class="card" v-if="error" style="border-color:#f0c0c0">{{ error }}</div>
 
   <div class="card wide" style="display:flex; flex-direction:column; height:60vh; min-height:360px">
-    <h2 style="flex:none">동행 대화</h2>
+    <h2 style="flex:none">메이트 대화</h2>
     <div ref="listEl" style="flex:1; overflow-y:auto; padding-right:4px">
       <div v-if="!messages.length" class="muted" style="text-align:center; padding:24px">
         아직 대화가 없어요. 만날 시간과 장소를 정해보세요

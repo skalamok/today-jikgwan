@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 동행 모집 (REQ-F-501).
+ * 메이트 모집글 (REQ-F-501).
  *
  * <p>동시성 제어의 핵심 지점이다. 여러 사용자가 동시에 참여를 누르면
  * confirmedCount 가 capacity 를 넘을 수 있으므로 세 겹으로 막는다.

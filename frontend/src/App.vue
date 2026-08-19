@@ -19,7 +19,7 @@ const screenId = computed(() => route.meta?.id || '')
 const titles = {
   home: '오늘의직관', login: '로그인', signup: '회원가입', games: '경기',
   'log-new': '직관 기록', logs: '내 기록', stats: '내 전적',
-  stadiums: '구장', stadium: '구장 상세', companions: '동행', companion: '동행 모집', 'companion-chat': '동행 대화',
+  stadiums: '구장', stadium: '구장 상세', companions: '메이트 구하기', companion: '메이트 모집글', 'companion-chat': '메이트 대화',
   plan: '관람 계획', standings: '팀 순위', guide: '첫 직관 가이드', my: '마이페이지',
   'log-detail': '기록 상세', notifications: '알림', admin: '운영자', 'oauth-callback': '로그인',
 }

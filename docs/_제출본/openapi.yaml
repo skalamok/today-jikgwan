@@ -41,9 +41,9 @@ tags:
   - name: Stat
     description: 전적 집계 (REQ-F-301 ~ 309)
   - name: Companion
-    description: 동행 모집 (REQ-F-501 ~ 506)
+    description: 직관 메이트 모집 (REQ-F-501 ~ 506)
   - name: CompanionChat
-    description: 동행 소통 (REQ-F-510 ~ 513)
+    description: 메이트 소통 (REQ-F-510 ~ 513)
   - name: Safety
     description: 신고 · 차단 (REQ-F-508, REQ-F-509)
   - name: ViewingPlan
@@ -751,7 +751,7 @@ paths:
   /companion-posts:
     get:
       tags: [Companion]
-      summary: 동행 모집 목록
+      summary: 메이트 모집글 목록
       description: REQ-F-502. 마감된 모집은 기본적으로 제외한다.
       parameters:
         - { name: gameDate, in: query, schema: { type: string, format: date } }
@@ -767,7 +767,7 @@ paths:
                 items: { $ref: '#/components/schemas/CompanionPostResponse' }
     post:
       tags: [Companion]
-      summary: 동행 모집 등록
+      summary: 메이트 모집글 등록
       description: REQ-F-501. 이미 시작한 경기에는 등록할 수 없다.
       requestBody:
         required: true
@@ -789,7 +789,7 @@ paths:
   /companion-posts/{postId}:
     get:
       tags: [Companion]
-      summary: 동행 모집 상세
+      summary: 메이트 모집글 상세
       parameters:
         - { $ref: '#/components/parameters/PostId' }
       responses:
@@ -803,7 +803,7 @@ paths:
   /companion-posts/{postId}/applications:
     post:
       tags: [Companion]
-      summary: 동행 참여 (선착순 확정)
+      summary: 메이트 참여 신청 (선착순 확정)
       description: |
         REQ-F-503, REQ-F-504, REQ-F-505, REQ-N-011.
 
@@ -838,13 +838,13 @@ paths:
                   summary: 동일 시간대 중복 (REQ-F-505)
                   value:
                     code: TIME_CONFLICT
-                    message: 같은 시간에 확정된 동행이 있어요.
+                    message: 같은 시간에 확정된 약속이 있어요.
         '400':
           description: 본인이 등록한 모집에는 지원할 수 없음
 
     delete:
       tags: [Companion]
-      summary: 동행 참여 취소
+      summary: 메이트 참여 취소
       description: REQ-F-506. 경기 시작 24시간 이내에는 취소할 수 없다. 취소 시 해당 자리는 다시 모집 상태가 된다.
       parameters:
         - { $ref: '#/components/parameters/PostId' }
@@ -897,7 +897,7 @@ paths:
   /companion-posts/{postId}/messages:
     get:
       tags: [CompanionChat]
-      summary: 동행 대화 조회
+      summary: 메이트 대화 조회
       description: |
         REQ-F-511. **확정된 동행자만 조회할 수 있다.**
         `after` 를 지정하면 그 시각 이후 메시지만 반환하므로 주기적 조회에 사용할 수 있다.
@@ -925,7 +925,7 @@ paths:
           description: 확정된 동행자가 아님
     post:
       tags: [CompanionChat]
-      summary: 동행 대화 전송
+      summary: 메이트 대화 전송
       description: REQ-F-511. 읽기 전용으로 전환된 대화방에는 전송할 수 없다.
       parameters:
         - { $ref: '#/components/parameters/PostId' }

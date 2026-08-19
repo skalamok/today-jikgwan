@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 동행 확정 1회 시도.
+ * 메이트 확정 1회 시도.
  *
  * <p>재시도할 때마다 새 트랜잭션에서 실행되어야 하므로 {@link CompanionService} 와
  * 별도 빈으로 분리했다. 같은 빈 안에서 자기 메서드를 호출하면 프록시를 거치지 않아

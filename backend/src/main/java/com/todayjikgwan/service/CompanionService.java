@@ -61,7 +61,7 @@ public class CompanionService {
             try {
                 return applyExecutor.applyOnce(postId, userId);
             } catch (OptimisticLockingFailureException e) {
-                log.debug("동행 확정 경합 발생 postId={} userId={} attempt={}", postId, userId, attempt);
+                log.debug("메이트 확정 경합 발생 postId={} userId={} attempt={}", postId, userId, attempt);
             } catch (DataIntegrityViolationException e) {
                 // DB CHECK 제약에 걸린 경우 = 정원 초과
                 throw new ApiException(ErrorCode.COMPANION_POST_FULL);

@@ -23,9 +23,9 @@ public enum ErrorCode {
     CHEER_TEAM_NOT_IN_GAME(HttpStatus.BAD_REQUEST, "이 경기에 출전하지 않은 팀이에요."),
     SCORE_REPORT_REQUIRED(HttpStatus.BAD_REQUEST, "아직 결과가 확정되지 않은 경기예요. 스코어를 입력해 주세요."),
 
-    // 동행
+    // 직관 메이트
     COMPANION_POST_FULL(HttpStatus.CONFLICT, "방금 정원이 찼어요."),
-    TIME_CONFLICT(HttpStatus.CONFLICT, "같은 시간에 확정된 동행이 있어요."),
+    TIME_CONFLICT(HttpStatus.CONFLICT, "같은 시간에 확정된 약속이 있어요."),
     ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 참여 중인 모집이에요."),
     SELF_APPLY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "본인이 등록한 모집에는 참여할 수 없어요."),
     POST_NOT_OPEN(HttpStatus.BAD_REQUEST, "모집이 마감되었어요."),
@@ -34,7 +34,7 @@ public enum ErrorCode {
     NOT_APPLIED(HttpStatus.BAD_REQUEST, "참여 중인 모집이 아니에요."),
 
     // 소통 · 안전
-    NOT_CONFIRMED_MEMBER(HttpStatus.FORBIDDEN, "확정된 동행자만 대화할 수 있어요."),
+    NOT_CONFIRMED_MEMBER(HttpStatus.FORBIDDEN, "확정된 메이트만 대화할 수 있어요."),
     CHAT_READ_ONLY(HttpStatus.BAD_REQUEST, "종료된 대화방이에요."),
     ALREADY_REPORTED(HttpStatus.CONFLICT, "이미 신고한 대상이에요."),
     CANNOT_BLOCK_SELF(HttpStatus.BAD_REQUEST, "자기 자신은 차단할 수 없어요."),

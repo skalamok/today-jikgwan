@@ -9,10 +9,10 @@ onMounted(async () => { posts.value = (await client.get('/companion-posts')).dat
 
 <template>
   <div class="card wide">
-    <h2>모집 중인 동행</h2>
+    <h2>같이 갈 사람 구해요</h2>
     <div v-if="!posts.length" class="empty">
       <div class="em">🤝</div>
-      <p>모집 중인 동행이 없어요</p>
+      <p>아직 올라온 모집글이 없어요</p>
     </div>
     <RouterLink v-for="p in posts" :key="p.id" :to="`/companions/${p.id}`"
                 class="list-item" style="align-items:center">
