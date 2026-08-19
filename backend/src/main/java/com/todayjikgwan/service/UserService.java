@@ -8,6 +8,8 @@ import com.todayjikgwan.domain.user.User;
 import com.todayjikgwan.domain.user.SocialAccount;
 import com.todayjikgwan.domain.user.SocialAccountRepository;
 import com.todayjikgwan.domain.user.UserRepository;
+import com.todayjikgwan.domain.user.UserTeamHistory;
+import com.todayjikgwan.domain.user.UserTeamHistoryRepository;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final UserTeamHistoryRepository teamHistoryRepository;
     private final SocialAccountRepository socialAccountRepository;
 
     @Transactional(readOnly = true)
@@ -46,7 +49,13 @@ public class UserService {
         if (favoriteTeamId != null) {
             Team team = teamRepository.findById(favoriteTeamId)
                     .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+            // 같은 팀을 다시 고른 경우까지 이력으로 남기면 무엇이 바뀐 기록인지 흐려진다
+            boolean changed = user.getFavoriteTeam() == null
+                    || !user.getFavoriteTeam().getId().equals(team.getId());
             user.changeFavoriteTeam(team);
+            if (changed) {
+                teamHistoryRepository.save(new UserTeamHistory(user, team));
+            }
         }
         return toMap(user);
     }

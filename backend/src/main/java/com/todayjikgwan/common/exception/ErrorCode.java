@@ -23,6 +23,7 @@ public enum ErrorCode {
     CHEER_TEAM_NOT_IN_GAME(HttpStatus.BAD_REQUEST, "이 경기에 출전하지 않은 팀이에요."),
 
     // 직관 메이트
+    INVALID_VERIFICATION_TOKEN(HttpStatus.BAD_REQUEST, "확인 링크가 만료되었거나 올바르지 않아요."),
     COMPANION_POST_FULL(HttpStatus.CONFLICT, "방금 정원이 찼어요."),
     TIME_CONFLICT(HttpStatus.CONFLICT, "같은 시간에 확정된 약속이 있어요."),
     ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 참여 중인 모집이에요."),

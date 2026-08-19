@@ -99,6 +99,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | GET | `/auth/oauth/providers` | 사용 가능한 소셜 로그인 제공자 조회 | 확장 | 공개 | REQ-F-003 |  |
 | GET | `/auth/oauth/{provider}/authorize-url` | 소셜 로그인 인가 URL 발급 | 확장 | 공개 | REQ-F-003 |  |
 | POST | `/auth/oauth/{provider}/callback` | 소셜 로그인 콜백 (인가 코드 교환) | 확장 | 공개 | REQ-F-003 |  |
+| POST | `/auth/verify-email` | 이메일 소유 확인 | MVP | 공개 | REQ-F-001 |  |
 | POST | `/auth/password-reset` | 비밀번호 재설정 메일 발송 | 확장 | 공개 | REQ-F-004 | 미구현 |
 
 ## User
@@ -230,4 +231,4 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 
 ---
 
-총 44개 경로 · 56개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
+총 45개 경로 · 57개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.

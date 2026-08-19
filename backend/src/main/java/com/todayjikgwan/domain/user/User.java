@@ -63,4 +63,11 @@ public class User extends BaseTimeEntity {
     public void changeFavoriteTeam(Team team) { this.favoriteTeam = team; }
 
     public void changeNickname(String nickname) { this.nickname = nickname; }
+
+    /** REQ-F-001 이메일 소유 확인. 이미 확인한 계정은 시각을 덮어쓰지 않는다 */
+    public void verifyEmail() {
+        if (this.emailVerifiedAt == null) {
+            this.emailVerifiedAt = OffsetDateTime.now();
+        }
+    }
 }

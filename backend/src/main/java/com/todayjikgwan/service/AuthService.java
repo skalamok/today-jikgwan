@@ -9,6 +9,8 @@ import com.todayjikgwan.domain.team.Team;
 import com.todayjikgwan.domain.team.TeamRepository;
 import com.todayjikgwan.domain.user.User;
 import com.todayjikgwan.domain.user.UserRepository;
+import com.todayjikgwan.domain.user.UserTeamHistory;
+import com.todayjikgwan.domain.user.UserTeamHistoryRepository;
 import com.todayjikgwan.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final UserTeamHistoryRepository teamHistoryRepository;
+    private final com.todayjikgwan.service.mail.EmailVerificationService emailVerificationService;
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -43,7 +47,14 @@ public class AuthService {
                 .nickname(request.nickname())
                 .favoriteTeam(team)
                 .build();
-        return userRepository.save(user).getId();
+        User saved = userRepository.save(user);
+        // REQ-F-005 가입 때 고른 팀이 이력의 시작점이다. 나중에 바꾸면 그 위에 쌓인다
+        if (team != null) {
+            teamHistoryRepository.save(new UserTeamHistory(saved, team));
+        }
+        // REQ-F-001 이메일 소유 확인. 발송이 실패해도 가입을 되돌리지 않는다
+        emailVerificationService.sendVerification(saved);
+        return saved.getId();
     }
 
     /**
