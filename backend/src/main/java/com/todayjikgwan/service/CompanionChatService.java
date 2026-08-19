@@ -29,6 +29,7 @@ public class CompanionChatService {
     private static final int READ_ONLY_AFTER_DAYS = 7;
 
     private final CompanionPostRepository postRepository;
+    private final com.todayjikgwan.api.companion.ws.ChatWebSocketHandler chatWebSocketHandler;
     private final CompanionApplicationRepository applicationRepository;
     private final CompanionCommentRepository commentRepository;
     private final CompanionMessageRepository messageRepository;
@@ -79,6 +80,8 @@ public class CompanionChatService {
         }
         User user = userRepository.getReferenceById(userId);
         CompanionMessage saved = messageRepository.save(new CompanionMessage(post, user, content));
+        // REQ-F-512 그 방을 보고 있는 사람에게 바로 보낸다. 폴링은 이것이 닿지 않을 때를 위한 것이다
+        chatWebSocketHandler.broadcast(postId, MessageResponse.of(saved, null));
         markRead(postId, userId);
         return MessageResponse.of(saved, userId);
     }

@@ -24,10 +24,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	// REQ-F-512 대화 실시간 수신
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 
 	// JSON 파싱 (기상청 API 응답)
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	// 날짜를 JSON 으로 내보내려면 있어야 한다. 없으면 직렬화가 조용히 실패한다
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 	// EXIF 판독 (REQ-F-204 촬영 시각 추출 / REQ-N-007 위치정보 제거)
 	implementation 'com.drewnoakes:metadata-extractor:2.19.0'

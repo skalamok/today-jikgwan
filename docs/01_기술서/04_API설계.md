@@ -99,6 +99,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 | GET | `/auth/oauth/providers` | 사용 가능한 소셜 로그인 제공자 조회 | 확장 | 공개 | REQ-F-003 |  |
 | GET | `/auth/oauth/{provider}/authorize-url` | 소셜 로그인 인가 URL 발급 | 확장 | 공개 | REQ-F-003 |  |
 | POST | `/auth/oauth/{provider}/callback` | 소셜 로그인 콜백 (인가 코드 교환) | 확장 | 공개 | REQ-F-003 |  |
+| POST | `/auth/password-reset/confirm` | 비밀번호 재설정 확정 | 확장 | 공개 | REQ-F-004 |  |
 | POST | `/auth/verify-email` | 이메일 소유 확인 | MVP | 공개 | REQ-F-001 |  |
 | POST | `/auth/password-reset` | 비밀번호 재설정 메일 발송 | 확장 | 공개 | REQ-F-004 | 미구현 |
 
@@ -110,6 +111,7 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 |---|---|---|---|---|---|---|
 | GET | `/users/me` | 내 정보 조회 | 확장 | 인증 | REQ-F-006 |  |
 | PATCH | `/users/me` | 내 정보 수정 | MVP | 인증 | REQ-F-005, REQ-F-006 |  |
+| DELETE | `/users/me` | 회원 탈퇴 | 확장 | 인증 | REQ-F-007 |  |
 | GET | `/users/me/badges` | 내 배지 목록 | 확장 | 인증 | REQ-F-703 |  |
 | GET | `/teams` | 구단 목록 | MVP | 공개 | REQ-F-005 |  |
 
@@ -231,4 +233,4 @@ GET /stats/me?dimension=STADIUM  →  200 OK
 
 ---
 
-총 45개 경로 · 57개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.
+총 46개 경로 · 59개 오퍼레이션. 인증이 필요한 요청은 `Authorization: Bearer {accessToken}` 헤더를 요구한다.

@@ -5,6 +5,7 @@ import com.todayjikgwan.api.auth.dto.SignupRequest;
 import com.todayjikgwan.api.auth.dto.TokenResponse;
 import com.todayjikgwan.service.AuthService;
 import com.todayjikgwan.service.mail.EmailVerificationService;
+import com.todayjikgwan.service.mail.PasswordResetService;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, Long>> signup(@Valid @RequestBody SignupRequest request) {
@@ -35,6 +37,25 @@ public class AuthController {
     public Map<String, String> verifyEmail(@RequestBody Map<String, String> body) {
         emailVerificationService.verify(body.get("token"));
         return Map.of("message", "이메일 확인이 끝났어요");
+    }
+
+    /**
+     * REQ-F-004 비밀번호 재설정 링크 요청.
+     *
+     * 가입 여부와 무관하게 같은 응답을 준다. 응답이 갈리면 그것만으로 가입 여부를
+     * 캐낼 수 있다 (REQ-NF-008).
+     */
+    @PostMapping("/password-reset")
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody Map<String, String> body) {
+        passwordResetService.request(body.get("email"));
+        return ResponseEntity.accepted().build();
+    }
+
+    /** REQ-F-004 받은 링크의 토큰으로 새 비밀번호를 정한다 */
+    @PostMapping("/password-reset/confirm")
+    public Map<String, String> confirmPasswordReset(@RequestBody Map<String, String> body) {
+        passwordResetService.reset(body.get("token"), body.get("password"));
+        return Map.of("message", "비밀번호를 바꿨어요");
     }
 
     @PostMapping("/login")

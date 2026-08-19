@@ -37,6 +37,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/stadiums/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/standings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/teams").permitAll()
+                // REQ-F-512 인증은 연결 뒤 첫 프레임에서 한다. 핸드셰이크는 열어 둔다
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")   // REQ-NF-009
                 .anyRequest().authenticated())

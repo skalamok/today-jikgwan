@@ -60,6 +60,19 @@ public class UserService {
         return toMap(user);
     }
 
+    /**
+     * REQ-F-007 탈퇴.
+     *
+     * 기록을 지우지 않는다. 이 사람이 남긴 구역 평가가 다른 사람의 좌석 선택 근거라
+     * 통째로 지우면 집계가 흔들린다. 식별 정보만 지우고 기여분은 익명으로 남긴다.
+     */
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        user.withdraw();
+    }
+
     private Map<String, Object> toMap(User u) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", u.getId());

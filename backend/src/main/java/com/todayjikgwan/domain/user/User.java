@@ -70,4 +70,23 @@ public class User extends BaseTimeEntity {
             this.emailVerifiedAt = OffsetDateTime.now();
         }
     }
+
+    public void changePassword(String encoded) { this.passwordHash = encoded; }
+
+    /**
+     * REQ-F-007 탈퇴.
+     *
+     * <p>행을 지우지 않는다. 이 사람이 남긴 구역 평가가 다른 사람의 좌석 선택 근거이므로
+     * 통째로 지우면 집계가 흔들린다. 식별할 수 있는 값만 지우고 기여분은 익명으로 남긴다.
+     * 같은 이메일로 다시 가입할 수 있도록 이메일도 비운다.
+     */
+    public void withdraw() {
+        this.withdrawnAt = OffsetDateTime.now();
+        this.status = UserStatus.WITHDRAWN;
+        this.email = null;
+        this.passwordHash = null;
+        this.nickname = "탈퇴한 사용자" + this.id;
+        this.profileImageUrl = null;
+        this.favoriteTeam = null;
+    }
 }
