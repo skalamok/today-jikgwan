@@ -251,7 +251,7 @@ def sheet(title, sub, groups, tables, refs, width):
   src: url('file://%s/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
 @font-face { font-family: Pretendard; font-weight: 700;
   src: url('file://%s/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
-body { width: %dpx; }</style></head><body>
+body { width: max-content; min-width: %dpx; }</style></head><body>
 <div class="sheet"><div class="head"><b>%s</b><span>%s</span></div>
 <svg class="wires"></svg><div class="cols">%s</div>
 <div class="legend"><span><span class="sw"></span>MVP</span>
@@ -266,21 +266,23 @@ body { width: %dpx; }</style></head><body>
 
 
 def shoot(name, html, width=0):
-    width = width or int(re.search(r"body \{ width: (\d+)px", html).group(1))
+    width = width or int(re.search(r"min-width: (\d+)px", html).group(1))
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, name + ".html")
     io.open(hp, "w", encoding="utf-8").write(html)
     png = os.path.join(OUT, name + ".png")
+    # 창을 넉넉히 잡고 잉크가 닿은 범위로 잘라 낸다. 폭을 계산으로 맞추면
+    # 테이블 이름 길이에 따라 몇 픽셀씩 넘쳐 오른쪽이 잘린다
     subprocess.run([CHROME, "--headless", "--disable-gpu", "--hide-scrollbars",
                     "--force-device-scale-factor=2",
-                    "--window-size=%d,%d" % (width, 3400),
+                    "--window-size=%d,%d" % (max(width + 700, 2600), 3400),
                     "--virtual-time-budget=3000",
                     "--screenshot=" + png, "file://" + hp], capture_output=True)
     from PIL import Image, ImageChops
     im = Image.open(png).convert("RGB")
     bb = ImageChops.difference(im, Image.new("RGB", im.size, (255, 255, 255))).getbbox()
     if bb:
-        im = im.crop((0, 0, im.width, min(im.height, bb[3] + 24)))
+        im = im.crop((0, 0, min(im.width, bb[2] + 24), min(im.height, bb[3] + 24)))
     im.save(png, optimize=True)
     print("  %-10s %dx%d  %.1fKB" % (name, im.width, im.height, os.path.getsize(png) / 1024))
 
@@ -324,7 +326,7 @@ def group_sheet(gname, members, tables, refs):
   src: url('file://%s/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
 @font-face { font-family: Pretendard; font-weight: 700;
   src: url('file://%s/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
-body { width: %dpx; }</style></head><body>
+body { width: max-content; min-width: %dpx; }</style></head><body>
 <div class="sheet"><div class="head"><b>%s</b><span>테이블 %d개 · 관계 %d개 &nbsp;·&nbsp; 단계 = 참조 깊이. 1단계는 다른 테이블을 참조하지 않는다</span></div>
 <svg class="wires"></svg><div class="cols">%s</div>
 <div class="legend"><span>%s</span></div>
@@ -360,7 +362,7 @@ def map_sheet(title, sub, groups, tables, refs):
   src: url('file://%s/docs/_assets/font/Pretendard-Regular.woff2') format('woff2'); }
 @font-face { font-family: Pretendard; font-weight: 700;
   src: url('file://%s/docs/_assets/font/Pretendard-Bold.woff2') format('woff2'); }
-body { width: %dpx; }
+body { width: max-content; min-width: %dpx; }
 .tbl > .t { padding: 6px 8px; }
 .grp .sub > div { min-width: 226px; }</style></head><body>
 <div class="sheet"><div class="head"><b>%s</b><span>%s</span></div>
@@ -384,7 +386,7 @@ def main():
                                groups, tables, refs), 0)
     for i, g in enumerate(groups, 1):
         html = group_sheet(g["name"], g["tables"], tables, refs)
-        shoot("ERD-G%d" % i, html, int(re.search(r"body \{ width: (\d+)px", html).group(1)))
+        shoot("ERD-G%d" % i, html, int(re.search(r"min-width: (\d+)px", html).group(1)))
 
 
 if __name__ == "__main__":
