@@ -105,7 +105,7 @@ Swagger Editor 에 원본을 붙여넣으면 같은 내용을 화면으로 확�
 | POST | `/companion-posts/{postId}/comments` | 모집글 문의 댓글 작성 | 확장 | 인증 | REQ-F-510 |  |
 | GET | `/companion-posts/{postId}/messages` | 메이트 대화 조회 | 확장 | 인증 | REQ-F-511 |  |
 | POST | `/companion-posts/{postId}/messages` | 메이트 대화 전송 | 확장 | 인증 | REQ-F-511 |  |
-| PUT | `/companion-posts/{postId}/messages/read` | 대화 읽음 처리 | 확장 | 인증 |  |  |
+| PUT | `/companion-posts/{postId}/messages/read` | 대화 읽음 처리 | 확장 | 인증 | REQ-F-511 |  |
 
 ## Safety
 

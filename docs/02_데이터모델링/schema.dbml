@@ -336,7 +336,7 @@ Table badges {
   description varchar(255)
   icon_url    varchar(500)
 
-  Note: '[확장]'
+  Note: '[확장] REQ-F-703 배지 정의. 코드와 달성 조건을 데이터로 두어 배지를 늘릴 때 코드를 고치지 않는다'
 }
 
 Table user_badges {
@@ -416,7 +416,7 @@ Table companion_message_reads {
   last_read_at      timestamp [not null]
 
   Indexes { (companion_post_id, user_id) [unique] }
-  Note: '[확장] 미읽음 개수 산출용. 메시지마다 읽음 행을 쌓지 않고 마지막 읽은 시각만 보관한다'
+  Note: '[확장] REQ-F-511 미읽음 개수 산출용. 메시지마다 읽음 행을 쌓지 않고 마지막 읽은 시각만 보관한다'
 }
 
 Table reports {

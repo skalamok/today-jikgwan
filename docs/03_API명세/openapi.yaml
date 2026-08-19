@@ -1139,7 +1139,7 @@ paths:
       x-scope: 확장
       tags: [CompanionChat]
       summary: 대화 읽음 처리
-      description: 마지막 읽은 시각을 갱신한다. 메시지마다 읽음 행을 쌓지 않는다.
+      description: REQ-F-511. 마지막 읽은 시각을 갱신한다. 메시지마다 읽음 행을 쌓지 않는다.
       parameters:
         - { $ref: '#/components/parameters/PostId' }
       responses:
